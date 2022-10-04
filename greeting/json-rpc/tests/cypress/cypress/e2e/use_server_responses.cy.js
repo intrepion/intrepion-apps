@@ -8,7 +8,7 @@ describe("greeting app", () => {
   });
 
   it("should have hello alice message when Alice is typed", () => {
-    cy.intercept('POST', '**/api').as('api')
+    cy.intercept('POST', '/api').as('api')
     cy.get("input.name").type("Alice");
     cy.get("button.submit").click();
 
