@@ -9,8 +9,8 @@ describe("greeting app", () => {
 
   it("should have hello alice message when Alice is typed", () => {
     cy.intercept("POST", "/api", { fixture: "alice_result.json" }).as("api");
-    cy.get("input.name").type("Alice");
-    cy.get("button.submit").click();
+    cy.get("input#inputName").type("Alice");
+    cy.get("button#submitName").click();
 
     cy.wait("@api");
 
