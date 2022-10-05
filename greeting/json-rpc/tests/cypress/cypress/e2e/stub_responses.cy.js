@@ -16,4 +16,14 @@ describe("greeting app", () => {
 
     cy.get("p.greeting").should("have.text", "Hello, Alice!");
   });
+
+  it("should have hello bob message when Bob is typed", () => {
+    cy.intercept("POST", "/api", { fixture: "bob_result.json" }).as("api");
+    cy.get("input#inputName").type("Bob");
+    cy.get("button#submitName").click();
+
+    cy.wait("@api");
+
+    cy.get("p.greeting").should("have.text", "Hello, Bob!");
+  });
 });
