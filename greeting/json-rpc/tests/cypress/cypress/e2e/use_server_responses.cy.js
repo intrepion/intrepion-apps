@@ -35,4 +35,21 @@ describe("greeting app", () => {
 
     cy.get("p.greeting").should("have.text", "Hello, World!");
   });
+
+  it("should have hello world message when nothing is typed after a previous name", () => {
+    cy.intercept("POST", "/api").as("api");
+    cy.get("input#inputName").type("Bob");
+    cy.get("button#submitName").click();
+
+    cy.wait("@api");
+
+    cy.intercept("POST", "/api").as("api");
+    cy.get("input#inputName").type("{backspace}{backspace}{backspace}");
+    cy.get("button#submitName").click();
+
+    cy.wait("@api");
+
+    cy.get("p.greeting").should("have.text", "Hello, World!");
+  });
+
 });
