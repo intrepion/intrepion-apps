@@ -4,7 +4,7 @@ describe("greeting app", () => {
   });
 
   it("should have hello alice message when Alice is typed", () => {
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("input#inputName").type("Alice");
     cy.get("button#submitName").click();
 
@@ -14,7 +14,7 @@ describe("greeting app", () => {
   });
 
   it("should have hello bob message when Bob is typed", () => {
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("input#inputName").type("Bob");
     cy.get("button#submitName").click();
 
@@ -28,7 +28,7 @@ describe("greeting app", () => {
   });
 
   it("should have hello world message when nothing is typed", () => {
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("button#submitName").click();
 
     cy.wait("@api");
@@ -37,13 +37,13 @@ describe("greeting app", () => {
   });
 
   it("should have hello world message when nothing is typed after a previous name", () => {
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("input#inputName").type("Bob");
     cy.get("button#submitName").click();
 
     cy.wait("@api");
 
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("input#inputName").type("{backspace}{backspace}{backspace}");
     cy.get("button#submitName").click();
 
@@ -53,13 +53,13 @@ describe("greeting app", () => {
   });
 
   it("should have hello world message when spaces are typed", () => {
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("input#inputName").type("Bob");
     cy.get("button#submitName").click();
 
     cy.wait("@api");
 
-    cy.intercept("POST", "/api").as("api");
+    cy.intercept("POST", "/").as("api");
     cy.get("input#inputName").type("{backspace}{backspace}{backspace}  ");
     cy.get("button#submitName").click();
 
