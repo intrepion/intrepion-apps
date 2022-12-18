@@ -10,7 +10,7 @@ describe("greeting app", () => {
 
     cy.wait("@api");
 
-    cy.get("p.greeting").should("have.text", "Hello, Alice!");
+    cy.get("[data-testid=\"greeting-test\"]").should("have.text", "Hello, Alice!");
   });
 
   it("should have hello bob message when Bob is typed", () => {
@@ -20,11 +20,11 @@ describe("greeting app", () => {
 
     cy.wait("@api");
 
-    cy.get("p.greeting").should("have.text", "Hello, Bob!");
+    cy.get("[data-testid=\"greeting-test\"]").should("have.text", "Hello, Bob!");
   });
 
   it("should have hello world message by default", () => {
-    cy.get("p.greeting").should("have.text", "Hello, World!");
+    cy.get("[data-testid=\"greeting-test\"]").should("have.text", "Hello, World!");
   });
 
   it("should have hello world message when nothing is typed", () => {
@@ -33,7 +33,7 @@ describe("greeting app", () => {
 
     cy.wait("@api");
 
-    cy.get("p.greeting").should("have.text", "Hello, World!");
+    cy.get("[data-testid=\"greeting-test\"]").should("have.text", "Hello, World!");
   });
 
   it("should have hello world message when nothing is typed after a previous name", () => {
@@ -49,7 +49,7 @@ describe("greeting app", () => {
 
     cy.wait("@api");
 
-    cy.get("p.greeting").should("have.text", "Hello, World!");
+    cy.get("[data-testid=\"greeting-test\"]").should("have.text", "Hello, World!");
   });
 
   it("should have hello world message when spaces are typed", () => {
@@ -65,6 +65,6 @@ describe("greeting app", () => {
 
     cy.wait("@api");
 
-    cy.get("p.greeting").should("have.text", "Hello, World!");
+    cy.get("[data-testid=\"greeting-test\"]").should("have.text", "Hello, World!");
   });
 });
