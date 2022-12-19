@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./greeting/json-rpc/server/rust-actix-web/start_local_server.sh "http://localhost:3000"
+./apps/greeting/json-rpc/server/start_server-rust-actix-web.sh "http://localhost:3000"

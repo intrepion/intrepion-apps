@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./greeting/json-rpc/client-web/typescript-react/start_local_client.sh "http://localhost:8080"
+./apps/greeting/json-rpc/client-web/start_client-web-typescript-react.sh "http://localhost:8080"
