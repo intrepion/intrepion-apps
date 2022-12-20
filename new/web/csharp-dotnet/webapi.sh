@@ -9,7 +9,6 @@ exit_on_error() {
     fi
 }
 
-# enable !! command completion
 set -o history -o histexpand
 
 SCRIPT=$0
@@ -26,133 +25,26 @@ if [ -z $PASCAL ]; then
     exit 1
 fi
 
-TEMPLATE=webapi
-APP=${PASCAL}WebApi
-STACK=web-csharp-dotnet-$TEMPLATE
-REPO=intrepion-$KEBOB-$STACK
-
 cd ..
 
-FOLDER=$REPO
+TEMPLATE=webapi
 
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
+APP=${PASCAL}WebApi
+LIBRARY=${PASCAL}Library
+SOLUTION=${PASCAL}App
+STACK=web-csharp-dotnet-$TEMPLATE
+TESTS=${PASCAL}Tests
 
-git clone git@github.com:intrepion/$REPO.git
+REPO=intrepion-$KEBOB-$STACK
+
+./intrepion-apps/new/web/csharp-dotnet/common/create_solution.sh $APP $LIBRARY $PASCAL $REPO $SOLUTION $TEMPLATE $TESTS
 exit_on_error $? !!
+
+echo "Adding health check."
 
 cd $REPO
 
-FILE=.gitignore
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-dotnet new gitignore
-exit_on_error $? !!
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet new gitignore"
-exit_on_error $? !!
-
-SOLUTION=${PASCAL}App
-FILE=$SOLUTION.sln
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-dotnet new sln --name $SOLUTION
-exit_on_error $? !!
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet new sln --name $SOLUTION"
-exit_on_error $? !!
-
-LIBRARY=${PASCAL}Library
-FOLDER=$LIBRARY
-
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
-
-dotnet new classlib --name $FOLDER
-exit_on_error $? !!
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet new classlib --name $FOLDER"
-exit_on_error $? !!
-dotnet sln add $FOLDER
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet sln add $FOLDER"
-exit_on_error $? !!
-
-TESTS=${PASCAL}Tests
-FOLDER=$TESTS
-
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
-
-dotnet new xunit --name $FOLDER
-exit_on_error $? !!
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet new xunit --name $FOLDER"
-exit_on_error $? !!
-dotnet sln add $FOLDER
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet sln add $FOLDER"
-exit_on_error $? !!
-dotnet add $FOLDER reference $LIBRARY
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet add $FOLDER reference $LIBRARY"
-exit_on_error $? !!
-
-FOLDER=$APP
-
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
-
-dotnet new web --name $FOLDER
-exit_on_error $? !!
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet new web --name $FOLDER"
-exit_on_error $? !!
-dotnet sln add $FOLDER
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet sln add $FOLDER"
-exit_on_error $? !!
-dotnet add $FOLDER reference $LIBRARY
-git add --all
-exit_on_error $? !!
-git commit --message="dotnet add $FOLDER reference $LIBRARY"
-exit_on_error $? !!
-
-FOLDER=.do
-
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
-
-mkdir $FOLDER
-
-FILE=.do/app.yaml
+FILE=$APP/Controllers/HealthCheckController.cs
 
 if [ -f $FILE ]; then
     echo "File $FILE already exists."
@@ -160,206 +52,42 @@ if [ -f $FILE ]; then
 fi
 
 cat > $FILE <<EOF
-name: app-web
-region: sfo
-services:
-  - dockerfile_path: Dockerfile
-    github:
-      branch: main
-      deploy_on_push: true
-      repo: intrepion/$REPO
-    health_check:
-      http_path: /health_check
-    http_port: 80
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    name: web
-    routes:
-      - path: /
-    source_dir: /
+using Microsoft.AspNetCore.Mvc;
+
+namespace $APP.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class HealthCheckController : ControllerBase
+{
+    private readonly ILogger<HealthCheckController> _logger;
+
+    public HealthCheckController(ILogger<HealthCheckController> logger)
+    {
+        _logger = logger;
+    }
+
+    [HttpGet(Name = "GetHealthCheck")]
+    public string Get()
+    {
+        return "";
+    }
+}
 EOF
-
-FILE=.do/deploy.template.yaml
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-spec:
-  name: app-web
-  region: sfo
-  services:
-    - dockerfile_path: Dockerfile
-      github:
-        branch: main
-        deploy_on_push: true
-        repo: intrepion/$REPO
-      health_check:
-        http_path: /health_check
-      http_port: 80
-      instance_count: 1
-      instance_size_slug: basic-xxs
-      name: web
-      routes:
-        - path: /
-      source_dir: /
-EOF
-
-FILE=Dockerfile
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
-
-WORKDIR /source
-
-COPY *.sln .
-COPY $LIBRARY/*.csproj ./$LIBRARY/
-COPY $TESTS/*.csproj ./$TESTS/
-COPY $APP/*.csproj ./$APP/
-RUN dotnet restore
-
-COPY $LIBRARY/. ./$LIBRARY/
-COPY $TESTS/. ./$TESTS/
-COPY $APP/. ./$APP/
-WORKDIR /source/$APP
-RUN dotnet publish -c release -o /app --no-restore
-
-FROM mcr.microsoft.com/dotnet/aspnet:7.0
-WORKDIR /app
-COPY --from=build /app ./
-EXPOSE 80
-ENTRYPOINT ["dotnet", "$APP.dll"]
-EOF
-
-FILE=README.md
-
-cat << EOF >> $FILE
-
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPO/tree/main)
-EOF
-
-FOLDER=scripts
-
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
-
-mkdir $FOLDER
-
-FILE=scripts/docker_build.sh
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-sudo docker build --tag $REPO --file Dockerfile .
-EOF
-
-FILE=scripts/docker_run.sh
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-sudo docker run -p 80:80 $REPO
-EOF
-
-FILE=scripts/docker_system_prune.sh
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-sudo docker system prune --all --force
-EOF
-
-FILE=scripts/doctl_apps_create.sh
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-doctl apps create --spec .do/app.yaml
-EOF
-
-FILE=scripts/doctl_apps_update.sh
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-doctl apps update $1 --spec .do/app.yaml
-EOF
-
-FILE=scripts/dotnet_watch.sh
-
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-dotnet watch test --project $TESTS
-EOF
-
-chmod +x $FOLDER/*.sh
-exit_on_error $? !!
 
 git add --all
 exit_on_error $? !!
-git commit --message="Added Digital Ocean files."
+git commit --message="Added health check."
 exit_on_error $? !!
 
-cd ../intrepion-apps
+cd ..
 
-FOLDER=apps/$KEBOB/web
+echo "Successfully added health check."
 
-if [ ! -d $FOLDER ]; then
-    mkdir -p $FOLDER
-fi
-
-FILE=$FOLDER/start_$STACK.sh
-
-cat > $FILE <<EOF
-#!/usr/bin/env bash
-
-dotnet run --project ../intrepion-$KEBOB-$STACK/$APP
-EOF
-chmod +x $FILE
+./intrepion-apps/new/web/csharp-dotnet/common/create_digital_ocean_files.sh $APP $LIBRARY $REPO $TESTS
 exit_on_error $? !!
-git add $FILE
-exit_on_error $? !!
-git commit -m "$SCRIPT $KEBOB $PASCAL"
+
+./intrepion-apps/new/web/csharp-dotnet/common/add_run_script.sh $APP $KEBOB $PASCAL $REPO $SCRIPT $STACK
 exit_on_error $? !!
 
 echo "$SCRIPT $KEBOB $PASCAL successful."
