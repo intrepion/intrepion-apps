@@ -1,20 +1,11 @@
 #!/usr/bin/env bash
 
-exit_on_error() {
-    exit_code=$1
-    last_command=${@:2}
-    if [ $exit_code -ne 0 ]; then
-        >&2 echo "\"${last_command}\" command failed with exit code ${exit_code}."
-        exit $exit_code
-    fi
-}
-
-set -o history -o histexpand
-
 APP=$1
 LIBRARY=$2
 REPO=$3
 TESTS=$4
+
+source ./intrepion-apps/new/functions.sh
 
 pushd .
 
@@ -22,19 +13,13 @@ cd $REPO
 
 FOLDER=.do
 
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
+exit_if_folder_exists $FOLDER
 
 mkdir $FOLDER
 
 FILE=.do/app.yaml
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 name: app-web
@@ -58,10 +43,7 @@ EOF
 
 FILE=.do/deploy.template.yaml
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 spec:
@@ -86,10 +68,7 @@ EOF
 
 FILE=Dockerfile
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
@@ -124,19 +103,13 @@ EOF
 
 FOLDER=scripts
 
-if [ -d $FOLDER ]; then
-    echo "Directory $FOLDER already exists"
-    exit 1
-fi
+exit_if_folder_exists $FOLDER
 
 mkdir $FOLDER
 
 FILE=scripts/docker_build.sh
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash
@@ -146,10 +119,7 @@ EOF
 
 FILE=scripts/docker_run.sh
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash
@@ -159,10 +129,7 @@ EOF
 
 FILE=scripts/docker_system_prune.sh
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash
@@ -172,10 +139,7 @@ EOF
 
 FILE=scripts/doctl_apps_create.sh
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash
@@ -185,10 +149,7 @@ EOF
 
 FILE=scripts/doctl_apps_update.sh
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash
@@ -198,10 +159,7 @@ EOF
 
 FILE=scripts/dotnet_watch.sh
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash

@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
 
-exit_on_error() {
-    exit_code=$1
-    last_command=${@:2}
-    if [ $exit_code -ne 0 ]; then
-        >&2 echo "\"${last_command}\" command failed with exit code ${exit_code}."
-        exit $exit_code
-    fi
-}
-
-set -o history -o histexpand
-
 SCRIPT=$0
 KEBOB=$1
 PASCAL=$2
@@ -26,6 +15,8 @@ if [ -z $PASCAL ]; then
 fi
 
 cd ..
+
+source ./intrepion-apps/new/functions.sh
 
 TEMPLATE=webapi
 

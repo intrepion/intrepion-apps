@@ -1,22 +1,13 @@
 #!/usr/bin/env bash
 
-exit_on_error() {
-    exit_code=$1
-    last_command=${@:2}
-    if [ $exit_code -ne 0 ]; then
-        >&2 echo "\"${last_command}\" command failed with exit code ${exit_code}."
-        exit $exit_code
-    fi
-}
-
-set -o history -o histexpand
-
 APP=$1
 KEBOB=$2
 PASCAL=$3
 REPO=$4
 SCRIPT=$5
 STACK=$6
+
+source ./intrepion-apps/new/functions.sh
 
 pushd .
 
@@ -35,6 +26,7 @@ cat > $FILE <<EOF
 
 dotnet run --project ../$REPO/$APP
 EOF
+
 chmod +x $FILE
 exit_on_error $? !!
 git add $FILE
