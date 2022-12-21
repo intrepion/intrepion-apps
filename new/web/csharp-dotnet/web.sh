@@ -51,9 +51,7 @@ if [ ! -f $FILE ]; then
     exit 1
 fi
 
-TEMP=${FILE}.tmp
-cp $FILE $TEMP && awk '/app\.Run\(\);/ && c == 0 {c = 1; print "app.MapGet(\"/HealthCheck\", () => \"\");\n"}; {print}' $TEMP > $FILE
-rm $TEMP
+sed -i '/app.MapGet("\/", () => "Hello World!");/iapp.MapGet("/HealthCheck", () => "");' $FILE
 
 git add --all
 exit_on_error $? !!
