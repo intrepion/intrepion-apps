@@ -35,12 +35,20 @@ echo "Adding health check."
 
 cd $REPO
 
+FILE=$APP/Controllers/WeatherForecastController.cs
+
+exit_if_file_does_not_exist $FILE
+
+rm -rf $FILE
+
+git add --all
+exit_on_error $? !!
+git commit --message="Removing boilerplate."
+exit_on_error $? !!
+
 FILE=$APP/Controllers/HealthCheckController.cs
 
-if [ -f $FILE ]; then
-    echo "File $FILE already exists."
-    exit 1
-fi
+exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 using Microsoft.AspNetCore.Mvc;
