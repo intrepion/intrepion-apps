@@ -2,10 +2,9 @@
 
 APP=$1
 KEBOB=$2
-PASCAL=$3
-REPO=$4
-SCRIPT=$5
-STACK=$6
+REPO=$3
+SCRIPT=$4
+STACK=$5
 
 source ./intrepion-apps/new/functions.sh
 
@@ -31,6 +30,6 @@ chmod +x $FILE
 exit_on_error $? !!
 git add $FILE
 exit_on_error $? !!
-git commit -m "$SCRIPT $KEBOB $PASCAL"
+git commit -m "$SCRIPT $KEBOB"
 
 popd

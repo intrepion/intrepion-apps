@@ -28,7 +28,7 @@ TESTS=${PASCAL}Tests
 
 REPO=intrepion-$KEBOB-$STACK
 
-./intrepion-apps/new/web/csharp-dotnet/common/create_solution.sh $APP $LIBRARY $PASCAL $REPO $SOLUTION $TEMPLATE $TESTS
+./intrepion-apps/new/web/csharp-dotnet/common/add_solution.sh $APP $LIBRARY $PASCAL $REPO $SOLUTION $TEMPLATE $TESTS
 exit_on_error $? !!
 
 echo "Adding health check."
@@ -83,10 +83,10 @@ cd ..
 
 echo "Successfully added health check."
 
-./intrepion-apps/new/web/csharp-dotnet/common/create_digital_ocean_files.sh $APP $LIBRARY $REPO $TESTS
+./intrepion-apps/new/web/csharp-dotnet/common/add_digital_ocean_files.sh $APP $LIBRARY $REPO $TESTS
 exit_on_error $? !!
 
-./intrepion-apps/new/web/csharp-dotnet/common/add_run_script.sh $APP $KEBOB $PASCAL $REPO $SCRIPT $STACK
+./intrepion-apps/new/add_run_script.sh $APP $KEBOB $REPO $SCRIPT $STACK
 exit_on_error $? !!
 
 echo "$SCRIPT $KEBOB $PASCAL successful."
