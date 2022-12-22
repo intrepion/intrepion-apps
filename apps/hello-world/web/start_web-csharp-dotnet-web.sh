@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-dotnet run --project ../intrepion-hello-world-web-csharp-dotnet-web/hello-world
+dotnet run --project ../intrepion-hello-world-web-csharp-dotnet-web/HelloWorldWeb
