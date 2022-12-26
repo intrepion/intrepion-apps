@@ -14,46 +14,46 @@ if [ -z $PASCAL ]; then
     exit 1
 fi
 
+echo "$SCRIPT $KEBOB $PASCAL"
+
+CURRENT=$(date +%Y-%m-%d-%H-%M-%S-%N)
+TEMPLATE=web
+PROJECT=${PASCAL}Web
+USER=intrepion
+
+STACK=web-csharp-dotnet-$TEMPLATE
+
+REPOSITORY=$USER-$KEBOB-$STACK
+
 cd ..
 
-source ./intrepion-apps/new/functions.sh
+source ./$USER-apps/new/functions.sh
 
-TEMPLATE=web
+./$USER-apps/new/web/csharp-dotnet/common/create_branch.sh $CURRENT $REPOSITORY $USER
 
-APP=${PASCAL}Web
-LIBRARY=${PASCAL}Library
-SOLUTION=${PASCAL}App
-STACK=web-csharp-dotnet-$TEMPLATE
-TESTS=${PASCAL}Tests
+./$USER-apps/new/web/csharp-dotnet/common/create_commands.sh $PASCAL $REPOSITORY
 
-REPO=intrepion-$KEBOB-$STACK
-
-./intrepion-apps/new/web/csharp-dotnet/common/add_solution.sh $APP $LIBRARY $PASCAL $REPO $SOLUTION $TEMPLATE $TESTS
-exit_on_error $? !!
+./$USER-apps/new/web/csharp-dotnet/common/create_app.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 echo "Adding health check."
 
-cd $REPO
+cd $REPOSITORY
 
-FILE=$APP/Program.cs
+FILE=$PROJECT/Program.cs
 
 exit_if_file_does_not_exist $FILE
 
 sed -i '/app.MapGet("\/", () => "Hello World!");/iapp.MapGet("/HealthCheck", () => "");' $FILE
 
 git add --all
-exit_on_error $? !!
 git commit --message="Added health check."
-exit_on_error $? !!
 
 cd ..
 
 echo "Successfully added health check."
 
-./intrepion-apps/new/web/csharp-dotnet/common/add_digital_ocean_files.sh $APP $LIBRARY $REPO $TESTS
-exit_on_error $? !!
+./$USER-apps/new/web/csharp-dotnet/common/create_digital_ocean_files.sh $CURRENT $PASCAL $REPOSITORY $USER
 
-./intrepion-apps/new/add_run_script.sh $APP $KEBOB $REPO $SCRIPT $STACK
-exit_on_error $? !!
+./$USER-apps/new/create_run_script.sh $KEBOB $PROJECT $REPOSITORY $STACK
 
 echo "$SCRIPT $KEBOB $PASCAL successful."

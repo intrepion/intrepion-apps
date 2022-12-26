@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 exit_if_file_does_not_exist() {
     if [ ! -f $1 ]; then
         echo "File $1 does not exist."
@@ -8,6 +10,13 @@ exit_if_file_does_not_exist() {
 exit_if_file_exists() {
     if [ -f $1 ]; then
         echo "File $1 already exists."
+        exit 1
+    fi
+}
+
+exit_if_folder_does_not_exist() {
+    if [ ! -d $1 ]; then
+        echo "Folder $1 does not exist."
         exit 1
     fi
 }

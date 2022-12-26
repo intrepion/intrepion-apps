@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-APP=$1
-KEBOB=$2
-REPO=$3
-SCRIPT=$4
-STACK=$5
+SCRIPT=$0
+KEBOB=$1
+PROJECT=$2
+REPOSITORY=$3
+STACK=$4
 
 source ./intrepion-apps/new/functions.sh
 
@@ -23,7 +23,7 @@ FILE=$FOLDER/start_$STACK.sh
 cat > $FILE <<EOF
 #!/usr/bin/env bash
 
-dotnet run --project ../$REPO/$APP
+dotnet run --project ../$REPOSITORY/$PROJECT
 EOF
 
 chmod +x $FILE

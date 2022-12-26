@@ -14,28 +14,32 @@ if [ -z $PASCAL ]; then
     exit 1
 fi
 
+echo "$SCRIPT $KEBOB $PASCAL"
+
+CURRENT=$(date +%Y-%m-%d-%H-%M-%S-%N)
+TEMPLATE=webapi
+PROJECT=${PASCAL}WebApi
+USER=intrepion
+
+STACK=web-csharp-dotnet-$TEMPLATE
+
+REPOSITORY=$USER-$KEBOB-$STACK
+
 cd ..
 
-source ./intrepion-apps/new/functions.sh
+source ./$USER-apps/new/functions.sh
 
-TEMPLATE=webapi
+./$USER-apps/new/web/csharp-dotnet/common/create_branch.sh $CURRENT $REPOSITORY $USER
 
-APP=${PASCAL}WebApi
-LIBRARY=${PASCAL}Library
-SOLUTION=${PASCAL}App
-STACK=web-csharp-dotnet-$TEMPLATE
-TESTS=${PASCAL}Tests
+./$USER-apps/new/web/csharp-dotnet/common/create_commands.sh $PASCAL $REPOSITORY
 
-REPO=intrepion-$KEBOB-$STACK
-
-./intrepion-apps/new/web/csharp-dotnet/common/add_solution.sh $APP $LIBRARY $PASCAL $REPO $SOLUTION $TEMPLATE $TESTS
-exit_on_error $? !!
+./$USER-apps/new/web/csharp-dotnet/common/create_app.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 echo "Adding health check."
 
-cd $REPO
+cd $REPOSITORY
 
-FILE=$APP/Controllers/WeatherForecastController.cs
+FILE=$PROJECT/Controllers/WeatherForecastController.cs
 
 exit_if_file_does_not_exist $FILE
 
@@ -46,14 +50,14 @@ exit_on_error $? !!
 git commit --message="Removing boilerplate."
 exit_on_error $? !!
 
-FILE=$APP/Controllers/HealthCheckController.cs
+FILE=$PROJECT/Controllers/HealthCheckController.cs
 
 exit_if_file_exists $FILE
 
 cat > $FILE <<EOF
 using Microsoft.AspNetCore.Mvc;
 
-namespace $APP.Controllers;
+namespace $PROJECT.Controllers;
 
 [ApiController]
 [Route("[controller]")]
@@ -83,10 +87,8 @@ cd ..
 
 echo "Successfully added health check."
 
-./intrepion-apps/new/web/csharp-dotnet/common/add_digital_ocean_files.sh $APP $LIBRARY $REPO $TESTS
-exit_on_error $? !!
+./$USER-apps/new/web/csharp-dotnet/common/create_digital_ocean_files.sh $CURRENT $PASCAL $REPOSITORY $USER
 
-./intrepion-apps/new/add_run_script.sh $APP $KEBOB $REPO $SCRIPT $STACK
-exit_on_error $? !!
+./$USER-apps/new/create_run_script.sh $KEBOB $PROJECT $REPOSITORY $STACK
 
 echo "$SCRIPT $KEBOB $PASCAL successful."

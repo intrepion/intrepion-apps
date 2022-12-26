@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
 
-APP=$1
-LIBRARY=$2
-REPO=$3
-TESTS=$4
+SCRIPT=$0
+CURRENT=$1
+PASCAL=$2
+REPOSITORY=$3
+USER=$4
+
+echo "$SCRIPT $CURRENT $PASCAL $REPOSITORY $USER"
 
 source ./intrepion-apps/new/functions.sh
 
 pushd .
 
-cd $REPO
+cd $REPOSITORY
 
 FOLDER=.do
 
@@ -27,9 +30,9 @@ region: sfo
 services:
   - dockerfile_path: Dockerfile
     github:
-      branch: main
+      branch: $CURRENT
       deploy_on_push: true
-      repo: intrepion/$REPO
+      repo: $USER/$REPOSITORY
     health_check:
       http_path: /HealthCheck
     http_port: 80
@@ -52,9 +55,9 @@ spec:
   services:
     - dockerfile_path: Dockerfile
       github:
-        branch: main
+        branch: $CURRENT
         deploy_on_push: true
-        repo: intrepion/$REPO
+        repo: $USER/$REPOSITORY
       health_check:
         http_path: /health_check
       http_port: 80
@@ -75,30 +78,33 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
 WORKDIR /source
 
-COPY *.sln .
-COPY $LIBRARY/*.csproj ./$LIBRARY/
-COPY $TESTS/*.csproj ./$TESTS/
-COPY $APP/*.csproj ./$APP/
+COPY ${PASCAL}App.sln .
+COPY ${PASCAL}Library/*.csproj ./${PASCAL}Library/
+COPY ${PASCAL}Tests/*.csproj ./${PASCAL}Tests/
+COPY ${PASCAL}Web/*.csproj ./${PASCAL}Web/
 RUN dotnet restore
 
-COPY $LIBRARY/. ./$LIBRARY/
-COPY $TESTS/. ./$TESTS/
-COPY $APP/. ./$APP/
-WORKDIR /source/$APP
+COPY ${PASCAL}Library/. ./${PASCAL}Library/
+COPY ${PASCAL}Tests/. ./${PASCAL}Tests/
+COPY ${PASCAL}Web/. ./${PASCAL}Web/
+WORKDIR /source/$PROJECT
 RUN dotnet publish -c release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /app ./
 EXPOSE 80
-ENTRYPOINT ["dotnet", "$APP.dll"]
+ENTRYPOINT ["dotnet", "$PROJECT.dll"]
 EOF
 
 FILE=README.md
 
+exist_if_file_does_not_exist $FILE
+
 cat << EOF >> $FILE
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPO/tree/main)
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPOSITORY/tree/$CURRENT)
 EOF
 
 FOLDER=scripts
@@ -114,7 +120,7 @@ exit_if_file_exists $FILE
 cat > $FILE <<EOF
 #!/usr/bin/env bash
 
-sudo docker build --tag $REPO --file Dockerfile .
+sudo docker build --tag $REPOSITORY --file Dockerfile .
 EOF
 
 FILE=scripts/docker_run.sh
@@ -124,7 +130,7 @@ exit_if_file_exists $FILE
 cat > $FILE <<EOF
 #!/usr/bin/env bash
 
-sudo docker run -p 80:80 $REPO
+sudo docker run -p 80:80 $REPOSITORY
 EOF
 
 FILE=scripts/docker_system_prune.sh
@@ -164,7 +170,7 @@ exit_if_file_exists $FILE
 cat > $FILE <<EOF
 #!/usr/bin/env bash
 
-dotnet watch test --project $TESTS
+dotnet watch test --project ${PASCAL}Tests
 EOF
 
 chmod +x $FOLDER/*.sh
