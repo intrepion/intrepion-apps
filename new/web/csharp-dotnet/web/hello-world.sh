@@ -40,8 +40,10 @@ REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 # project - fix grammar
 cd $REPOSITORY
 
-sed -i 's/app.MapGet("\/", () => "Hello World!");/app.MapGet("\/", () => "Hello, world!");/' $PROJECT/Program.cs
-git add $PROJECT/Program.cs
+FILE=$PROJECT/Program.cs
+
+sed -i 's/app.MapGet("\/", () => "Hello World!");/app.MapGet("\/", () => "Hello, world!");/' $FILE
+git add $FILE
 git commit --message "Fixed grammar."
 git push --force
 
