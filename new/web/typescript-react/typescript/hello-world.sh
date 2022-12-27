@@ -8,10 +8,10 @@ pushd .
 
 cd ..
 
-FRAMEWORK=csharp-dotnet
+FRAMEWORK=typescript-react
 KEBOB=hello-world
 PASCAL=HelloWorld
-TEMPLATE=web
+TEMPLATE=typescript
 TYPE=web
 USER=intrepion
 
@@ -23,13 +23,13 @@ REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 ./$USER-apps/new/common/checkout_first_commit.sh $REPOSITORY $USER
 
 # framework - add template files
-./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_template_files.sh $REPOSITORY $TEMPLATE
 
 # framework - add local commands
-./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_local_commands.sh $PROJECT $REPOSITORY
+./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_local_commands.sh $REPOSITORY
 
 # framework - add deployment files
-./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_deployment_files.sh $PASCAL $PROJECT $REPOSITORY $USER
+./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_deployment_files.sh $REPOSITORY $USER
 
 # template - remove boilerplate
 ./$USER-apps/new/$TYPE/$FRAMEWORK/$TEMPLATE/common/remove_boilerplate.sh $REPOSITORY
@@ -37,14 +37,18 @@ REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 # template - add health check
 ./$USER-apps/new/$TYPE/$FRAMEWORK/$TEMPLATE/common/add_health_check.sh $PROJECT $REPOSITORY
 
-# project - fix grammar
+# project - add hello world
 cd $REPOSITORY
 
-FILE=$PROJECT/Program.cs
 
-sed -i 's/app.MapGet("\/", () => "Hello World!");/app.MapGet("\/", () => "Hello, world!");/' $FILE
+FILE=src/App.tsx
+
+sed -i 's/  return <><\/>;/  return <>Hello, world!<\/>;/' $FILE
 git add $FILE
-git commit --message "Fixed grammar."
+git commit --message "Added hello world text."
+git push --force
+
+
 git push --force
 
 cd ..

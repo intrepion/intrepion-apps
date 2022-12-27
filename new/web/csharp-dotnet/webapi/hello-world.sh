@@ -72,8 +72,8 @@ git push --force
 
 cd ..
 
-# global - add run scripts
-./$USER-apps/new/common/add_run_scripts.sh $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE $TYPE $USER
+# framework - add run scripts
+./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_run_scripts.sh $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE $TYPE $USER
 
 popd
 
