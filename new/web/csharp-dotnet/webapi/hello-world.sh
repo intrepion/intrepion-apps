@@ -11,11 +11,11 @@ cd ..
 FRAMEWORK=csharp-dotnet
 KEBOB=hello-world
 PASCAL=HelloWorld
-TEMPLATE=web
+TEMPLATE=webapi
 TYPE=web
 USER=intrepion
 
-PROJECT=${PASCAL}Web
+PROJECT=${PASCAL}WebApi
 
 REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 
@@ -32,17 +32,42 @@ REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 ./$USER-apps/new/$TYPE/$FRAMEWORK/common/add_deployment_files.sh $PASCAL $PROJECT $REPOSITORY $USER
 
 # template - remove boilerplate
-./$USER-apps/new/$TYPE/$FRAMEWORK/$TEMPLATE/common/remove_boilerplate.sh
+./$USER-apps/new/$TYPE/$FRAMEWORK/$TEMPLATE/common/remove_boilerplate.sh $PROJECT $REPOSITORY
 
 # template - add health check
 ./$USER-apps/new/$TYPE/$FRAMEWORK/$TEMPLATE/common/add_health_check.sh $PROJECT $REPOSITORY
 
-# project - fix grammar
+# project - add hello world
 cd $REPOSITORY
 
-sed -i 's/app.MapGet("\/", () => "Hello World!");/app.MapGet("\/", () => "Hello, world!");/' $PROJECT/Program.cs
-git add $PROJECT/Program.cs
-git commit --message "Fixed grammar."
+FILE=$PROJECT/Controllers/HelloWorldController.cs
+
+cat > $FILE <<EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Controllers;
+
+[ApiController]
+[Route("/")]
+public class HelloWorldController : ControllerBase
+{
+    private readonly ILogger<HelloWorldController> _logger;
+
+    public HelloWorldController(ILogger<HelloWorldController> logger)
+    {
+        _logger = logger;
+    }
+
+    [HttpGet(Name = "GetHelloWorld")]
+    public string Get()
+    {
+        return "Hello, world!";
+    }
+}
+EOF
+
+git add $FILE
+git commit --message="Added hello world controller."
 git push --force
 
 cd ..

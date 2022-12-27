@@ -10,12 +10,15 @@ pushd .
 
 cd $REPOSITORY
 
-FILE=$PROJECT/Program.cs
-
-sed -i '/app.MapGet("\/", () => "Hello World!");/iapp.MapGet("/HealthCheck", () => "");' $FILE
-
+FILE=$PROJECT/Controllers/WeatherForecastController.cs
+rm -rf $FILE
 git add $FILE
-git commit --message="Added health check."
+
+FILE=$PROJECT/WeatherForecast.cs
+rm -rf $FILE
+git add $FILE
+
+git commit --message="Removed boilerplate."
 
 popd
 
