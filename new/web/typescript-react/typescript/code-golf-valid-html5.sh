@@ -9,8 +9,7 @@ pushd .
 cd ..
 
 FRAMEWORK=typescript-react
-KEBOB=hello-world
-PASCAL=HelloWorld
+KEBOB=code-golf-valid-html5
 TEMPLATE=typescript
 TYPE=web
 USER=intrepion
@@ -35,14 +34,9 @@ REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 # template - add health check
 ./$USER-apps/new/$TYPE/$FRAMEWORK/$TEMPLATE/common/add_health_check.sh $REPOSITORY
 
-# project - add hello world
+# project - add minimal html5 to pass validation
 cd $REPOSITORY
 
-FILE=src/App.tsx
-
-sed -i 's/  return <><\/>;/  return <>Hello, world!<\/>;/' $FILE
-git add $FILE
-git commit --message "Added hello world text."
 git push --force
 
 cd ..

@@ -23,7 +23,6 @@ export default App;
 EOF
 
 git add $FILE
-git commit --message="Added health check."
 
 FILE=src/App.css
 rm -rf $FILE
