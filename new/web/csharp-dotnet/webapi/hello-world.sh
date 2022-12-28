@@ -20,7 +20,7 @@ PROJECT=${PASCAL}WebApi
 REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 
 # framework - the works
-./$USER-apps/new/common/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE $USER
+./$USER-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE $USER
 
 # project - add hello world
 cd $REPOSITORY
@@ -57,8 +57,8 @@ git push --force
 
 cd ..
 
-# framework - add run scripts
-./$USER-apps/new/common/$FRAMEWORK/common/add_run_scripts.sh $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE $TYPE $USER
+# type - add run scripts
+./$USER-apps/new/common/type/$TYPE/$FRAMEWORK/add_run_scripts.sh $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE $TYPE $USER
 
 popd
 

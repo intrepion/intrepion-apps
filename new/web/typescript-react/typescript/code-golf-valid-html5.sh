@@ -17,7 +17,7 @@ USER=intrepion
 REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
 
 # framework - the works
-./$USER-apps/new/common/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $REPOSITORY $TEMPLATE $USER
+./$USER-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $REPOSITORY $TEMPLATE $USER
 
 # project - add minimal html5 to pass validation
 cd $REPOSITORY
@@ -26,8 +26,8 @@ git push --force
 
 cd ..
 
-# framework - add run scripts
-./$USER-apps/new/common/$FRAMEWORK/common/add_run_scripts.sh $FRAMEWORK $KEBOB $REPOSITORY $TEMPLATE $TYPE $USER
+# type - add run scripts
+./$USER-apps/new/common/type/$TYPE/$FRAMEWORK/add_run_scripts.sh $FRAMEWORK $KEBOB $REPOSITORY $TEMPLATE $TYPE $USER
 
 popd
 

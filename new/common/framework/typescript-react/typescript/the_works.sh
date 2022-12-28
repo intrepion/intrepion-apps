@@ -14,19 +14,19 @@ pushd .
 ./$USER-apps/new/common/checkout_first_commit.sh $REPOSITORY $USER
 
 # framework - add template files
-./$USER-apps/new/common/$FRAMEWORK/add_template_files.sh $REPOSITORY $TEMPLATE
+./$USER-apps/new/common/framework/$FRAMEWORK/add_template_files.sh $REPOSITORY $TEMPLATE
 
 # framework - add local commands
-./$USER-apps/new/common/$FRAMEWORK/add_local_commands.sh $REPOSITORY
+./$USER-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $REPOSITORY
 
 # framework - add deployment files
-./$USER-apps/new/common/$FRAMEWORK/add_deployment_files.sh $REPOSITORY $USER
+./$USER-apps/new/common/framework/$FRAMEWORK/add_deployment_files.sh $REPOSITORY $USER
 
 # template - remove boilerplate
-./$USER-apps/new/common/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $REPOSITORY
+./$USER-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $REPOSITORY
 
 # template - add health check
-./$USER-apps/new/common/$FRAMEWORK/$TEMPLATE/add_health_check.sh $REPOSITORY
+./$USER-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $REPOSITORY
 
 popd
 
