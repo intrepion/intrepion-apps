@@ -33,4 +33,4 @@ git commit -m "Add run scripts."
 
 popd
 
-echo "Completed $SCRIPT $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE "
+echo "Completed $SCRIPT $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE"
