@@ -12,15 +12,13 @@ FRAMEWORK=csharp-dotnet
 KEBOB=hello-world
 PASCAL=HelloWorld
 TEMPLATE=web
-TYPE=web
-USER=intrepion
 
 PROJECT=${PASCAL}Web
 
-REPOSITORY=$USER-$KEBOB-$TYPE-$FRAMEWORK-$TEMPLATE
+REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE
 
 # framework - the works
-./$USER-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE $USER
+./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 # project - fix grammar
 cd $REPOSITORY
@@ -35,7 +33,7 @@ git push --force
 cd ..
 
 # type - add run scripts
-./$USER-apps/new/common/type/$TYPE/$FRAMEWORK/add_run_scripts.sh $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE $TYPE $USER
+./intrepion-apps/new/common/type/web/$FRAMEWORK/add_run_scripts.sh $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE
 
 popd
 

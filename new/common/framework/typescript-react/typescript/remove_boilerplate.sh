@@ -44,6 +44,8 @@ FILE=src/logo.svg
 rm -rf $FILE
 git add $FILE
 
+npx prettier --write .
+
 git commit --message="Removed boilerplate."
 
 popd

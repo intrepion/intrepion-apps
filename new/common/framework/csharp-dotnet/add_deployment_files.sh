@@ -4,9 +4,8 @@ SCRIPT=$0
 PASCAL=$1
 PROJECT=$2
 REPOSITORY=$3
-USER=$4
 
-echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY $USER"
+echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY"
 
 pushd .
 
@@ -22,7 +21,7 @@ services:
     github:
       branch: main
       deploy_on_push: true
-      repo: $USER/$REPOSITORY
+      repo: intrepion/$REPOSITORY
     health_check:
       http_path: /HealthCheck
     http_port: 80
@@ -43,7 +42,7 @@ spec:
       github:
         branch: main
         deploy_on_push: true
-        repo: $USER/$REPOSITORY
+        repo: intrepion/$REPOSITORY
       health_check:
         http_path: /health_check
       http_port: 80
@@ -85,7 +84,7 @@ cat << EOF >> README.md
 
 ### Digital Ocean
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/$USER/$REPOSITORY/tree/main)
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPOSITORY/tree/main)
 EOF
 
 mkdir scripts
@@ -133,4 +132,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY $USER"
+echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY"

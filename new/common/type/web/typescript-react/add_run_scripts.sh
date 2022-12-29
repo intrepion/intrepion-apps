@@ -5,22 +5,20 @@ FRAMEWORK=$1
 KEBOB=$2
 REPOSITORY=$3
 TEMPLATE=$4
-TYPE=$5
-USER=$6
 
-echo "Running $SCRIPT $FRAMEWORK $KEBOB $REPOSITORY $TEMPLATE $TYPE $USER"
+echo "Running $SCRIPT $FRAMEWORK $KEBOB $REPOSITORY $TEMPLATE"
 
 pushd .
 
 cd intrepion-apps
 
-FOLDER=apps/$KEBOB/$TYPE
+FOLDER=apps/$KEBOB/web
 
 if [ ! -d $FOLDER ]; then
     mkdir -p $FOLDER
 fi
 
-FILE=$FOLDER/start_$TYPE-$FRAMEWORK-$TEMPLATE.sh
+FILE=$FOLDER/start_web-$FRAMEWORK-$TEMPLATE.sh
 
 cat > $FILE <<EOF
 #!/usr/bin/env bash
@@ -30,8 +28,8 @@ EOF
 
 chmod +x $FILE
 git add $FILE
-git commit -m "$SCRIPT $KEBOB"
+git commit -m "Add run scripts."
 
 popd
 
-echo "Completed $SCRIPT $FRAMEWORK $KEBOB $REPOSITORY $TEMPLATE $TYPE $USER"
+echo "Completed $SCRIPT $FRAMEWORK $KEBOB $REPOSITORY $TEMPLATE"

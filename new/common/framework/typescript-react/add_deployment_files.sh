@@ -2,9 +2,8 @@
 
 SCRIPT=$0
 REPOSITORY=$1
-USER=$2
 
-echo "Running $SCRIPT $REPOSITORY $USER"
+echo "Running $SCRIPT $REPOSITORY"
 
 pushd .
 
@@ -21,7 +20,7 @@ static_sites:
     github:
       branch: main
       deploy_on_push: true
-      repo: $USER/$REPOSITORY
+      repo: intrepion/$REPOSITORY
     name: web
     routes:
       - path: /
@@ -38,12 +37,11 @@ spec:
       github:
         branch: main
         deploy_on_push: true
-        repo: $USER/$REPOSITORY
+        repo: intrepion/$REPOSITORY
       name: web
       routes:
         - path: /
       source_dir: /
-
 EOF
 
 cat << EOF >> README.md
@@ -52,7 +50,7 @@ cat << EOF >> README.md
 
 ### Digital Ocean
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/$USER/$REPOSITORY/tree/main)
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPOSITORY/tree/main)
 EOF
 
 mkdir scripts
@@ -76,4 +74,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY $USER"
+echo "Completed $SCRIPT $REPOSITORY"

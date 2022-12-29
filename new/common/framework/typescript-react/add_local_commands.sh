@@ -11,7 +11,6 @@ cd $REPOSITORY
 
 cat << EOF >> README.md
 
-
 ## Commands
 
 ### Install

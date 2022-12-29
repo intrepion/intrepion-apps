@@ -2,16 +2,15 @@
 
 SCRIPT=$0
 REPOSITORY=$1
-USER=$2
 
-echo "Running $SCRIPT $REPOSITORY $USER"
+echo "Running $SCRIPT $REPOSITORY"
 
 pushd .
 
 # Check if the specified folder exists
 if [ ! -d "$REPOSITORY" ]; then
   # If the folder does not exist, clone the repository using SSH
-  git clone git@github.com:$USER/$REPOSITORY.git
+  git clone git@github.com:intrepion/$REPOSITORY.git
 fi
 
 # Navigate to the repository folder
@@ -27,4 +26,4 @@ git clean -d --force
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY $USER"
+echo "Completed $SCRIPT $REPOSITORY"
