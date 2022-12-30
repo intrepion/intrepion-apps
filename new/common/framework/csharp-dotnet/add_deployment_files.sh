@@ -14,7 +14,7 @@ cd $REPOSITORY
 
 mkdir .do
 
-cat > .do/app.yaml <<EOF
+cat > .do/app.yaml << EOF
 name: app-$NAME
 region: sfo
 services:
@@ -34,7 +34,7 @@ services:
     source_dir: /
 EOF
 
-cat > .do/deploy.template.yaml <<EOF
+cat > .do/deploy.template.yaml << EOF
 spec:
   name: app-$NAME
   region: sfo
@@ -55,7 +55,7 @@ spec:
       source_dir: /
 EOF
 
-cat > Dockerfile <<EOF
+cat > Dockerfile << EOF
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
 WORKDIR /source
@@ -90,37 +90,37 @@ EOF
 
 mkdir scripts
 
-cat > scripts/docker_build.sh <<EOF
+cat > scripts/docker_build.sh << EOF
 #!/usr/bin/env bash
 
 sudo docker build --tag $REPOSITORY --file Dockerfile .
 EOF
 
-cat > scripts/docker_run.sh <<EOF
+cat > scripts/docker_run.sh << EOF
 #!/usr/bin/env bash
 
 sudo docker run -p 80:80 $REPOSITORY
 EOF
 
-cat > scripts/docker_system_prune.sh <<EOF
+cat > scripts/docker_system_prune.sh << EOF
 #!/usr/bin/env bash
 
 sudo docker system prune --all --force
 EOF
 
-cat > scripts/doctl_apps_create.sh <<EOF
+cat > scripts/doctl_apps_create.sh << EOF
 #!/usr/bin/env bash
 
 doctl apps create --spec .do/app.yaml
 EOF
 
-cat > scripts/doctl_apps_update.sh <<EOF
+cat > scripts/doctl_apps_update.sh << EOF
 #!/usr/bin/env bash
 
 doctl apps update \$1 --spec .do/app.yaml
 EOF
 
-cat > scripts/dotnet_watch.sh <<EOF
+cat > scripts/dotnet_watch.sh << EOF
 #!/usr/bin/env bash
 
 dotnet watch test --project ${PASCAL}Tests

@@ -10,7 +10,9 @@ pushd .
 
 cd $REPOSITORY
 
-cat << EOF >> README.md
+FILE=README.md
+
+cat << EOF >> $FILE
 
 
 ## Commands
@@ -34,7 +36,7 @@ dotnet run --project ${PROJECT}
 \`\`\`
 EOF
 
-git add README.md
+git add $FILE
 git commit -m "Added commands section to README file.";
 
 popd

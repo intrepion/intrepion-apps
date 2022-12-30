@@ -50,19 +50,24 @@ git commit --message "dotnet add $PROJECT reference ${PASCAL}Library"
 # Create a xunit project with the application name appended with "Tests"
 dotnet new xunit --name ${PASCAL}Tests
 git add ${PASCAL}Tests
-git commit --message "dotnet new xunit --name ${PASCAL}Library"
+git commit --message "dotnet new xunit --name ${PASCAL}Tests"
+
+cd ${PASCAL}Tests && dotnet add package Microsoft.AspNetCore.Mvc.Testing
+cd ..
+git add ${PASCAL}Tests
+git commit --message "cd ${PASCAL}Tests && dotnet add package Microsoft.AspNetCore.Mvc.Testing"
 
 # Add the xunit project to the solution
 dotnet sln ${PASCAL}App.sln add ${PASCAL}Tests
 git add ${PASCAL}App.sln
 git commit --message "dotnet sln ${PASCAL}App.sln add ${PASCAL}Tests"
 
-# Add a reference to the library project in the xunit project
+# Add a reference to the library project in the test project
 dotnet add ${PASCAL}Tests reference ${PASCAL}Library
 git add ${PASCAL}Tests
 git commit --message "dotnet add ${PASCAL}Tests reference ${PASCAL}Library"
 
-# Add a reference to the template project in the xunit project
+# Add a reference to the template project in the test project
 dotnet add ${PASCAL}Tests reference $PROJECT
 git add ${PASCAL}Tests
 git commit --message "dotnet add ${PASCAL}Tests reference $PROJECT"

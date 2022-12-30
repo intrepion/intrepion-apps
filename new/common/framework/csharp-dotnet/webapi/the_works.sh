@@ -26,10 +26,10 @@ NAME=web
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_deployment_files.sh $NAME $PASCAL $PROJECT $REPOSITORY
 
 # template - remove boilerplate
-./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $PASCAL $PROJECT $REPOSITORY
+./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $PASCAL $REPOSITORY
 
 # template - add health check
-./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PROJECT $REPOSITORY
+./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PASCAL $REPOSITORY
 
 popd
 

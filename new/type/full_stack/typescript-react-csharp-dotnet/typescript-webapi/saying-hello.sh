@@ -23,14 +23,14 @@ REPOSITORY=intrepion-$KEBOB-json-rpc-server-$FRAMEWORK-$TEMPLATE
 # project - add saying hello
 cd $REPOSITORY
 
-mkdir -p ${PASCAL}Tests/UnitTests
+mkdir -p SayingHelloTests/Domain
 
-FILE=${PASCAL}Tests/UnitTests/SayingHelloTest.cs
+FILE=SayingHelloTests/Domain/SayingHelloTest.cs
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 using SayingHelloLibrary.Domain;
 
-namespace SayingHelloTests.UnitTests;
+namespace SayingHelloTests.Domain;
 
 public class SayingHelloTest
 {
@@ -59,11 +59,11 @@ EOF
 git add $FILE
 git commit --message="Added saying hello tests."
 
-mkdir -p ${PASCAL}Library/Domain
+mkdir -p SayingHelloLibrary/Domain
 
-FILE=${PASCAL}Library/Domain/SayingHello.cs
+FILE=SayingHelloLibrary/Domain/SayingHello.cs
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 namespace SayingHelloLibrary.Domain;
 
 static public class SayingHello
@@ -83,25 +83,65 @@ EOF
 git add $FILE
 git commit --message="Added saying hello code."
 
-FILE=$PROJECT/Controllers/HelloWorldController.cs
+mkdir -p SayingHelloTests/Controllers
 
-cat > $FILE <<EOF
+FILE=SayingHelloTests/Controllers/SayingHelloControllerTest.cs
+
+cat > $FILE << EOF
+using System.Net;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace SayingHelloTests.Controllers;
+
+public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public SayingHelloControllerTest(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task TestGetSayingHello()
+    {
+        // Arrange
+        var expected = "";
+
+        // Act
+        var response = await _client.GetAsync("/");
+        var actual = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expected, actual);
+    }
+}
+EOF
+
+git add $FILE
+git commit --message="Added saying hello controller tests."
+
+FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
+
+cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
-namespace HelloWorldWebApi.Controllers;
+namespace SayingHelloWebApi.Controllers;
 
 [ApiController]
 [Route("/")]
-public class HelloWorldController : ControllerBase
+public class SayingHelloController : ControllerBase
 {
-    private readonly ILogger<HelloWorldController> _logger;
+    private readonly ILogger<SayingHelloController> _logger;
 
-    public HelloWorldController(ILogger<HelloWorldController> logger)
+    public SayingHelloController(ILogger<SayingHelloController> logger)
     {
         _logger = logger;
     }
 
-    [HttpGet(Name = "GetHelloWorld")]
+    [HttpGet(Name = "GetSayingHello")]
     public string Get()
     {
         return "Hello, world!";
@@ -110,7 +150,7 @@ public class HelloWorldController : ControllerBase
 EOF
 
 git add $FILE
-git commit --message="Added hello world controller."
+git commit --message="Added saying hello controller."
 git push --force
 
 cd ..

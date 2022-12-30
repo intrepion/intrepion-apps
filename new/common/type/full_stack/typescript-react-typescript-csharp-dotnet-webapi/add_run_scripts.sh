@@ -20,7 +20,7 @@ fi
 
 FILE=$FOLDER/start_server-csharp-dotnet-webapi.sh
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 CLIENT_URL=\$1 dotnet run --project ../intrepion-$KEBOB-json-rpc-server-csharp-dotnet-webapi/$PROJECT
@@ -37,7 +37,7 @@ fi
 
 FILE=$FOLDER/start_client-web-typescript-react-typescript.sh
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 REACT_APP_SERVER_URL=\$1 npm start --prefix ../intrepion-$KEBOB-json-rpc-client-web-typescript-react-typescript
@@ -54,7 +54,7 @@ fi
 
 FILE=$FOLDER/start_full_stack-typescript-webapi_server.sh
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 ./apps/$KEBOB/json-rpc/server/start_server-csharp-dotnet-webapi.sh "$CLIENT"
@@ -65,7 +65,7 @@ git add $FILE
 
 FILE=$FOLDER/start_full_stack-typescript-webapi_client.sh
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 ./apps/$KEBOB/json-rpc/client-web/start_client-web-typescript-react-typescript.sh "$SERVER"

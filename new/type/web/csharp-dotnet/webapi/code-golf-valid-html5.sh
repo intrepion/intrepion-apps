@@ -25,7 +25,7 @@ cd $REPOSITORY
 
 FILE=$PROJECT/Controllers/CodeGolfValidHtml5Controller.cs
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.Controllers;

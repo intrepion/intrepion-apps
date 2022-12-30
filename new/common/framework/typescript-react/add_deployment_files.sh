@@ -12,7 +12,7 @@ cd $REPOSITORY
 
 mkdir .do
 
-cat > .do/app.yaml <<EOF
+cat > .do/app.yaml << EOF
 name: app-$NAME
 region: sfo
 static_sites:
@@ -28,7 +28,7 @@ static_sites:
     source_dir: /
 EOF
 
-cat > .do/deploy.template.yaml <<EOF
+cat > .do/deploy.template.yaml << EOF
 spec:
   name: app-$NAME
   region: sfo
@@ -56,13 +56,13 @@ EOF
 
 mkdir scripts
 
-cat > scripts/doctl_apps_create.sh <<EOF
+cat > scripts/doctl_apps_create.sh << EOF
 #!/usr/bin/env bash
 
 doctl apps create --spec .do/app.yaml
 EOF
 
-cat > scripts/doctl_apps_update.sh <<EOF
+cat > scripts/doctl_apps_update.sh << EOF
 #!/usr/bin/env bash
 
 doctl apps update \$1 --spec .do/app.yaml

@@ -11,7 +11,7 @@ cd $REPOSITORY
 
 FILE=src/App.tsx
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 import React from "react";
 
 function App() {

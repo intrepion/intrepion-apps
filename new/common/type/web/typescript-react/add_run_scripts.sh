@@ -20,7 +20,7 @@ fi
 
 FILE=$FOLDER/start_web-$FRAMEWORK-$TEMPLATE.sh
 
-cat > $FILE <<EOF
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 npm start --prefix ../$REPOSITORY

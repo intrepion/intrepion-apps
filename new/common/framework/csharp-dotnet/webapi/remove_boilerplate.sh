@@ -2,10 +2,9 @@
 
 SCRIPT=$0
 PASCAL=$1
-PROJECT=$2
-REPOSITORY=$3
+REPOSITORY=$2
 
-echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY"
+echo "Running $SCRIPT $PASCAL $REPOSITORY"
 
 pushd .
 
@@ -19,11 +18,11 @@ FILE=${PASCAL}Tests/UnitTest1.cs
 rm -rf $FILE
 git add $FILE
 
-FILE=$PROJECT/Controllers/WeatherForecastController.cs
+FILE=${PASCAL}WebApi/Controllers/WeatherForecastController.cs
 rm -rf $FILE
 git add $FILE
 
-FILE=$PROJECT/WeatherForecast.cs
+FILE=${PASCAL}WebApi/WeatherForecast.cs
 rm -rf $FILE
 git add $FILE
 
@@ -31,4 +30,4 @@ git commit --message="Removed boilerplate."
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY"
+echo "Completed $SCRIPT $PASCAL $REPOSITORY"
