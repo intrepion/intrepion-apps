@@ -23,6 +23,62 @@ REPOSITORY=intrepion-$KEBOB-json-rpc-server-$FRAMEWORK-$TEMPLATE
 # project - add saying hello
 cd $REPOSITORY
 
+FILE=${PASCAL}Tests/SayingHelloTest.cs
+
+cat > $FILE <<EOF
+using ${PASCAL}Library;
+
+namespace ${PASCAL}Tests;
+
+public class SayingHelloTest
+{
+    [Theory]
+    [InlineData("", "Hello, world!")]
+    [InlineData("Oliver", "Hello, Oliver!")]
+    public void TestSayHelloHappyPath(string name, string expected)
+    {
+        var result = SayingHello.SayHello(name);
+        Assert.Equal(expected, result);
+    }
+
+    [Theory]
+    [InlineData("   ", "Hello, world!")]
+    [InlineData("Oliver  ", "Hello, Oliver!")]
+    [InlineData("   Oliver", "Hello, Oliver!")]
+    [InlineData("  Oliver ", "Hello, Oliver!")]
+    public void TestSayHelloUnhappyPath(string name, string expected)
+    {
+        var result = SayingHello.SayHello(name);
+        Assert.Equal(expected, result);
+    }
+}
+EOF
+
+git add $FILE
+git commit --message="Added saying hello tests."
+
+FILE=${PASCAL}Library/SayingHello.cs
+
+cat > $FILE <<EOF
+namespace SayingHelloLibrary;
+
+static public class SayingHello
+{
+    static public string SayHello(string name) {
+        name = name.Trim();
+
+        if (string.IsNullOrEmpty(name)) {
+            name = "world";
+        }
+
+        return $"Hello, {name}!";
+    }
+}
+EOF
+
+git add $FILE
+git commit --message="Added saying hello code."
+
 FILE=$PROJECT/Controllers/HelloWorldController.cs
 
 cat > $FILE <<EOF
