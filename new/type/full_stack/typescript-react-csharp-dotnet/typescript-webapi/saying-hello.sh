@@ -23,12 +23,14 @@ REPOSITORY=intrepion-$KEBOB-json-rpc-server-$FRAMEWORK-$TEMPLATE
 # project - add saying hello
 cd $REPOSITORY
 
-FILE=${PASCAL}Tests/SayingHelloTest.cs
+mkdir -p ${PASCAL}Tests/UnitTests
+
+FILE=${PASCAL}Tests/UnitTests/SayingHelloTest.cs
 
 cat > $FILE <<EOF
-using ${PASCAL}Library;
+using SayingHelloLibrary.Domain;
 
-namespace ${PASCAL}Tests;
+namespace SayingHelloTests.UnitTests;
 
 public class SayingHelloTest
 {
@@ -57,10 +59,12 @@ EOF
 git add $FILE
 git commit --message="Added saying hello tests."
 
-FILE=${PASCAL}Library/SayingHello.cs
+mkdir -p ${PASCAL}Library/Domain
+
+FILE=${PASCAL}Library/Domain/SayingHello.cs
 
 cat > $FILE <<EOF
-namespace SayingHelloLibrary;
+namespace SayingHelloLibrary.Domain;
 
 static public class SayingHello
 {
@@ -84,7 +88,7 @@ FILE=$PROJECT/Controllers/HelloWorldController.cs
 cat > $FILE <<EOF
 using Microsoft.AspNetCore.Mvc;
 
-namespace $PROJECT.Controllers;
+namespace HelloWorldWebApi.Controllers;
 
 [ApiController]
 [Route("/")]
