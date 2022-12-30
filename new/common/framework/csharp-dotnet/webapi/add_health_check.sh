@@ -58,7 +58,7 @@ public class HealthCheckControllerTest : IClassFixture<WebApplicationFactory<Pro
 EOF
 
 git add $FILE
-git commit --message="Added saying hello controller tests."
+git commit --message="Added health check controller tests."
 
 FILE=${PASCAL}WebApi/Controllers/HealthCheckController.cs
 
@@ -87,7 +87,7 @@ public class HealthCheckController : ControllerBase
 EOF
 
 git add $FILE
-git commit --message="Added health check."
+git commit --message="Added health check controller."
 
 popd
 

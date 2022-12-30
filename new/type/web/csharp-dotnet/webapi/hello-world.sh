@@ -23,12 +23,52 @@ REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE
 # project - add hello world
 cd $REPOSITORY
 
-FILE=$PROJECT/Controllers/HelloWorldController.cs
+mkdir -p HelloWorldTests/Controllers
+
+FILE=HelloWorldTests/Controllers/HelloWorldControllerTest.cs
+
+cat > $FILE << EOF
+using System.Net;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace HelloWorldTests.Controllers;
+
+public class HelloWorldControllerTest : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public HelloWorldControllerTest(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task TestGetHelloWorld()
+    {
+        // Arrange
+        var expected = "Hello, world!";
+
+        // Act
+        var response = await _client.GetAsync("/");
+        var actual = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(expected, actual);
+    }
+}
+EOF
+
+git add $FILE
+git commit --message="Added hello world controller tests."
+
+FILE=HelloWorldWebApi/Controllers/HelloWorldController.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
-namespace $PROJECT.Controllers;
+namespace HelloWorldWebApi.Controllers;
 
 [ApiController]
 [Route("/")]
