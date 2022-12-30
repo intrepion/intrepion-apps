@@ -10,7 +10,6 @@ cd ..
 
 FRAMEWORK=typescript-react
 KEBOB=hello-world
-PASCAL=HelloWorld
 TEMPLATE=typescript
 
 REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE

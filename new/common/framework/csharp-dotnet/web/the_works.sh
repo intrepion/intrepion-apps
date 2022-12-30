@@ -11,6 +11,8 @@ echo "Running $SCRIPT $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
 
 pushd .
 
+NAME=web
+
 # global - checkout first commit
 ./intrepion-apps/new/common/checkout_first_commit.sh $REPOSITORY
 
@@ -21,7 +23,7 @@ pushd .
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $PROJECT $REPOSITORY
 
 # framework - add deployment files
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_deployment_files.sh $PASCAL $PROJECT $REPOSITORY
+./intrepion-apps/new/common/framework/$FRAMEWORK/add_deployment_files.sh $NAME $PASCAL $PROJECT $REPOSITORY
 
 # template - remove boilerplate
 ./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh

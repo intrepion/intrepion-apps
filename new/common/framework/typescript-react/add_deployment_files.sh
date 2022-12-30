@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-REPOSITORY=$1
+NAME=$1
+REPOSITORY=$2
 
-echo "Running $SCRIPT $REPOSITORY"
+echo "Running $SCRIPT $NAME $REPOSITORY"
 
 pushd .
 
@@ -12,7 +13,7 @@ cd $REPOSITORY
 mkdir .do
 
 cat > .do/app.yaml <<EOF
-name: app-web
+name: app-$NAME
 region: sfo
 static_sites:
   - build_command: npm run build
@@ -21,7 +22,7 @@ static_sites:
       branch: main
       deploy_on_push: true
       repo: intrepion/$REPOSITORY
-    name: web
+    name: $NAME
     routes:
       - path: /
     source_dir: /
@@ -29,7 +30,7 @@ EOF
 
 cat > .do/deploy.template.yaml <<EOF
 spec:
-  name: app-web
+  name: app-$NAME
   region: sfo
   static_sites:
     - build_command: npm run build
@@ -38,7 +39,7 @@ spec:
         branch: main
         deploy_on_push: true
         repo: intrepion/$REPOSITORY
-      name: web
+      name: $NAME
       routes:
         - path: /
       source_dir: /
@@ -74,4 +75,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY"
+echo "Completed $SCRIPT $NAME $REPOSITORY"

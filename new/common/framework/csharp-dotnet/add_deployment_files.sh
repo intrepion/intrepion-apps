@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-PASCAL=$1
-PROJECT=$2
-REPOSITORY=$3
+NAME=$1
+PASCAL=$2
+PROJECT=$3
+REPOSITORY=$4
 
-echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY"
+echo "Running $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
 
 pushd .
 
@@ -14,7 +15,7 @@ cd $REPOSITORY
 mkdir .do
 
 cat > .do/app.yaml <<EOF
-name: app-web
+name: app-$NAME
 region: sfo
 services:
   - dockerfile_path: Dockerfile
@@ -27,7 +28,7 @@ services:
     http_port: 80
     instance_count: 1
     instance_size_slug: basic-xxs
-    name: web
+    name: $NAME
     routes:
       - path: /
     source_dir: /
@@ -35,7 +36,7 @@ EOF
 
 cat > .do/deploy.template.yaml <<EOF
 spec:
-  name: app-web
+  name: app-$NAME
   region: sfo
   services:
     - dockerfile_path: Dockerfile
@@ -48,7 +49,7 @@ spec:
       http_port: 80
       instance_count: 1
       instance_size_slug: basic-xxs
-      name: web
+      name: $NAME
       routes:
         - path: /
       source_dir: /
@@ -132,4 +133,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY"
+echo "Completed $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"

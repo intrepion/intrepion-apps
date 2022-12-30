@@ -11,13 +11,13 @@ echo "Running $SCRIPT $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
 
 pushd .
 
-NAME=web
+NAME=server
 
 # global - checkout first commit
 ./intrepion-apps/new/common/checkout_first_commit.sh $REPOSITORY
 
-# framework - add template files
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+# type - add template files
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 # framework - add local commands
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $PROJECT $REPOSITORY
