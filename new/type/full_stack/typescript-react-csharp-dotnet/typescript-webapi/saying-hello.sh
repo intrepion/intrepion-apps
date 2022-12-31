@@ -104,7 +104,7 @@ public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     [Theory]
-    [InlineData($$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","params":{"name":"Oliver"}}""", $$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""")]
+    [InlineData(\$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","params":{"name":"Oliver"}}""", \$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""")]
     public async Task TestPostSayingHelloHappyPaths(string body, string expected)
     {
         // Arrange
