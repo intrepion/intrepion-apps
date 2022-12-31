@@ -21,7 +21,7 @@ NAME=client-web
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $REPOSITORY
 
 # framework - add deployment files
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_deployment_files.sh $NAME $REPOSITORY
+./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $REPOSITORY
 
 # template - remove boilerplate
 ./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $REPOSITORY

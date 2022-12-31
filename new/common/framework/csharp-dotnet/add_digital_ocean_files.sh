@@ -12,9 +12,11 @@ pushd .
 
 cd $REPOSITORY
 
-mkdir .do
+mkdir -p .do
 
-cat > .do/app.yaml << EOF
+FILE=.do/app.yaml
+
+cat > $FILE << EOF
 name: app-$NAME
 region: sfo
 services:
@@ -34,7 +36,11 @@ services:
     source_dir: /
 EOF
 
-cat > .do/deploy.template.yaml << EOF
+git add $FILE
+
+FILE=.do/deploy.template.yaml
+
+cat > $FILE << EOF
 spec:
   name: app-$NAME
   region: sfo
@@ -55,7 +61,11 @@ spec:
       source_dir: /
 EOF
 
-cat > Dockerfile << EOF
+git add $FILE
+
+FILE=Dockerfile
+
+cat > $FILE << EOF
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
 WORKDIR /source
@@ -79,7 +89,11 @@ EXPOSE 80
 ENTRYPOINT ["dotnet", "$PROJECT.dll"]
 EOF
 
-cat << EOF >> README.md
+git add $FILE
+
+FILE=README.md
+
+cat << EOF >> $FILE
 
 ## Deploy
 
@@ -88,47 +102,76 @@ cat << EOF >> README.md
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPOSITORY/tree/main)
 EOF
 
+git add $FILE
+
 mkdir scripts
 
-cat > scripts/docker_build.sh << EOF
+FILE=scripts/docker_build.sh
+
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 sudo docker build --tag $REPOSITORY --file Dockerfile .
 EOF
 
-cat > scripts/docker_run.sh << EOF
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/docker_run.sh
+
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 sudo docker run -p 80:80 $REPOSITORY
 EOF
 
-cat > scripts/docker_system_prune.sh << EOF
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/docker_system_prune.sh
+
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 sudo docker system prune --all --force
 EOF
 
-cat > scripts/doctl_apps_create.sh << EOF
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/doctl_apps_create.sh
+
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 doctl apps create --spec .do/app.yaml
 EOF
 
-cat > scripts/doctl_apps_update.sh << EOF
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/doctl_apps_update.sh
+
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 doctl apps update \$1 --spec .do/app.yaml
 EOF
 
-cat > scripts/dotnet_watch.sh << EOF
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/dotnet_watch.sh
+
+cat > $FILE << EOF
 #!/usr/bin/env bash
 
 dotnet watch test --project ${PASCAL}Tests
 EOF
 
-chmod +x scripts/*.sh
+chmod +x $FILE
+git add $FILE
 
-git add --all
 git commit --message="Added Digital Ocean files."
 
 popd
