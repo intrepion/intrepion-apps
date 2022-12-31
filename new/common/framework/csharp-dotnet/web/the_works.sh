@@ -22,7 +22,10 @@ NAME=web
 # framework - add local commands
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $PROJECT $REPOSITORY
 
-# framework - add deployment files
+# framework - add github actions
+./intrepion-apps/new/common/framework/$FRAMEWORK/add_github_actions.sh $REPOSITORY
+
+# framework - add digital ocean files
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $PASCAL $PROJECT $REPOSITORY
 
 # template - remove boilerplate

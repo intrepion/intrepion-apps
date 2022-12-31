@@ -18,7 +18,7 @@ pushd .
 # framework - add local commands
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $REPOSITORY
 
-# framework - add deployment files
+# framework - add digital ocean files
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $REPOSITORY
 
 # template - remove boilerplate

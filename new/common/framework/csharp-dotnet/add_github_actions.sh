@@ -35,7 +35,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
@@ -45,6 +45,18 @@ jobs:
 EOF
 
 git add $FILE
+
+FILE=README.md
+
+cat << EOF >> $FILE
+
+## CI/CD
+
+[![.NET](https://github.com/intrepion/intrepion-hello-world-web-csharp-dotnet-web/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/intrepion-hello-world-web-csharp-dotnet-web/actions/workflows/dotnet.yml)
+EOF
+
+git add $FILE
+
 git commit --message="Added GitHub Action files."
 
 popd

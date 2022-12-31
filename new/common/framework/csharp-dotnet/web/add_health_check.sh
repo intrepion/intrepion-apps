@@ -12,6 +12,14 @@ cd $REPOSITORY
 
 FILE=$PROJECT/Program.cs
 
+cat << EOF >> $FILE
+
+public partial class Program {}
+EOF
+
+git add $FILE
+git commit -m "Added public partial to Program class.";
+
 sed -i '/app.MapGet("\/", () => "Hello World!");/iapp.MapGet("/HealthCheck", () => "");' $FILE
 
 git add $FILE
