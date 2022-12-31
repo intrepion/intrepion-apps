@@ -103,13 +103,13 @@ public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Pro
         _client = factory.CreateClient();
     }
 
-    [Fact]
-    public async Task TestPostSayingHello()
+    [Theory]
+    [InlineData($$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","params":{"name":"Oliver"}}""", $$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""")]
+    public async Task TestPostSayingHelloHappyPaths(string body, string expected)
     {
         // Arrange
-        var expected = \$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""";
         var requestBody = new StringContent(
-            \$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","params":{"name":"Oliver"}}""",
+            body,
             Encoding.UTF8,
             "application/json"
         );
