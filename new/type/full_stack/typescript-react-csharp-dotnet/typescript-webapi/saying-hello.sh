@@ -89,6 +89,7 @@ FILE=SayingHelloTests/Controllers/SayingHelloControllerTest.cs
 
 cat > $FILE << EOF
 using System.Net;
+using System.Text;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace SayingHelloTests.Controllers;
@@ -103,13 +104,18 @@ public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     [Fact]
-    public async Task TestGetSayingHello()
+    public async Task TestPostSayingHello()
     {
         // Arrange
-        var expected = "";
+        var expected = \$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""";
+        var requestBody = new StringContent(
+            \$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","params":{"name":"Oliver"}}""",
+            Encoding.UTF8,
+            "application/json"
+        );
 
         // Act
-        var response = await _client.GetAsync("/");
+        var response = await _client.PostAsync("/", requestBody);
         var actual = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -141,10 +147,10 @@ public class SayingHelloController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet(Name = "GetSayingHello")]
-    public string Get()
+    [HttpPost(Name = "PostSayingHello")]
+    public string Post()
     {
-        return "Hello, world!";
+        return \$\$$"""{"id":"00000000-0000-0000-0000-000000000000","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""";
     }
 }
 EOF
