@@ -68,9 +68,9 @@ public class JsonRpcTest
     public void TestJsonRpc_ParseError()
     {
         // Arrange
-        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}""";
-
         var functions = new Dictionary<string, FunctionCall> {};
+
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}""";
 
         // Act
         var response = JsonRpcService.ProcessRequest(json, functions);
@@ -88,9 +88,9 @@ public class JsonRpcTest
     public void TestJsonRpc_MethodNotFound()
     {
         // Arrange
-        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}}""";
-
         var functions = new Dictionary<string, FunctionCall> {};
+
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}}""";
 
         // Act
         var response = JsonRpcService.ProcessRequest(json, functions);
@@ -99,6 +99,166 @@ public class JsonRpcTest
         Assert.Equal(-32601, response.Error.Code);
         Assert.Null(response.Error.Data);
         Assert.Equal("Method not found", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
+    public void TestJsonRpc_InvalidParams_ExpectingInt()
+    {
+        // Arrange
+        AddResult Add(int a, int b)
+        {
+            return new AddResult
+            {
+                Sum = a + b
+            };
+        }
+
+        var functions = new Dictionary<string, FunctionCall>
+        {
+            { "add", new FunctionCall
+                {
+                    Function = (List<Parameter> parameters) => Add((int)parameters.First(p => p.Name == "a").Value, (int)parameters.First(p => p.Name == "b").Value),
+                    Parameters = new List<Parameter>
+                    {
+                        new Parameter { Name = "a", Kind = "int" },
+                        new Parameter { Name = "b", Kind = "int" },
+                    }
+                }
+            }
+        };
+
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":"2"}}""";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32602, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid params", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
+    public void TestJsonRpc_InvalidParams_ExpectingString()
+    {
+        // Arrange
+        AddResult Add(int a, int b)
+        {
+            return new AddResult
+            {
+                Sum = a + b
+            };
+        }
+
+        var functions = new Dictionary<string, FunctionCall>
+        {
+            { "add", new FunctionCall
+                {
+                    Function = (List<Parameter> parameters) => Add((int)parameters.First(p => p.Name == "a").Value, (int)parameters.First(p => p.Name == "b").Value),
+                    Parameters = new List<Parameter>
+                    {
+                        new Parameter { Name = "a", Kind = "int" },
+                        new Parameter { Name = "b", Kind = "string" },
+                    }
+                }
+            }
+        };
+
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}}""";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32602, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid params", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
+    public void TestJsonRpc_InvalidParams_EmptyParam()
+    {
+        // Arrange
+        AddResult Add(int a, int b)
+        {
+            return new AddResult
+            {
+                Sum = a + b
+            };
+        }
+
+        var functions = new Dictionary<string, FunctionCall>
+        {
+            { "add", new FunctionCall
+                {
+                    Function = (List<Parameter> parameters) => Add((int)parameters.First(p => p.Name == "a").Value, (int)parameters.First(p => p.Name == "b").Value),
+                    Parameters = new List<Parameter>
+                    {
+                        new Parameter { Name = "a", Kind = "int" },
+                        new Parameter { Name = "b", Kind = "int" },
+                    }
+                }
+            }
+        };
+
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":null}}""";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32602, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid params", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
+    public void TestJsonRpc_InvalidParams_MissingParam()
+    {
+        // Arrange
+        AddResult Add(int a, int b)
+        {
+            return new AddResult
+            {
+                Sum = a + b
+            };
+        }
+
+        var functions = new Dictionary<string, FunctionCall>
+        {
+            { "add", new FunctionCall
+                {
+                    Function = (List<Parameter> parameters) => Add((int)parameters.First(p => p.Name == "a").Value, (int)parameters.First(p => p.Name == "b").Value),
+                    Parameters = new List<Parameter>
+                    {
+                        new Parameter { Name = "a", Kind = "int" },
+                        new Parameter { Name = "b", Kind = "int" },
+                    }
+                }
+            }
+        };
+
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1}}""";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32602, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid params", response.Error.Message);
         Assert.Null(response.Id);
         Assert.Equal("2.0", response.JsonRpc);
         Assert.Null(response.Result);
@@ -232,17 +392,41 @@ public static class JsonRpcService
             {
                 foreach (var property in paramsElement.EnumerateObject())
                 {
-                    var parameter = functionCall.Parameters.First(p => p.Name == property.Name);
-                    switch (parameter.Kind)
+                    if (property.Value.ValueKind == JsonValueKind.Null)
                     {
-                        case "int":
-                            parameter.Value = property.Value.GetInt32();
-                            break;
-                        case "string":
-                            parameter.Value = property.Value.GetString();
-                            break;
-                        default:
-                            break;
+                        return new JsonRpcResponse
+                        {
+                            JsonRpc = "2.0",
+                            Error = new JsonRpcError
+                            {
+                                Code = -32602,
+                                Message = "Invalid params"
+                            }
+                        };
+                    }
+                    var parameter = functionCall.Parameters.First(p => p.Name == property.Name);
+                    try {
+                        switch (parameter.Kind)
+                        {
+                            case "int":
+                                parameter.Value = property.Value.GetInt32();
+                                break;
+                            case "string":
+                                parameter.Value = property.Value.GetString();
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (InvalidOperationException) {
+                        return new JsonRpcResponse
+                        {
+                            JsonRpc = "2.0",
+                            Error = new JsonRpcError
+                            {
+                                Code = -32602,
+                                Message = "Invalid params"
+                            }
+                        };
                     }
                 }
             }
@@ -265,7 +449,18 @@ public static class JsonRpcService
                     Message = "Parse error"
                 }
             };
+        } catch (NullReferenceException) {
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Error = new JsonRpcError
+                {
+                    Code = -32602,
+                    Message = "Invalid params"
+                }
+            };
         }
+
     }
 }
 EOF
