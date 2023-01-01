@@ -19,43 +19,69 @@ using ${PASCAL}Library.JsonRpc;
 
 namespace ${PASCAL}Tests.JsonRpc;
 
+class AddResult
+{
+    public int Sum { get; set; }
+}
+
 public class JsonRpcTest
 {
     [Fact]
-    public void TestJsonRpc()
+    public void TestJsonRpc_HappyPath()
     {
-        // Define the Add function
-        int Add(int a, int b)
+        // Arrange
+        AddResult Add(int a, int b)
         {
-            return a + b;
+            return new AddResult
+            {
+                Sum = a + b
+            };
         }
 
-        // Define the functions dictionary
-        Dictionary<string, FunctionCall> functions = new Dictionary<string, FunctionCall>
+        var functions = new Dictionary<string, FunctionCall>
         {
             { "add", new FunctionCall
                 {
                     Function = (List<Parameter> parameters) => Add((int)parameters.First(p => p.Name == "a").Value, (int)parameters.First(p => p.Name == "b").Value),
                     Parameters = new List<Parameter>
                     {
-                        new Parameter { Name = "a" },
-                        new Parameter { Name = "b" }
+                        new Parameter { Name = "a", Kind = "int" },
+                        new Parameter { Name = "b", Kind = "int" },
                     }
                 }
             }
         };
 
-        // Define the request JSON string
-        string json = \$\$$"""{"id":1,"jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}}""";
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}}""";
 
-        // Call ProcessRequest and get the response
+        // Act
         var response = JsonRpcService.ProcessRequest(json, functions);
 
-        // Assert that the response is correct
+        // Assert
         Assert.Null(response.Error);
-        Assert.Equal(1, response.Id);
+        Assert.Equal("1", response.Id);
         Assert.Equal("2.0", response.JsonRpc);
-        Assert.Equal(3, response.Result);
+        Assert.Equal(3, ((AddResult)response.Result).Sum);
+    }
+
+    [Fact]
+    public void TestJsonRpc_ParseError()
+    {
+        // Arrange
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}""";
+
+        var functions = new Dictionary<string, FunctionCall> {};
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32700, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Parse error", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
     }
 }
 EOF
@@ -104,12 +130,16 @@ git add $FILE
 FILE=${PASCAL}Library/JsonRpc/JsonRpcRequest.cs
 
 cat > $FILE << EOF
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace ${PASCAL}Library.JsonRpc;
 
 public class JsonRpcRequest
 {
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+
     [JsonPropertyName("jsonrpc")]
     public string JsonRpc { get; set; }
 
@@ -117,10 +147,7 @@ public class JsonRpcRequest
     public string Method { get; set; }
 
     [JsonPropertyName("params")]
-    public object[] Params { get; set; }
-
-    [JsonPropertyName("id")]
-    public object Id { get; set; }
+    public JsonElement Params { get; set; }
 }
 EOF
 
@@ -135,6 +162,9 @@ namespace ${PASCAL}Library.JsonRpc;
 
 public class JsonRpcResponse
 {
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+
     [JsonPropertyName("jsonrpc")]
     public string JsonRpc { get; set; }
 
@@ -143,9 +173,6 @@ public class JsonRpcResponse
 
     [JsonPropertyName("error")]
     public JsonRpcError Error { get; set; }
-
-    [JsonPropertyName("id")]
-    public object Id { get; set; }
 }
 EOF
 
@@ -162,22 +189,50 @@ public static class JsonRpcService
 {
     public static JsonRpcResponse ProcessRequest(string json, Dictionary<string, FunctionCall> functions)
     {
-        // Parse the JSON string
-        var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
+        try {
+            var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
 
-        // Get the function call
-        var functionCall = functions[request.Method];
+            FunctionCall functionCall = functions[request.Method];
 
-        // Call the function
-        var result = functionCall.Function(functionCall.Parameters);
+            JsonElement paramsElement = request.Params;
+            if (paramsElement.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in paramsElement.EnumerateObject())
+                {
+                    var parameter = functionCall.Parameters.First(p => p.Name == property.Name);
+                    switch (parameter.Kind)
+                    {
+                        case "int":
+                            parameter.Value = property.Value.GetInt32();
+                            break;
+                        case "string":
+                            parameter.Value = property.Value.GetString();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
 
-        // Return the response
-        return new JsonRpcResponse
-        {
-            Id = request.Id,
-            JsonRpc = request.JsonRpc,
-            Result = result
-        };
+            var result = functionCall.Function(functionCall.Parameters);
+
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Result = result,
+                Id = request.Id
+            };
+        } catch (JsonException) {
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Error = new JsonRpcError
+                {
+                    Code = -32700,
+                    Message = "Parse error"
+                }
+            };
+        }
     }
 }
 EOF
@@ -191,6 +246,7 @@ namespace ${PASCAL}Library.JsonRpc;
 
 public class Parameter
 {
+    public string Kind { get; set; }
     public string Name { get; set; }
     public object Value { get; set; }
 }

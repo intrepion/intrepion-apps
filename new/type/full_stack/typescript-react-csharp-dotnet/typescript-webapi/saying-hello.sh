@@ -120,10 +120,10 @@ using SayingHelloLibrary.JsonRpc;
 
 namespace SayingHelloTests.JsonRpc;
 
-public class JsonRpcTest
+public class SayingHelloJsonRpcTest
 {
     [Fact]
-    public void TestJsonRpc()
+    public void TestSayingHelloJsonRpc()
     {
         // Define the functions dictionary
         Dictionary<string, FunctionCall> functions = new Dictionary<string, FunctionCall>
@@ -133,14 +133,14 @@ public class JsonRpcTest
                     Function = (List<Parameter> parameters) => SayingHello.SayHello((string)parameters.First(p => p.Name == "name").Value),
                     Parameters = new List<Parameter>
                     {
-                        new Parameter { Name = "name" },
+                        new Parameter { Name = "name", Kind = "string" },
                     }
                 }
             }
         };
 
         // Define the request JSON string
-        string json = \$\$$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"Oliver"}}""";
+        string json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"Oliver"}}""";
 
         // Call ProcessRequest and get the response
         JsonRpcResponse response = JsonRpcService.ProcessRequest(json, functions);
@@ -155,154 +155,6 @@ EOF
 
 git add $FILE
 git commit --message="Added json-rpc tests."
-
-mkdir -p SayingHelloLibrary/JsonRpc
-
-FILE=SayingHelloLibrary/JsonRpc/FunctionCall.cs
-
-cat > $FILE << EOF
-namespace SayingHelloLibrary.JsonRpc;
-
-public class FunctionCall
-{
-    public Func<List<Parameter>, object> Function { get; set; }
-    public List<Parameter> Parameters { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloLibrary/JsonRpc/JsonRpcError.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace SayingHelloLibrary.JsonRpc;
-
-public class JsonRpcError
-{
-    [JsonPropertyName("code")]
-    public int Code { get; set; }
-
-    [JsonPropertyName("data")]
-    public object Data { get; set; }
-
-    [JsonPropertyName("message")]
-    public string Message { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloLibrary/JsonRpc/JsonRpcRequest.cs
-
-cat > $FILE << EOF
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-namespace SayingHelloLibrary.JsonRpc;
-
-public class JsonRpcRequest
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-
-    [JsonPropertyName("jsonrpc")]
-    public string JsonRpc { get; set; }
-
-    [JsonPropertyName("method")]
-    public string Method { get; set; }
-
-    [JsonPropertyName("params")]
-    public JsonElement Params { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloLibrary/JsonRpc/JsonRpcResponse.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace SayingHelloLibrary.JsonRpc;
-
-public class JsonRpcResponse
-{
-    [JsonPropertyName("error")]
-    public JsonRpcError Error { get; set; }
-
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-
-    [JsonPropertyName("jsonrpc")]
-    public string JsonRpc { get; set; }
-
-    [JsonPropertyName("result")]
-    public object Result { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloLibrary/JsonRpc/JsonRpcService.cs
-
-cat > $FILE << EOF
-using System.Text.Json;
-
-namespace SayingHelloLibrary.JsonRpc;
-
-public static class JsonRpcService
-{
-    public static JsonRpcResponse ProcessRequest(string json, Dictionary<string, FunctionCall> functions)
-    {
-        // Deserialize the JSON string to a JsonRpcRequest object
-        var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
-
-        // Get the function and parameters from the dictionary
-        FunctionCall functionCall = functions[request.Method];
-
-        // Set the values of the parameters based on the request's params object
-        JsonElement paramsElement = request.Params;
-        if (paramsElement.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var property in paramsElement.EnumerateObject())
-            {
-                functionCall.Parameters.First(p => p.Name == property.Name).Value = property.Value.GetString();
-            }
-        }
-
-        // Call the function and get the result
-        var result = functionCall.Function(functionCall.Parameters);
-
-        // Return a JsonRpcResponse with the result
-        return new JsonRpcResponse
-        {
-            JsonRpc = "2.0",
-            Result = result,
-            Id = request.Id
-        };
-    }
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloLibrary/JsonRpc/Parameter.cs
-
-cat > $FILE << EOF
-namespace SayingHelloLibrary.JsonRpc;
-
-public class Parameter
-{
-    public string Name { get; set; }
-    public object Value { get; set; }
-}
-EOF
-
-git add $FILE
-
-git commit --message="Added json-rpc code."
 
 mkdir -p SayingHelloTests/Controllers
 
@@ -325,7 +177,7 @@ public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     [Theory]
-    [InlineData(\$\$$"""{"id":"1","jsonrpc":"2.0","params":{"name":"Oliver"}}""", \$\$$"""{"id":"1","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""")]
+    [InlineData(\$\$\$"""{"id":"1","jsonrpc":"2.0","params":{"name":"Oliver"}}""", \$\$\$"""{"id":"1","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""")]
     public async Task TestPostSayingHelloHappyPaths(string body, string expected)
     {
         // Arrange
@@ -371,7 +223,7 @@ public class SayingHelloController : ControllerBase
     [HttpPost(Name = "PostSayingHello")]
     public string Post()
     {
-        return \$\$$"""{"id":"1","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""";
+        return \$\$\$"""{"id":"1","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""";
     }
 }
 EOF
