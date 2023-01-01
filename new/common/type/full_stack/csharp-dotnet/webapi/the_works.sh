@@ -16,8 +16,11 @@ NAME=server
 # global - checkout first commit
 ./intrepion-apps/new/common/checkout_first_commit.sh $REPOSITORY
 
-# type - add template files
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+# framework - add template files
+./intrepion-apps/new/common/framework/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+
+# type - add cors
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_cors.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 # type - add json-rpc files
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY

@@ -267,6 +267,10 @@ git add $FILE
 git commit --message="Added saying hello controller."
 git push --force
 
+FILE=${PROJECT}/Properties/launchSettings.json
+
+SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
+
 cd ..
 
 FRAMEWORK=typescript-react
@@ -282,16 +286,71 @@ cd $REPOSITORY
 
 FILE=src/App.tsx
 
-sed -i 's/  return <><\/>;/  return <>Hello, world!<\/>;/' $FILE
-npx prettier --write .
+sed -i '/import React from "react";/a\
+import SayingHello from ".\/SayingHello";' $FILE
+sed -i 's/  return <><\/>;/  return <SayingHello \/>;/' $FILE
+
+npx prettier --write $FILE
 git add $FILE
-git commit --message "Added hello world text."
+
+FILE=src/SayingHello.tsx
+
+cat > $FILE << EOF
+import * as React from "react";
+import { useState } from "react";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
+
+const SayingHello: React.FC = () => {
+  const [name, setName] = useState("");
+  const [message, setMessage] = useState("Hello, world!");
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setName(event.target.value);
+  };
+
+  const callEndpoint = () => {
+    fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: "1",
+        jsonrpc: "2.0",
+        method: "say_hello",
+        params: { name },
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        const result = responseJson.result;
+        setMessage(result.saying);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  return (
+    <div>
+      <input type="text" value={name} onChange={handleChange} />
+      <button onClick={callEndpoint}>Call Endpoint</button>
+      <div>{message}</div>
+    </div>
+  );
+};
+
+export default SayingHello;
+EOF
+
+npx prettier --write $FILE
+git add $FILE
+
+git commit --message "Added saying hello form."
 git push --force
 
 cd ..
 
 CLIENT="http://localhost:3000"
-SERVER="http://localhost:80"
 
 # type - add run scripts
 ./intrepion-apps/new/common/type/full_stack/typescript-react-typescript-csharp-dotnet-webapi/add_run_scripts.sh $CLIENT $KEBOB $PROJECT $SERVER

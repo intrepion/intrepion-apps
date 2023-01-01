@@ -68,7 +68,7 @@ FILE=$FOLDER/start_full_stack-typescript-webapi_client.sh
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
-./apps/$KEBOB/json-rpc/client-web/start_client-web-typescript-react-typescript.sh "$SERVER"
+./apps/$KEBOB/json-rpc/client-web/start_client-web-typescript-react-typescript.sh $SERVER
 EOF
 
 chmod +x $FILE
