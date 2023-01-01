@@ -201,6 +201,8 @@ git add $FILE
 FILE=${PASCAL}Library/JsonRpc/JsonRpcService.cs
 
 cat > $FILE << EOF
+using System.Text.Json;
+
 namespace ${PASCAL}Library.JsonRpc;
 
 public static class JsonRpcService
