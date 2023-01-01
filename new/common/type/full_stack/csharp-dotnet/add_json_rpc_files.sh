@@ -85,6 +85,66 @@ public class JsonRpcTest
     }
 
     [Fact]
+    public void TestJsonRpc_InvalidRequest_WithEmptyString()
+    {
+        // Arrange
+        var functions = new Dictionary<string, FunctionCall> {};
+
+        var json = "";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32600, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid Request", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
+    public void TestJsonRpc_InvalidRequest_WithInt()
+    {
+        // Arrange
+        var functions = new Dictionary<string, FunctionCall> {};
+
+        var json = "1";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32600, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid Request", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
+    public void TestJsonRpc_InvalidRequest_WithDouble()
+    {
+        // Arrange
+        var functions = new Dictionary<string, FunctionCall> {};
+
+        var json = "3.0";
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32600, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Invalid Request", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
+
+    [Fact]
     public void TestJsonRpc_MethodNotFound()
     {
         // Arrange
@@ -369,6 +429,18 @@ public static class JsonRpcService
 {
     public static JsonRpcResponse ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls)
     {
+        if (string.IsNullOrEmpty(json) || double.TryParse(json, out _))
+        {
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Error = new JsonRpcError
+                {
+                    Code = -32600,
+                    Message = "Invalid Request"
+                }
+            };
+        }
         try {
             var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
 
