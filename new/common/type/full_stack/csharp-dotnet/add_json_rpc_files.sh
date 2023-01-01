@@ -83,6 +83,26 @@ public class JsonRpcTest
         Assert.Equal("2.0", response.JsonRpc);
         Assert.Null(response.Result);
     }
+
+    [Fact]
+    public void TestJsonRpc_MethodNotFound()
+    {
+        // Arrange
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"add","params":{"a":1,"b":2}}""";
+
+        var functions = new Dictionary<string, FunctionCall> {};
+
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, functions);
+
+        // Assert
+        Assert.Equal(-32601, response.Error.Code);
+        Assert.Null(response.Error.Data);
+        Assert.Equal("Method not found", response.Error.Message);
+        Assert.Null(response.Id);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Null(response.Result);
+    }
 }
 EOF
 
@@ -181,18 +201,29 @@ git add $FILE
 FILE=${PASCAL}Library/JsonRpc/JsonRpcService.cs
 
 cat > $FILE << EOF
-using System.Text.Json;
-
 namespace ${PASCAL}Library.JsonRpc;
 
 public static class JsonRpcService
 {
-    public static JsonRpcResponse ProcessRequest(string json, Dictionary<string, FunctionCall> functions)
+    public static JsonRpcResponse ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls)
     {
         try {
             var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
 
-            FunctionCall functionCall = functions[request.Method];
+            if (request == null || string.IsNullOrEmpty(request.Method) || !functionCalls.ContainsKey(request.Method))
+            {
+                return new JsonRpcResponse
+                {
+                    JsonRpc = "2.0",
+                    Error = new JsonRpcError
+                    {
+                        Code = -32601,
+                        Message = "Method not found"
+                    }
+                };
+            }
+
+            FunctionCall functionCall = functionCalls[request.Method];
 
             JsonElement paramsElement = request.Params;
             if (paramsElement.ValueKind == JsonValueKind.Object)
