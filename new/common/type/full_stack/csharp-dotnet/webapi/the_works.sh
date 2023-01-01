@@ -19,6 +19,9 @@ NAME=server
 # type - add template files
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
+# type - add json-rpc files
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY
+
 # framework - add local commands
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $PROJECT $REPOSITORY
 
