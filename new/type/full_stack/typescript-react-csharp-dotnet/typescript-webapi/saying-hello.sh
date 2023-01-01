@@ -290,7 +290,6 @@ sed -i '/import React from "react";/a\
 import SayingHello from ".\/SayingHello";' $FILE
 sed -i 's/  return <><\/>;/  return <SayingHello \/>;/' $FILE
 
-npx prettier --write $FILE
 git add $FILE
 
 FILE=src/SayingHello.tsx
@@ -342,9 +341,9 @@ const SayingHello: React.FC = () => {
 export default SayingHello;
 EOF
 
-npx prettier --write $FILE
 git add $FILE
 
+npx prettier --write .
 git commit --message "Added saying hello form."
 git push --force
 

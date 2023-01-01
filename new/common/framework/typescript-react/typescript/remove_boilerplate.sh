@@ -19,7 +19,6 @@ function App() {
 }
 
 export default App;
-
 EOF
 
 git add $FILE

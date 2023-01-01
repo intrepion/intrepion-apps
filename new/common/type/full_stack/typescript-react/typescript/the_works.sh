@@ -9,8 +9,6 @@ echo "Running $SCRIPT $FRAMEWORK $REPOSITORY $TEMPLATE"
 
 pushd .
 
-NAME=client-web
-
 # global - checkout first commit
 ./intrepion-apps/new/common/checkout_first_commit.sh $REPOSITORY
 

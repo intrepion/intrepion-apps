@@ -12,9 +12,9 @@ pushd .
 
 cd $REPOSITORY
 
-dotnet add ${PROJECT} package Microsoft.AspNet.WebApi.Cors
+dotnet add ${PROJECT} package Microsoft.AspNetCore.Cors
 git add ${PROJECT}
-git commit --message "dotnet add ${PROJECT} package Microsoft.AspNet.WebApi.Cors"
+git commit --message "dotnet add ${PROJECT} package Microsoft.AspNetCore.Cors"
 
 FILE=${PROJECT}/Properties/launchSettings.json
 
