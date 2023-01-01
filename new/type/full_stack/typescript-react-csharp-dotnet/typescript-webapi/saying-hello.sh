@@ -117,14 +117,13 @@ FILE=SayingHelloTests/JsonRpc/SayingHelloJsonRpcTest.cs
 cat > $FILE << EOF
 using SayingHelloLibrary.Domain;
 using SayingHelloLibrary.JsonRpc;
-using System.Text.Json;
 
 namespace SayingHelloTests.JsonRpc;
 
-public class SayingHelloJsonRpcTest
+public class JsonRpcTest
 {
     [Fact]
-    public void TestSayingHelloJsonRpc()
+    public void TestJsonRpc()
     {
         // Define the functions dictionary
         Dictionary<string, FunctionCall> functions = new Dictionary<string, FunctionCall>
@@ -141,15 +140,15 @@ public class SayingHelloJsonRpcTest
         };
 
         // Define the request JSON string
-        string json = @"{""id"":""1"",""jsonrpc"":""2.0"",""method"":""say_hello"",""params"":{""name"":""Oliver""}}";
+        string json = \$\$$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"Oliver"}}""";
 
         // Call ProcessRequest and get the response
         JsonRpcResponse response = JsonRpcService.ProcessRequest(json, functions);
 
         // Assert that the response is correct
         Assert.Equal("2.0", response.JsonRpc);
-        Assert.Equal("1", response.Id.ToString());
-        Assert.Equal("{\"saying\":\"Hello, Oliver!\"}", JsonSerializer.Serialize<SayingHelloResult>((SayingHelloResult)response.Result));
+        Assert.Equal("1", response.Id);
+        Assert.Equal("Hello, Oliver!", ((SayingHelloResult)response.Result).Saying);
     }
 }
 EOF
@@ -206,7 +205,7 @@ namespace SayingHelloLibrary.JsonRpc;
 public class JsonRpcRequest
 {
     [JsonPropertyName("id")]
-    public object Id { get; set; }
+    public string Id { get; set; }
 
     [JsonPropertyName("jsonrpc")]
     public string JsonRpc { get; set; }
@@ -234,7 +233,7 @@ public class JsonRpcResponse
     public JsonRpcError Error { get; set; }
 
     [JsonPropertyName("id")]
-    public object Id { get; set; }
+    public string Id { get; set; }
 
     [JsonPropertyName("jsonrpc")]
     public string JsonRpc { get; set; }
