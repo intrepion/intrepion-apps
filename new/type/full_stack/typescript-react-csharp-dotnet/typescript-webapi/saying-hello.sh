@@ -36,6 +36,7 @@ public class SayingHelloTest
 {
     [Theory]
     [InlineData("", "Hello, world!")]
+    [InlineData("James", "Hello, James!")]
     [InlineData("Oliver", "Hello, Oliver!")]
     public void TestSayHelloHappyPath(string name, string expected)
     {
@@ -68,6 +69,32 @@ git add $FILE
 git commit --message="Added saying hello tests."
 
 mkdir -p SayingHelloLibrary/Domain
+
+FILE=SayingHelloLibrary/Domain/FunctionCalls.cs
+
+cat > $FILE << EOF
+using SayingHelloLibrary.JsonRpc;
+
+namespace SayingHelloLibrary.Domain;
+
+public static class FunctionCalls
+{
+    public static Dictionary<string, FunctionCall> Dictionary = new Dictionary<string, FunctionCall>
+    {
+        { "say_hello", new FunctionCall
+            {
+                Function = (List<Parameter> parameters) => SayingHello.SayHello((string)parameters.First(p => p.Name == "name").Value),
+                Parameters = new List<Parameter>
+                {
+                    new Parameter { Name = "name", Kind = "string" },
+                }
+            }
+        },
+    };
+}
+EOF
+
+git add $FILE
 
 FILE=SayingHelloLibrary/Domain/SayingHello.cs
 
@@ -122,33 +149,23 @@ namespace SayingHelloTests.JsonRpc;
 
 public class SayingHelloJsonRpcTest
 {
-    [Fact]
-    public void TestSayingHelloJsonRpc()
+    [Theory]
+    [InlineData("", "Hello, world!")]
+    [InlineData("James", "Hello, James!")]
+    [InlineData("Oliver", "Hello, Oliver!")]
+    public void TestSayingHelloJsonRpc_HappyPath(string name, string expected)
     {
-        // Define the functions dictionary
-        Dictionary<string, FunctionCall> functions = new Dictionary<string, FunctionCall>
-        {
-            { "say_hello", new FunctionCall
-                {
-                    Function = (List<Parameter> parameters) => SayingHello.SayHello((string)parameters.First(p => p.Name == "name").Value),
-                    Parameters = new List<Parameter>
-                    {
-                        new Parameter { Name = "name", Kind = "string" },
-                    }
-                }
-            }
-        };
+        // Arrange
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"{{{name}}}"}}""";
 
-        // Define the request JSON string
-        string json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"Oliver"}}""";
+        // Act
+        var response = JsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary);
+        var actual = ((SayingHelloResult)response.Result).Saying;
 
-        // Call ProcessRequest and get the response
-        JsonRpcResponse response = JsonRpcService.ProcessRequest(json, functions);
-
-        // Assert that the response is correct
-        Assert.Equal("2.0", response.JsonRpc);
+        // Assert
         Assert.Equal("1", response.Id);
-        Assert.Equal("Hello, Oliver!", ((SayingHelloResult)response.Result).Saying);
+        Assert.Equal("2.0", response.JsonRpc);
+        Assert.Equal(expected, actual);
     }
 }
 EOF
@@ -161,9 +178,12 @@ mkdir -p SayingHelloTests/Controllers
 FILE=SayingHelloTests/Controllers/SayingHelloControllerTest.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc.Testing;
+using SayingHelloLibrary.Domain;
+using SayingHelloLibrary.JsonRpc;
 using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Mvc.Testing;
+using System.Text.Json;
 
 namespace SayingHelloTests.Controllers;
 
@@ -177,19 +197,26 @@ public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Pro
     }
 
     [Theory]
-    [InlineData(\$\$\$"""{"id":"1","jsonrpc":"2.0","params":{"name":"Oliver"}}""", \$\$\$"""{"id":"1","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""")]
-    public async Task TestPostSayingHelloHappyPaths(string body, string expected)
+    [InlineData("", "Hello, world!")]
+    [InlineData("James", "Hello, James!")]
+    [InlineData("Oliver", "Hello, Oliver!")]
+    public async Task TestPostSayingHello_HappyPaths(string name, string expected)
     {
         // Arrange
+        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"{{{name}}}"}}""";
         var requestBody = new StringContent(
-            body,
+            json,
             Encoding.UTF8,
             "application/json"
         );
 
         // Act
         var response = await _client.PostAsync("/", requestBody);
-        var actual = await response.Content.ReadAsStringAsync();
+        var content = await response.Content.ReadAsStringAsync();
+        var responseJsonRpc = JsonSerializer.Deserialize<JsonRpcResponse>(content);
+        var sayingHelloJson = responseJsonRpc.Result.ToString();
+        var sayingHelloResult = JsonSerializer.Deserialize<SayingHelloResult>(sayingHelloJson);
+        var actual = sayingHelloResult.Saying;
 
         // Assert
         response.EnsureSuccessStatusCode();
@@ -206,6 +233,8 @@ FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
+using SayingHelloLibrary.Domain;
+using SayingHelloLibrary.JsonRpc;
 
 namespace SayingHelloWebApi.Controllers;
 
@@ -221,9 +250,15 @@ public class SayingHelloController : ControllerBase
     }
 
     [HttpPost(Name = "PostSayingHello")]
-    public string Post()
+    public async Task<JsonRpcResponse> Post()
     {
-        return \$\$\$"""{"id":"1","jsonrpc":"2.0","result":{"saying":"Hello, Oliver!"}}""";
+        Request.EnableBuffering();
+
+        Request.Body.Position = 0;
+
+        var json = await new StreamReader(Request.Body).ReadToEndAsync();
+
+        return JsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary);
     }
 }
 EOF
