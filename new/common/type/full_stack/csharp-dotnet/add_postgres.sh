@@ -90,7 +90,13 @@ SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 FILE=${PROJECT}/Program.cs
 
 cat > $FILE << EOF
+using Microsoft.EntityFrameworkCore;
+using SayingHelloWebApi.Data;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDBContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 
@@ -115,6 +121,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -122,6 +129,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDBContext>();
+    // Note: if you're having trouble with EF, database schema, etc.,
+    // uncomment the line below to re-create the database upon each run.
+    //context.Database.EnsureDeleted();
+    context.Database.EnsureCreated();
+    DBInitializer.Initialize(context);
+}
+
 
 app.UseHttpsRedirection();
 
@@ -134,6 +154,7 @@ app.UseCors(MyAllowSpecificOrigins);
 app.Run();
 
 public partial class Program {}
+
 EOF
 
 git add $FILE
