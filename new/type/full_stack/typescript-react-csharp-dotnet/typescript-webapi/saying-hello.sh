@@ -43,7 +43,7 @@ public class SayingHelloTest
     {
         // Arrange
         // Act
-        var actual = SayingHello.SayHello(name).Saying;
+        var actual = SayingHello.SayHello(name);
 
         // Assert
         Assert.Equal(expected, actual);
@@ -58,7 +58,7 @@ public class SayingHelloTest
     {
         // Arrange
         // Act
-        var actual = SayingHello.SayHello(name).Saying;
+        var actual = SayingHello.SayHello(name);
 
         // Assert
         Assert.Equal(expected, actual);
@@ -71,32 +71,6 @@ git commit --message="Added saying hello tests."
 
 mkdir -p SayingHelloLibrary/Domain
 
-FILE=SayingHelloLibrary/Domain/FunctionCalls.cs
-
-cat > $FILE << EOF
-using SayingHelloLibrary.JsonRpc;
-
-namespace SayingHelloLibrary.Domain;
-
-public static class FunctionCalls
-{
-    public static Dictionary<string, FunctionCall> Dictionary = new Dictionary<string, FunctionCall>
-    {
-        { "say_hello", new FunctionCall
-            {
-                Function = (List<Parameter> parameters) => SayingHello.SayHello((string)parameters.First(p => p.Name == "name").Value),
-                Parameters = new List<Parameter>
-                {
-                    new Parameter { Name = "name", Kind = "string" },
-                }
-            }
-        },
-    };
-}
-EOF
-
-git add $FILE
-
 FILE=SayingHelloLibrary/Domain/SayingHello.cs
 
 cat > $FILE << EOF
@@ -104,138 +78,28 @@ namespace SayingHelloLibrary.Domain;
 
 static public class SayingHello
 {
-    static public SayingHelloResult SayHello(string name) {
+    static public string SayHello(string name) {
         name = name.Trim();
 
         if (string.IsNullOrEmpty(name)) {
             name = "world";
         }
 
-        return new SayingHelloResult {
-            Saying = $"Hello, {name}!"
-        };
+        return $"Hello, {name}!";
     }
 }
 EOF
 
 git add $FILE
-
-FILE=SayingHelloLibrary/Domain/SayingHelloResult.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace SayingHelloLibrary.Domain;
-
-public class SayingHelloResult
-{
-    [JsonPropertyName("saying")]
-    public string Saying { get; set; }
-}
-EOF
-
-git add $FILE
-
 git commit --message="Added saying hello code."
-
-mkdir -p SayingHelloTests/JsonRpc
-
-FILE=SayingHelloTests/JsonRpc/SayingHelloJsonRpcTest.cs
-
-cat > $FILE << EOF
-using SayingHelloLibrary.Domain;
-using SayingHelloLibrary.JsonRpc;
-
-namespace SayingHelloTests.JsonRpc;
-
-public class SayingHelloJsonRpcTest
-{
-    [Theory]
-    [InlineData("", "Hello, world!")]
-    [InlineData("James", "Hello, James!")]
-    [InlineData("Oliver", "Hello, Oliver!")]
-    public void TestSayingHelloJsonRpc_HappyPath(string name, string expected)
-    {
-        // Arrange
-        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"{{{name}}}"}}""";
-
-        // Act
-        var response = JsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary);
-        var actual = ((SayingHelloResult)response.Result).Saying;
-
-        // Assert
-        Assert.Equal("1", response.Id);
-        Assert.Equal("2.0", response.JsonRpc);
-        Assert.Equal(expected, actual);
-    }
-}
-EOF
-
-git add $FILE
-git commit --message="Added json-rpc tests."
-
-mkdir -p SayingHelloTests/Controllers
-
-FILE=SayingHelloTests/Controllers/SayingHelloControllerTest.cs
-
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Mvc.Testing;
-using SayingHelloLibrary.Domain;
-using SayingHelloLibrary.JsonRpc;
-using System.Net;
-using System.Text;
-using System.Text.Json;
-
-namespace SayingHelloTests.Controllers;
-
-public class SayingHelloControllerTest : IClassFixture<WebApplicationFactory<Program>>
-{
-    private readonly HttpClient _client;
-
-    public SayingHelloControllerTest(WebApplicationFactory<Program> factory)
-    {
-        _client = factory.CreateClient();
-    }
-
-    [Theory]
-    [InlineData("", "Hello, world!")]
-    [InlineData("James", "Hello, James!")]
-    [InlineData("Oliver", "Hello, Oliver!")]
-    public async Task TestPostSayingHello_HappyPaths(string name, string expected)
-    {
-        // Arrange
-        var json = \$\$\$"""{"id":"1","jsonrpc":"2.0","method":"say_hello","params":{"name":"{{{name}}}"}}""";
-        var requestBody = new StringContent(
-            json,
-            Encoding.UTF8,
-            "application/json"
-        );
-
-        // Act
-        var response = await _client.PostAsync("/", requestBody);
-        var content = await response.Content.ReadAsStringAsync();
-        var responseJsonRpc = JsonSerializer.Deserialize<JsonRpcResponse>(content);
-        var sayingHelloJson = responseJsonRpc.Result.ToString();
-        var sayingHelloResult = JsonSerializer.Deserialize<SayingHelloResult>(sayingHelloJson);
-        var actual = sayingHelloResult.Saying;
-
-        // Assert
-        response.EnsureSuccessStatusCode();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(expected, actual);
-    }
-}
-EOF
-
-git add $FILE
-git commit --message="Added saying hello controller tests."
 
 FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
-using SayingHelloLibrary.Domain;
 using SayingHelloLibrary.JsonRpc;
+using SayingHelloWebApi.Data;
+using SayingHelloWebApi.JsonRpc;
 
 namespace SayingHelloWebApi.Controllers;
 
@@ -243,10 +107,12 @@ namespace SayingHelloWebApi.Controllers;
 [Route("/")]
 public class SayingHelloController : ControllerBase
 {
+    private readonly AppDBContext _context;
     private readonly ILogger<SayingHelloController> _logger;
 
-    public SayingHelloController(ILogger<SayingHelloController> logger)
+    public SayingHelloController(AppDBContext context, ILogger<SayingHelloController> logger)
     {
+        _context = context;
         _logger = logger;
     }
 
@@ -259,7 +125,7 @@ public class SayingHelloController : ControllerBase
 
         var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
-        return JsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary);
+        return await JsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary, _context);
     }
 }
 EOF
@@ -267,9 +133,9 @@ EOF
 git add $FILE
 git commit --message="Added saying hello controller."
 
-mkdir -p ${PROJECT}/Data
+mkdir -p SayingHelloWebApi/Data
 
-FILE=${PROJECT}/Data/AppDBContext.cs
+FILE=SayingHelloWebApi/Data/AppDBContext.cs
 
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
@@ -285,13 +151,19 @@ public class AppDBContext : DbContext
         DBInitializer.Initialize(this);
     }
 
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder.Entity<Greeting>()
+            .HasIndex(greeting => greeting.Name)
+            .IsUnique();
+    }
     public DbSet<Greeting> Greetings { get; set; }
 }
 EOF
 
 git add $FILE
 
-FILE=${PROJECT}/Data/DBInitializer.cs
+FILE=SayingHelloWebApi/Data/DBInitializer.cs
 
 cat > $FILE << EOF
 using SayingHelloWebApi.Entities;
@@ -311,15 +183,18 @@ public static class DBInitializer
         {
             new Greeting
             {
-                Message = "Hello, world!"
+                Message = "Hello, world!",
+                Name = "",
             },
             new Greeting
             {
-                Message = "Hello, Oliver!"
+                Message = "Hello, Oliver!",
+                Name = "Oliver",
             },
             new Greeting
             {
-                Message = "Hello, James!"
+                Message = "Hello, James!",
+                Name = "James",
             },
         };
 
@@ -330,12 +205,11 @@ public static class DBInitializer
 EOF
 
 git add $FILE
+git commit --message="Added data files."
 
-git commit --message="Added database files."
+mkdir -p SayingHelloWebApi/Entities
 
-mkdir -p ${PROJECT}/Entities
-
-FILE=${PROJECT}/Entities/Greeting.cs
+FILE=SayingHelloWebApi/Entities/Greeting.cs
 
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
@@ -347,17 +221,327 @@ public class Greeting
     [JsonPropertyName("id")]
     public Guid Id { get; set; }
 
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+
     [JsonPropertyName("message")]
     public string Message { get; set; }
 }
 EOF
 
 git add $FILE
-
 git commit --message="Added entities."
+
+mkdir -p SayingHelloWebApi/JsonRpc
+
+FILE=SayingHelloWebApi/JsonRpc/FunctionCall.cs
+
+cat > $FILE << EOF
+namespace SayingHelloWebApi.JsonRpc;
+
+public class FunctionCall
+{
+    public List<Parameter> Parameters { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/JsonRpc/FunctionCalls.cs
+
+cat > $FILE << EOF
+namespace SayingHelloWebApi.JsonRpc;
+
+public static class FunctionCalls
+{
+    public static Dictionary<string, FunctionCall> Dictionary = new Dictionary<string, FunctionCall>
+    {
+        {
+            "new_greeting", new FunctionCall
+            {
+                Parameters = new List<Parameter>
+                {
+                    new Parameter { Name = "name", Kind = "string" },
+                }
+            }
+        },
+        {
+            "get_all_greetings", new FunctionCall
+            {
+                Parameters = new List<Parameter> {}
+            }
+        },
+    };
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/JsonRpc/JsonRpcService.cs
+
+cat > $FILE << EOF
+using SayingHelloLibrary.JsonRpc;
+using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Repositories;
+using System.Text.Json;
+
+namespace SayingHelloWebApi.JsonRpc;
+
+public static class JsonRpcService
+{
+    public static async Task<JsonRpcResponse> ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls, AppDBContext context)
+    {
+        if (string.IsNullOrEmpty(json) || double.TryParse(json, out _))
+        {
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Error = new JsonRpcError
+                {
+                    Code = -32600,
+                    Message = "Invalid Request - json is not found"
+                }
+            };
+        }
+
+        try {
+            var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
+
+            if (request == null || string.IsNullOrEmpty(request.Method) || !functionCalls.ContainsKey(request.Method))
+            {
+                return new JsonRpcResponse
+                {
+                    JsonRpc = "2.0",
+                    Error = new JsonRpcError
+                    {
+                        Code = -32601,
+                        Message = "Method not found"
+                    }
+                };
+            }
+
+            FunctionCall functionCall = functionCalls[request.Method];
+
+            if (functionCall.Parameters.Count > 0)
+            {
+                JsonElement paramsElement = request.Params;
+
+                if (paramsElement.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var property in paramsElement.EnumerateObject())
+                    {
+                        if (property.Value.ValueKind == JsonValueKind.Null)
+                        {
+                            return new JsonRpcResponse
+                            {
+                                JsonRpc = "2.0",
+                                Error = new JsonRpcError
+                                {
+                                    Code = -32602,
+                                    Message = "Invalid params - value is null"
+                                }
+                            };
+                        }
+                        var parameter = functionCall.Parameters.First(p => p.Name == property.Name);
+                        try {
+                            switch (parameter.Kind)
+                            {
+                                case "int":
+                                    parameter.Value = property.Value.GetInt32();
+                                    break;
+                                case "string":
+                                    parameter.Value = property.Value.GetString();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        } catch (InvalidOperationException) {
+                            return new JsonRpcResponse
+                            {
+                                JsonRpc = "2.0",
+                                Error = new JsonRpcError
+                                {
+                                    Code = -32602,
+                                    Message = "Invalid params - value is not of the correct type"
+                                }
+                            };
+                        }
+                    }
+                }
+            }
+
+            if (request.Method == "new_greeting") {
+                var name = functionCall.Parameters.First(p => p.Name == "name").Value.ToString();
+                var result = await GreetingRepository.NewGreetingAsync(context, name);
+
+                return new JsonRpcResponse
+                {
+                    JsonRpc = "2.0",
+                    Result = result,
+                    Id = request.Id
+                };
+            } else if (request.Method == "get_all_greetings") {
+                var result = await GreetingRepository.GetAllGreetingsAsync(context);
+
+                return new JsonRpcResponse
+                {
+                    JsonRpc = "2.0",
+                    Result = result,
+                    Id = request.Id
+                };
+            }
+
+        } catch (JsonException) {
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Error = new JsonRpcError
+                {
+                    Code = -32700,
+                    Message = "Parse error"
+                }
+            };
+        } catch (Exception) {
+            return new JsonRpcResponse
+            {
+                JsonRpc = "2.0",
+                Error = new JsonRpcError
+                {
+                    Code = -32602,
+                    Message = "Invalid Request - internal error"
+                }
+            };
+        }
+
+        return new JsonRpcResponse
+        {
+            JsonRpc = "2.0",
+            Error = new JsonRpcError
+            {
+                Code = -32600,
+                Message = "Invalid Request"
+            }
+        };
+    }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/JsonRpc/Parameter.cs
+
+cat > $FILE << EOF
+namespace SayingHelloWebApi.JsonRpc;
+
+public class Parameter
+{
+    public string Kind { get; set; }
+    public string Name { get; set; }
+    public object Value { get; set; }
+}
+EOF
+
+git add $FILE
+git commit --message="Added project json rpc files."
+
+mkdir -p SayingHelloWebApi/Repositories
+
+FILE=SayingHelloWebApi/Repositories/GreetingRepository.cs
+
+cat > $FILE << EOF
+using Microsoft.EntityFrameworkCore;
+using SayingHelloLibrary.Domain;
+using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Entities;
+using SayingHelloWebApi.Results;
+
+namespace SayingHelloWebApi.Repositories;
+
+public static class GreetingRepository
+{
+    public static async Task<GetAllGreetingsResult> GetAllGreetingsAsync(AppDBContext context)
+    {
+        var greetings = await context.Greetings.ToListAsync();
+
+        return new GetAllGreetingsResult
+        {
+            Greetings = greetings
+        };
+    }
+
+    public static async Task<NewGreetingResult> NewGreetingAsync(AppDBContext context, string name)
+    {
+        name = name.Trim();
+
+        var greeting = await context.Greetings.Where(greeting => greeting.Name == name).FirstOrDefaultAsync();
+        if (greeting != null) {
+            return new NewGreetingResult
+            {
+                Message = greeting.Message
+            };
+        }
+
+        var message = SayingHello.SayHello(name);
+
+        greeting = new Greeting
+        {
+            Name = name,
+            Message = message,
+        };
+
+        await context.AddAsync(greeting);
+        context.SaveChanges();
+
+        return new NewGreetingResult
+        {
+            Message = message
+        };
+    }
+}
+EOF
+
+git add $FILE
+git commit --message="Added repository files."
+
+mkdir -p SayingHelloWebApi/Results
+
+FILE=SayingHelloWebApi/Results/GetAllGreetingsResult.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+using SayingHelloWebApi.Entities;
+
+namespace SayingHelloWebApi.Results;
+
+public class GetAllGreetingsResult
+{
+    [JsonPropertyName("greetings")]
+    public List<Greeting> Greetings { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Results/NewGreetingResult.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Results;
+
+public class NewGreetingResult
+{
+    [JsonPropertyName("message")]
+    public string Message { get; set; }
+}
+EOF
+
+git add $FILE
+git commit --message="Added result files."
+
 git push --force
 
-FILE=${PROJECT}/Properties/launchSettings.json
+FILE=SayingHelloWebApi/Properties/launchSettings.json
 
 SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 
