@@ -8,6 +8,7 @@ echo "Running $SCRIPT $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
 FILE=src/App.tsx
 
@@ -43,9 +44,11 @@ FILE=src/logo.svg
 rm -rf $FILE
 git add $FILE
 
-npx prettier --write .
-
 git commit --message="Removed boilerplate."
+
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
 
 popd
 

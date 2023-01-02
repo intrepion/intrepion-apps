@@ -284,15 +284,27 @@ REPOSITORY=intrepion-$KEBOB-json-rpc-client-web-$FRAMEWORK-$TEMPLATE
 # project - add saying hello
 cd $REPOSITORY
 
-FILE=src/App.tsx
+FILE=src/components/Home.tsx
 
-sed -i '/import React from "react";/a\
-import SayingHello from ".\/SayingHello";' $FILE
-sed -i 's/  return <><\/>;/  return <SayingHello \/>;/' $FILE
+cat > $FILE << EOF
+import React from "react";
+import SayingHello from "./SayingHello";
+
+const Home = () => {
+  return (
+    <>
+      <p>Home</p>
+      <SayingHello />
+    </>
+  );
+};
+
+export default Home;
+EOF
 
 git add $FILE
 
-FILE=src/SayingHello.tsx
+FILE=src/components/SayingHello.tsx
 
 cat > $FILE << EOF
 import * as React from "react";

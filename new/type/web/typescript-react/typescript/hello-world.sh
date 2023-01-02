@@ -23,9 +23,13 @@ cd $REPOSITORY
 FILE=src/App.tsx
 
 sed -i 's/  return <><\/>;/  return <>Hello, world!<\/>;/' $FILE
-npx prettier --write .
 git add $FILE
 git commit --message "Added hello world text."
+
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
 git push --force
 
 cd ..

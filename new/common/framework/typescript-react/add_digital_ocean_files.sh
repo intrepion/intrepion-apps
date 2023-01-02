@@ -9,8 +9,9 @@ echo "Running $SCRIPT $NAME $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
-mkdir .do
+mkdir -p .do
 
 FILE=.do/app.yaml
 
@@ -66,7 +67,7 @@ EOF
 
 git add $FILE
 
-mkdir scripts
+mkdir -p scripts
 
 FILE=scripts/doctl_apps_create.sh
 

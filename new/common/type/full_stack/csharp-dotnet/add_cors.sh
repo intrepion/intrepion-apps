@@ -41,7 +41,8 @@ builder.Services.AddCors(options =>\
 
 # Insert the specified text above the matching line
 sed -i '/app.Run();/i\
-app.UseCors(MyAllowSpecificOrigins);' $FILE
+app.UseCors(MyAllowSpecificOrigins);\
+' $FILE
 
 git add $FILE
 git commit --message "Added CORS to $PROJECT.";
