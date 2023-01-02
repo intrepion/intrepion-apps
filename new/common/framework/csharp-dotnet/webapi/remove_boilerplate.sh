@@ -9,6 +9,7 @@ echo "Running $SCRIPT $PASCAL $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
 FILE=${PASCAL}Library/Class1.cs
 rm -rf $FILE

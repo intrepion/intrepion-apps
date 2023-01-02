@@ -20,6 +20,9 @@ NAME=client-web
 # template - remove boilerplate
 ./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $REPOSITORY
 
+# template - add health check
+./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $REPOSITORY
+
 # type - add user routes
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_user_routes.sh $REPOSITORY
 
@@ -28,9 +31,6 @@ NAME=client-web
 
 # framework - add digital ocean files
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $REPOSITORY
-
-# template - add health check
-./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $REPOSITORY
 
 popd
 

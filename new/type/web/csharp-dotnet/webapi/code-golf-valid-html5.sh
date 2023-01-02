@@ -22,6 +22,7 @@ REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE
 
 # project - add code golf valid html5
 cd $REPOSITORY
+pwd
 
 mkdir -p CodeGolfValidHtml5Tests/Controllers
 

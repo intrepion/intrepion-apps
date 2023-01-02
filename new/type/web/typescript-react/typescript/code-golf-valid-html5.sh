@@ -19,6 +19,7 @@ REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE
 
 # project - add minimal html5 to pass validation
 cd $REPOSITORY
+pwd
 
 git push --force
 

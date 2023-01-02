@@ -11,6 +11,7 @@ echo "Running $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
 mkdir -p .do
 

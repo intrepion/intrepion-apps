@@ -19,6 +19,7 @@ REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE
 
 # project - add hello world
 cd $REPOSITORY
+pwd
 
 FILE=src/App.tsx
 

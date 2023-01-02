@@ -15,6 +15,7 @@ fi
 
 # Navigate to the repository folder
 cd $REPOSITORY
+pwd
 
 # Checkout main branch
 git checkout main

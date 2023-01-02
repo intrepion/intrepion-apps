@@ -8,6 +8,7 @@ echo "Running $SCRIPT $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
 npm install react-router-dom
 

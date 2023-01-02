@@ -31,7 +31,7 @@ git commit --message "dotnet sln ${PASCAL}App.sln add ${PASCAL}Library"
 
 dotnet new $TEMPLATE --name $PROJECT
 git add $PROJECT
-git commit --message "dotnet new $TEMPLATE --name $PROJECT"
+git commit --message "dotnet new $TEMPLATE --auth Individual --name $PROJECT --use-local-db"
 
 dotnet sln ${PASCAL}App.sln add $PROJECT
 git add ${PASCAL}App.sln

@@ -22,6 +22,7 @@ REPOSITORY=intrepion-$KEBOB-web-$FRAMEWORK-$TEMPLATE
 
 # project - fix grammar
 cd $REPOSITORY
+pwd
 
 FILE=CodeGolfValidHtml5Tests/CodeGolfValidHtml5Test.cs
 

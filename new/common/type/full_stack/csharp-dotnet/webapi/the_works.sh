@@ -16,11 +16,20 @@ NAME=server
 # global - checkout first commit
 ./intrepion-apps/new/common/checkout_first_commit.sh $REPOSITORY
 
-# framework - add template files
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+# type - add template files
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_template_files.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+
+# template - remove boilerplate
+./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $PASCAL $REPOSITORY
+
+# template - add health check
+./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PASCAL $REPOSITORY
 
 # type - add cors
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_cors.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+
+# type - add postgres
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_postgres.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 # type - add json-rpc files
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY
@@ -33,13 +42,6 @@ NAME=server
 
 # framework - add digital ocean files
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $PASCAL $PROJECT $REPOSITORY
-
-# template - remove boilerplate
-./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/remove_boilerplate.sh $PASCAL $REPOSITORY
-
-# template - add health check
-./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PASCAL $REPOSITORY
-
 popd
 
 echo "Completed $SCRIPT $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE"

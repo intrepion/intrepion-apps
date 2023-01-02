@@ -9,6 +9,7 @@ echo "Running $SCRIPT $PASCAL $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
 mkdir -p ${PASCAL}Tests/JsonRpc
 

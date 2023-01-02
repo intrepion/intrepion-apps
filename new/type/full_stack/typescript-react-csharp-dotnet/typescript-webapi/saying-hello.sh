@@ -22,6 +22,7 @@ REPOSITORY=intrepion-$KEBOB-json-rpc-server-$FRAMEWORK-$TEMPLATE
 
 # project - add saying hello
 cd $REPOSITORY
+pwd
 
 mkdir -p SayingHelloTests/Domain
 
@@ -265,6 +266,95 @@ EOF
 
 git add $FILE
 git commit --message="Added saying hello controller."
+
+mkdir -p ${PROJECT}/Data
+
+FILE=${PROJECT}/Data/AppDBContext.cs
+
+cat > $FILE << EOF
+using Microsoft.EntityFrameworkCore;
+using SayingHelloWebApi.Entities;
+
+namespace SayingHelloWebApi.Data;
+
+public class AppDBContext : DbContext
+{
+    public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
+    {
+        Database.EnsureCreated();
+        DBInitializer.Initialize(this);
+    }
+
+    public DbSet<Greeting> Greetings { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=${PROJECT}/Data/DBInitializer.cs
+
+cat > $FILE << EOF
+using SayingHelloWebApi.Entities;
+
+namespace SayingHelloWebApi.Data;
+
+public static class DBInitializer
+{
+    public static void Initialize(AppDBContext context)
+    {
+        if (context.Greetings.Any())
+        {
+            return;
+        }
+
+        var greetings = new Greeting[]
+        {
+            new Greeting
+            {
+                Message = "Hello, world!"
+            },
+            new Greeting
+            {
+                Message = "Hello, Oliver!"
+            },
+            new Greeting
+            {
+                Message = "Hello, James!"
+            },
+        };
+
+        context.Greetings.AddRange(greetings);
+        context.SaveChanges();
+    }
+}
+EOF
+
+git add $FILE
+
+git commit --message="Added database files."
+
+mkdir -p ${PROJECT}/Entities
+
+FILE=${PROJECT}/Entities/Greeting.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Entities;
+
+public class Greeting
+{
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; }
+
+    [JsonPropertyName("message")]
+    public string Message { get; set; }
+}
+EOF
+
+git add $FILE
+
+git commit --message="Added entities."
 git push --force
 
 FILE=${PROJECT}/Properties/launchSettings.json
@@ -283,6 +373,7 @@ REPOSITORY=intrepion-$KEBOB-json-rpc-client-web-$FRAMEWORK-$TEMPLATE
 
 # project - add saying hello
 cd $REPOSITORY
+pwd
 
 FILE=src/components/Home.tsx
 
@@ -307,8 +398,7 @@ git add $FILE
 FILE=src/components/SayingHello.tsx
 
 cat > $FILE << EOF
-import * as React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
 

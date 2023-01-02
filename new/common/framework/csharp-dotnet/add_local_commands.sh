@@ -9,6 +9,7 @@ echo "Running $SCRIPT $PROJECT $REPOSITORY"
 pushd .
 
 cd $REPOSITORY
+pwd
 
 FILE=README.md
 
