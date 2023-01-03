@@ -114,6 +114,23 @@ cat > $FILE << EOF
 EOF
 
 git add $FILE
+
+FILE=SayingHelloWebApi/appsettings.json
+
+cat > $FILE << EOF
+{
+  "AllowedHosts": "*",
+  "JwtExpireDays": 30,
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+EOF
+
+git add $FILE
 git commit --message "Updated app settings."
 
 FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
@@ -688,13 +705,15 @@ builder.Services
     })
     .AddJwtBearer(cfg =>
     {
+        var jwtIssuer = builder.Configuration["JwtIssuer"] ?? Environment.GetEnvironmentVariable("JWT_ISSUER");
+        var jwtKey = builder.Configuration["JwtKey"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
         cfg.RequireHttpsMetadata = false;
         cfg.SaveToken = true;
         cfg.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidIssuer = builder.Configuration["JwtIssuer"],
-            ValidAudience = builder.Configuration["JwtIssuer"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"])),
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtIssuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -942,13 +961,16 @@ public class UserRepository : IUserRepository, IDisposable
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
+        var jwtIssuer = _configuration["JwtIssuer"] ?? Environment.GetEnvironmentVariable("JWT_ISSUER");
+        var jwtKey = _configuration["JwtKey"] ?? Environment.GetEnvironmentVariable("JWT_KEY");
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
 
         var token = new JwtSecurityToken(
-            _configuration["JwtIssuer"],
-            _configuration["JwtIssuer"],
+            jwtIssuer,
+            jwtIssuer,
             claims,
             expires: expires,
             signingCredentials: creds
