@@ -34,10 +34,79 @@ git add $FILE
 FILE=src/components/Login.tsx
 
 cat > $FILE << EOF
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { v4 } from "uuid";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
 
 const Login = () => {
-  return <p>Login</p>;
+  const [loadingLogin, setLoadingLogin] = useState(false);
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
+
+  const callLogin = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    setLoadingLogin(true);
+    fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: v4(),
+        jsonrpc: "2.0",
+        method: "login",
+        params: { password, username },
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        if (responseJson.result) {
+          navigate("/Login");
+        } else if (responseJson.error) {
+          console.error(responseJson.error);
+        }
+        setLoadingLogin(false);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
+  };
+
+  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
+  return (
+    <div>
+      <h1>Login</h1>
+      <label htmlFor="username">
+        Username:{" "}
+        <input
+          id="name"
+          onChange={handleChangeUsername}
+          type="text"
+          value={username}
+        />
+      </label>
+      <label htmlFor="password">
+        Password:{" "}
+        <input
+          id="password"
+          onChange={handleChangePassword}
+          type="password"
+          value={password}
+        />
+      </label>
+      <button disabled={loadingLogin} onClick={callLogin}>
+        Login
+      </button>
+    </div>
+  );
 };
 
 export default Login;
@@ -49,9 +118,10 @@ FILE=src/components/Logout.tsx
 
 cat > $FILE << EOF
 import React from "react";
+import { Navigate } from "react-router-dom";
 
 const Logout = () => {
-  return <p>Logout</p>;
+  return <Navigate to="/" />;
 };
 
 export default Logout;
@@ -65,7 +135,7 @@ cat > $FILE << EOF
 import React from "react";
 
 const Profile = () => {
-  return <p>Profile</p>;
+  return <h1>Profile</h1>;
 };
 
 export default Profile;
@@ -76,10 +146,107 @@ git add $FILE
 FILE=src/components/Register.tsx
 
 cat > $FILE << EOF
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { v4 } from "uuid";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
 
 const Register = () => {
-  return <p>Register</p>;
+  const [confirm, setConfirm] = useState("");
+  const [email, setEmail] = useState("");
+  const [loadingRegister, setLoadingRegister] = useState(false);
+  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
+
+  const callRegister = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    setLoadingRegister(true);
+    fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: v4(),
+        jsonrpc: "2.0",
+        method: "register",
+        params: { confirm, email, password, username },
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        if (responseJson.result) {
+          navigate("/Login");
+        } else if (responseJson.error) {
+          console.error(responseJson.error);
+        }
+        setLoadingRegister(false);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
+  };
+
+  const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
+  };
+
+  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
+  const handleChangeConfirm = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirm(event.target.value);
+  };
+
+  return (
+    <div>
+      <h1>Register</h1>
+      <label htmlFor="username">
+        Username:{" "}
+        <input
+          id="name"
+          onChange={handleChangeUsername}
+          type="text"
+          value={username}
+        />
+      </label>
+      <label htmlFor="email">
+        Email:{" "}
+        <input
+          id="email"
+          onChange={handleChangeEmail}
+          type="email"
+          value={email}
+        />
+      </label>
+      <label htmlFor="password">
+        Password:{" "}
+        <input
+          id="password"
+          onChange={handleChangePassword}
+          type="password"
+          value={password}
+        />
+      </label>
+      <label htmlFor="confirm">
+        Confirm:{" "}
+        <input
+          id="confirm"
+          onChange={handleChangeConfirm}
+          type="password"
+          value={confirm}
+        />
+      </label>
+      <button disabled={loadingRegister} onClick={callRegister}>
+        Register
+      </button>
+    </div>
+  );
 };
 
 export default Register;
@@ -93,7 +260,7 @@ cat > $FILE << EOF
 import React from "react";
 
 const ResetPassword = () => {
-  return <p>ResetPassword</p>;
+  return <h1>ResetPassword</h1>;
 };
 
 export default ResetPassword;
@@ -107,7 +274,7 @@ cat > $FILE << EOF
 import React from "react";
 
 const VerifyEmail = () => {
-  return <p>VerifyEmail</p>;
+  return <h1>VerifyEmail</h1>;
 };
 
 export default VerifyEmail;
@@ -121,7 +288,7 @@ cat > $FILE << EOF
 import React from "react";
 
 const VerifyReset = () => {
-  return <p>VerifyReset</p>;
+  return <h1>VerifyReset</h1>;
 };
 
 export default VerifyReset;

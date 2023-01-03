@@ -35,6 +35,18 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
+npm install uuid
+git add --all
+git commit --message "npm install uuid"
+
+npm i --save-dev @types/uuid
+git add --all
+git commit --message "npm i --save-dev @types/uuid"
+
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
 popd
 
 echo "Completed $SCRIPT $REPOSITORY $TEMPLATE"

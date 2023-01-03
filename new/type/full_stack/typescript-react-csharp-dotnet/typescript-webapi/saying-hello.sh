@@ -172,11 +172,18 @@ public class AppDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.Entity<Greeting>()
-            .HasIndex(greeting => greeting.Name)
-            .IsUnique();
+        builder.Entity<Greeting>(greeting => {
+            greeting.HasIndex(g => g.Name).IsUnique();
+        });
+
+        builder.Entity<User>(user => {
+            user.HasIndex(u => u.Email).IsUnique();
+            user.HasIndex(u => u.Username).IsUnique();
+        });
     }
+
     public DbSet<Greeting> Greetings { get; set; }
+    public DbSet<User> Users { get; set; }
 }
 EOF
 
@@ -249,6 +256,43 @@ public class Greeting
 EOF
 
 git add $FILE
+
+FILE=SayingHelloWebApi/Entities/User.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Entities;
+
+public class User
+{
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; }
+
+    [JsonPropertyName("username")]
+    public string Username { get; set; }
+
+    [JsonPropertyName("email")]
+    public string Email { get; set; }
+
+    [JsonPropertyName("email_verified")]
+    public string EmailVerified { get; set; }
+
+    [JsonPropertyName("password_verified")]
+    public string PasswordVerified { get; set; }
+
+    [JsonPropertyName("password")]
+    public string Password { get; set; }
+
+    [JsonPropertyName("verify_email")]
+    public string VerifyEmail { get; set; }
+
+    [JsonPropertyName("verify_password")]
+    public string VerifyPassword { get; set; }
+}
+EOF
+
+git add $FILE
 git commit --message="Added entities."
 
 mkdir -p SayingHelloWebApi/JsonRpc
@@ -276,6 +320,28 @@ public static class FunctionCalls
     public static Dictionary<string, FunctionCall> Dictionary = new Dictionary<string, FunctionCall>
     {
         {
+            "get_all_greetings", new FunctionCall
+            {
+                Parameters = new List<Parameter> {}
+            }
+        },
+        {
+            "login", new FunctionCall
+            {
+                Parameters = new List<Parameter>
+                {
+                    new Parameter { Name = "password", Kind = "string" },
+                    new Parameter { Name = "username", Kind = "string" },
+                }
+            }
+        },
+        {
+            "logout", new FunctionCall
+            {
+                Parameters = new List<Parameter> {}
+            }
+        },
+        {
             "new_greeting", new FunctionCall
             {
                 Parameters = new List<Parameter>
@@ -285,11 +351,17 @@ public static class FunctionCalls
             }
         },
         {
-            "get_all_greetings", new FunctionCall
+            "register", new FunctionCall
             {
-                Parameters = new List<Parameter> {}
+                Parameters = new List<Parameter>
+                {
+                    new Parameter { Name = "confirm", Kind = "string" },
+                    new Parameter { Name = "email", Kind = "string" },
+                    new Parameter { Name = "password", Kind = "string" },
+                    new Parameter { Name = "username", Kind = "string" },
+                }
             }
-        },
+        }
     };
 }
 EOF
@@ -301,6 +373,7 @@ FILE=SayingHelloWebApi/JsonRpc/JsonRpcService.cs
 cat > $FILE << EOF
 using SayingHelloLibrary.JsonRpc;
 using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Params;
 using SayingHelloWebApi.Repositories;
 using System.Text.Json;
 
@@ -389,25 +462,16 @@ public static class JsonRpcService
                 }
             }
 
-            if (request.Method == "new_greeting") {
-                var name = functionCall.Parameters.First(p => p.Name == "name").Value.ToString();
-                var result = await GreetingRepository.NewGreetingAsync(context, name);
-
-                return new JsonRpcResponse
-                {
-                    JsonRpc = "2.0",
-                    Result = result,
-                    Id = request.Id
-                };
-            } else if (request.Method == "get_all_greetings") {
-                var result = await GreetingRepository.GetAllGreetingsAsync(context);
-
-                return new JsonRpcResponse
-                {
-                    JsonRpc = "2.0",
-                    Result = result,
-                    Id = request.Id
-                };
+            if (request.Method == "get_all_greetings") {
+                return await GreetingRepository.GetAllGreetingsAsync(context, request);
+            } else if (request.Method == "login") {
+                return await UserRepository.LoginAsync(context, request);
+            } else if (request.Method == "logout") {
+                return await UserRepository.LogoutAsync(context, request);
+            } else if (request.Method == "new_greeting") {
+                return await GreetingRepository.NewGreetingAsync(context, request);
+            } else if (request.Method == "register") {
+                return await UserRepository.RegisterAsync(context, request);
             }
 
         } catch (JsonException) {
@@ -462,6 +526,69 @@ EOF
 
 git add $FILE
 git commit --message="Added project json rpc files."
+
+mkdir -p SayingHelloWebApi/Params
+
+FILE=SayingHelloWebApi/Params/LoginParams.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Params;
+
+public class LoginParams
+{
+    [JsonPropertyName("password")]
+    public string Password { get; set; }
+
+    [JsonPropertyName("username")]
+    public string Username { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Params/NewGreetingParams.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Params;
+
+public class NewGreetingParams
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Params/RegisterParams.cs
+
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Params;
+
+public class RegisterParams
+{
+    [JsonPropertyName("confirm")]
+    public string Confirm { get; set; }
+
+    [JsonPropertyName("email")]
+    public string Email { get; set; }
+
+    [JsonPropertyName("password")]
+    public string Password { get; set; }
+
+    [JsonPropertyName("username")]
+    public string Username { get; set; }
+}
+EOF
+
+git add $FILE
+git commit --message="Added params."
 
 FILE=SayingHelloWebApi/Properties/launchSettings.json
 
@@ -546,33 +673,47 @@ FILE=SayingHelloWebApi/Repositories/GreetingRepository.cs
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
 using SayingHelloLibrary.Domain;
+using SayingHelloLibrary.JsonRpc;
 using SayingHelloWebApi.Data;
 using SayingHelloWebApi.Entities;
+using SayingHelloWebApi.Params;
 using SayingHelloWebApi.Results;
+using System.Text.Json;
 
 namespace SayingHelloWebApi.Repositories;
 
 public static class GreetingRepository
 {
-    public static async Task<GetAllGreetingsResult> GetAllGreetingsAsync(AppDBContext context)
+    public static async Task<JsonRpcResponse> GetAllGreetingsAsync(AppDBContext context, JsonRpcRequest request)
     {
         var greetings = await context.Greetings.ToListAsync();
 
-        return new GetAllGreetingsResult
+        return new JsonRpcResponse
         {
-            Greetings = greetings
+            Id = request.Id,
+            JsonRpc = request.JsonRpc,
+            Result = new GetAllGreetingsResult
+            {
+                Greetings = greetings
+            },
         };
     }
 
-    public static async Task<NewGreetingResult> NewGreetingAsync(AppDBContext context, string name)
+    public static async Task<JsonRpcResponse> NewGreetingAsync(AppDBContext context, JsonRpcRequest request)
     {
-        name = name.Trim();
+        var newGreetingParams = JsonSerializer.Deserialize<NewGreetingParams>(request.Params.GetRawText());
+        var name = newGreetingParams.Name.Trim();
 
         var greeting = await context.Greetings.Where(greeting => greeting.Name == name).FirstOrDefaultAsync();
         if (greeting != null) {
-            return new NewGreetingResult
+            return new JsonRpcResponse
             {
-                Message = greeting.Message
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Result = new NewGreetingResult
+                {
+                    Message = greeting.Message
+                },
             };
         }
 
@@ -587,9 +728,144 @@ public static class GreetingRepository
         await context.AddAsync(greeting);
         context.SaveChanges();
 
-        return new NewGreetingResult
+        return new JsonRpcResponse
         {
-            Message = message
+            Id = request.Id,
+            JsonRpc = request.JsonRpc,
+            Result = new NewGreetingResult
+            {
+                Message = message
+            },
+        };
+    }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Repositories/UserRepository.cs
+
+cat > $FILE << EOF
+using SayingHelloLibrary.JsonRpc;
+using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Params;
+using SayingHelloWebApi.Results;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+
+namespace SayingHelloWebApi.Repositories;
+
+public static class UserRepository
+{
+    public static async Task<JsonRpcResponse> LoginAsync(AppDBContext context, JsonRpcRequest request)
+    {
+        var loginParams = JsonSerializer.Deserialize<LoginParams>(request.Params.GetRawText());
+        var password = loginParams.Password;
+        var username = loginParams.Username.Trim();
+
+        if (password.Length < 8) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 2,
+                    Message = "Password must be at least 8 characters.",
+                },
+            };
+        }
+
+        if (username.Length < 1) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 3,
+                    Message = "Username must be at least 1 character.",
+                },
+            };
+        }
+
+        return new JsonRpcResponse {
+            Id = request.Id,
+            JsonRpc = request.JsonRpc,
+            Result = new LoginResult {},
+        };
+    }
+
+    public static async Task<JsonRpcResponse> LogoutAsync(AppDBContext context, JsonRpcRequest request)
+    {
+        return new JsonRpcResponse {
+            Id = request.Id,
+            JsonRpc = request.JsonRpc,
+        };
+    }
+
+    public static async Task<JsonRpcResponse> RegisterAsync(AppDBContext context, JsonRpcRequest request)
+    {
+        var registerParams = JsonSerializer.Deserialize<RegisterParams>(request.Params.GetRawText());
+        var confirm = registerParams.Confirm;
+        var email = registerParams.Email.Trim();
+        var password = registerParams.Password;
+        var username = registerParams.Username.Trim();
+
+        if (confirm != password) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 1,
+                    Message = "Passwords do not match.",
+                },
+            };
+        }
+
+        if (password.Length < 8) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 2,
+                    Message = "Password must be at least 8 characters.",
+                },
+            };
+        }
+
+        if (username.Length < 1) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 3,
+                    Message = "Username must be at least 1 character.",
+                },
+            };
+        }
+
+        if (email.Length < 1) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 4,
+                    Message = "Email must be at least 1 character.",
+                },
+            };
+        }
+
+        if (!Regex.Match(email, "^.*@.*[.].*$").Success) {
+            return new JsonRpcResponse {
+                Id = request.Id,
+                JsonRpc = request.JsonRpc,
+                Error = new JsonRpcError {
+                    Code = 5,
+                    Message = "Email must have an amperat and a period.",
+                },
+            };
+        }
+
+        return new JsonRpcResponse {
+            Id = request.Id,
+            JsonRpc = request.JsonRpc,
         };
     }
 }
@@ -603,8 +879,8 @@ mkdir -p SayingHelloWebApi/Results
 FILE=SayingHelloWebApi/Results/GetAllGreetingsResult.cs
 
 cat > $FILE << EOF
-using System.Text.Json.Serialization;
 using SayingHelloWebApi.Entities;
+using System.Text.Json.Serialization;
 
 namespace SayingHelloWebApi.Results;
 
@@ -612,6 +888,18 @@ public class GetAllGreetingsResult
 {
     [JsonPropertyName("greetings")]
     public List<Greeting> Greetings { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Results/LoginResult.cs
+
+cat > $FILE << EOF
+namespace SayingHelloWebApi.Results;
+
+public class LoginResult
+{
 }
 EOF
 
