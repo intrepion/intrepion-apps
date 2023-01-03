@@ -471,7 +471,7 @@ FILE=SayingHelloWebApi/Program.cs
 
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
-using SayingHelloWebApiWebApi.Data;
+using SayingHelloWebApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
