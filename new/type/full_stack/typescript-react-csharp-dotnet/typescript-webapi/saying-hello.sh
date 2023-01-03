@@ -93,6 +93,25 @@ EOF
 git add $FILE
 git commit --message="Added saying hello code."
 
+FILE=SayingHelloWebApi/appsettings.Development.json
+
+cat > $FILE << EOF
+{
+  "ConnectionStrings": {  
+    "DefaultConnection": "Host=localhost;Database=intrepion;Username=postgres;Password=password"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+EOF
+
+git add $FILE
+git commit --message "Updated app settings."
+
 FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
 
 cat > $FILE << EOF
@@ -443,6 +462,82 @@ EOF
 
 git add $FILE
 git commit --message="Added project json rpc files."
+
+FILE=SayingHelloWebApi/Properties/launchSettings.json
+
+SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
+
+FILE=SayingHelloWebApi/Program.cs
+
+cat > $FILE << EOF
+using Microsoft.EntityFrameworkCore;
+using SayingHelloWebApiWebApi.Data;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<AppDBContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var ClientUrl = Environment.GetEnvironmentVariable("CLIENT_URL") ?? $SERVER;
+
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins(ClientUrl)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDBContext>();
+    // Note: if you're having trouble with EF, database schema, etc.,
+    // uncomment the line below to re-create the database upon each run.
+    //context.Database.EnsureDeleted();
+    context.Database.EnsureCreated();
+    DBInitializer.Initialize(context);
+}
+
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.UseCors(MyAllowSpecificOrigins);
+
+app.Run();
+
+public partial class Program {}
+
+EOF
+
+git add $FILE
+git commit --message "Updated Program class."
 
 mkdir -p SayingHelloWebApi/Repositories
 

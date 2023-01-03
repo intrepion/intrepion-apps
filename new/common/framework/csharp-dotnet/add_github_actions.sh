@@ -43,6 +43,15 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      services:
+        postgres:
+          image: postgres:12
+          env:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: intrepion
+          ports:
+            - 5432:5432
 EOF
 
 git add $FILE
