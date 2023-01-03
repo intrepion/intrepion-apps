@@ -41,6 +41,14 @@ dotnet add $PROJECT reference ${PASCAL}Library
 git add $PROJECT
 git commit --message "dotnet add $PROJECT reference ${PASCAL}Library"
 
+dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore
+git add $PROJECT
+git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+
+dotnet add $PROJECT package Microsoft.AspNetCore.Authentication.JwtBearer
+git add $PROJECT
+git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Authentication.JwtBearer"
+
 dotnet new xunit --name ${PASCAL}Tests
 git add ${PASCAL}Tests
 git commit --message "dotnet new xunit --name ${PASCAL}Tests"

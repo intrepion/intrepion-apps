@@ -126,10 +126,10 @@ namespace SayingHelloWebApi.Controllers;
 [Route("/")]
 public class SayingHelloController : ControllerBase
 {
-    private readonly AppDBContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly ILogger<SayingHelloController> _logger;
 
-    public SayingHelloController(AppDBContext context, ILogger<SayingHelloController> logger)
+    public SayingHelloController(ApplicationDbContext context, ILogger<SayingHelloController> logger)
     {
         _context = context;
         _logger = logger;
@@ -154,17 +154,18 @@ git commit --message="Added saying hello controller."
 
 mkdir -p SayingHelloWebApi/Data
 
-FILE=SayingHelloWebApi/Data/AppDBContext.cs
+FILE=SayingHelloWebApi/Data/ApplicationDbContext.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SayingHelloWebApi.Entities;
 
 namespace SayingHelloWebApi.Data;
 
-public class AppDBContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
 {
-    public AppDBContext(DbContextOptions<AppDBContext> options) : base(options)
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
         Database.EnsureCreated();
         DBInitializer.Initialize(this);
@@ -172,17 +173,15 @@ public class AppDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        base.OnModelCreating(builder);
+
         builder.Entity<Greeting>(greeting => {
             greeting.HasIndex(g => g.Name).IsUnique();
-        });
-
-        builder.Entity<User>(user => {
-            user.HasIndex(u => u.Email).IsUnique();
-            user.HasIndex(u => u.Username).IsUnique();
         });
     }
 
     public DbSet<Greeting> Greetings { get; set; }
+    public DbSet<Role> Roles { get; set; }
     public DbSet<User> Users { get; set; }
 }
 EOF
@@ -198,7 +197,7 @@ namespace SayingHelloWebApi.Data;
 
 public static class DBInitializer
 {
-    public static void Initialize(AppDBContext context)
+    public static void Initialize(ApplicationDbContext context)
     {
         if (context.Greetings.Any())
         {
@@ -257,20 +256,36 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Entities/User.cs
+FILE=SayingHelloWebApi/Entities/Role.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using System.Text.Json.Serialization;
 
 namespace SayingHelloWebApi.Entities;
 
-public class User
+public class Role : IdentityRole<Guid>
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; }
 
-    [JsonPropertyName("username")]
-    public string Username { get; set; }
+    [JsonPropertyName("name")]
+    public string Name { get; set; }
+}
+EOF
+
+FILE=SayingHelloWebApi/Entities/User.cs
+
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using System.Text.Json.Serialization;
+
+namespace SayingHelloWebApi.Entities;
+
+public class User : IdentityUser<Guid>
+{
+    [JsonPropertyName("id")]
+    public Guid Id { get; set; }
 
     [JsonPropertyName("email")]
     public string Email { get; set; }
@@ -278,17 +293,29 @@ public class User
     [JsonPropertyName("email_verified")]
     public string EmailVerified { get; set; }
 
+    [JsonPropertyName("password")]
+    public string Password { get; set; }
+
     [JsonPropertyName("password_verified")]
     public string PasswordVerified { get; set; }
 
-    [JsonPropertyName("password")]
-    public string Password { get; set; }
+    [JsonPropertyName("registered_when")]
+    public DateTime RegisteredWhen { get; set; }
+
+    [JsonPropertyName("username")]
+    public string Username { get; set; }
 
     [JsonPropertyName("verify_email")]
     public string VerifyEmail { get; set; }
 
+    [JsonPropertyName("verify_email_expiration")]
+    public DateTime VerifyEmailExpiration { get; set; }
+
     [JsonPropertyName("verify_password")]
     public string VerifyPassword { get; set; }
+
+    [JsonPropertyName("verify_password_expiration")]
+    public DateTime VerifyPasswordExpiration { get; set; }
 }
 EOF
 
@@ -381,7 +408,7 @@ namespace SayingHelloWebApi.JsonRpc;
 
 public static class JsonRpcService
 {
-    public static async Task<JsonRpcResponse> ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls, AppDBContext context)
+    public static async Task<JsonRpcResponse> ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls, ApplicationDbContext context)
     {
         if (string.IsNullOrEmpty(json) || double.TryParse(json, out _))
         {
@@ -597,15 +624,23 @@ SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 FILE=SayingHelloWebApi/Program.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDBContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 // Add services to the container.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddIdentity<User, Role>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -640,7 +675,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
 
-    var context = services.GetRequiredService<AppDBContext>();
+    var context = services.GetRequiredService<ApplicationDbContext>();
     // Note: if you're having trouble with EF, database schema, etc.,
     // uncomment the line below to re-create the database upon each run.
     //context.Database.EnsureDeleted();
@@ -660,7 +695,6 @@ app.UseCors(MyAllowSpecificOrigins);
 app.Run();
 
 public partial class Program {}
-
 EOF
 
 git add $FILE
@@ -684,7 +718,7 @@ namespace SayingHelloWebApi.Repositories;
 
 public static class GreetingRepository
 {
-    public static async Task<JsonRpcResponse> GetAllGreetingsAsync(AppDBContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> GetAllGreetingsAsync(ApplicationDbContext context, JsonRpcRequest request)
     {
         var greetings = await context.Greetings.ToListAsync();
 
@@ -699,7 +733,7 @@ public static class GreetingRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> NewGreetingAsync(AppDBContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> NewGreetingAsync(ApplicationDbContext context, JsonRpcRequest request)
     {
         var newGreetingParams = JsonSerializer.Deserialize<NewGreetingParams>(request.Params.GetRawText());
         var name = newGreetingParams.Name.Trim();
@@ -757,7 +791,7 @@ namespace SayingHelloWebApi.Repositories;
 
 public static class UserRepository
 {
-    public static async Task<JsonRpcResponse> LoginAsync(AppDBContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> LoginAsync(ApplicationDbContext context, JsonRpcRequest request)
     {
         var loginParams = JsonSerializer.Deserialize<LoginParams>(request.Params.GetRawText());
         var password = loginParams.Password;
@@ -792,7 +826,7 @@ public static class UserRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> LogoutAsync(AppDBContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> LogoutAsync(ApplicationDbContext context, JsonRpcRequest request)
     {
         return new JsonRpcResponse {
             Id = request.Id,
@@ -800,7 +834,7 @@ public static class UserRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> RegisterAsync(AppDBContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> RegisterAsync(ApplicationDbContext context, JsonRpcRequest request)
     {
         var registerParams = JsonSerializer.Deserialize<RegisterParams>(request.Params.GetRawText());
         var confirm = registerParams.Confirm;
