@@ -274,6 +274,8 @@ public class Role : IdentityRole<Guid>
 }
 EOF
 
+git add $FILE
+
 FILE=SayingHelloWebApi/Entities/User.cs
 
 cat > $FILE << EOF
