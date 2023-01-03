@@ -659,6 +659,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SayingHelloWebApi.Data;
 using SayingHelloWebApi.Entities;
+using SayingHelloWebApi.JsonRpc;
+using SayingHelloWebApi.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
@@ -698,6 +700,10 @@ builder.Services
     });
 
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IJsonRpcService, JsonRpcService>();
+builder.Services.AddScoped<IGreetingRepository, GreetingRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

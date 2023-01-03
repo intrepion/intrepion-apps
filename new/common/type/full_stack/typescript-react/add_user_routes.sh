@@ -99,7 +99,7 @@ const Login = () => {
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.result) {
-          navigate("/Home");
+          navigate("/");
         } else if (responseJson.error) {
           console.error(responseJson.error);
         }
@@ -176,7 +176,7 @@ const Logout: React.FC = () => {
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.result) {
-          navigate("/Home");
+          navigate("/");
         } else if (responseJson.error) {
           console.error(responseJson.error);
         }

@@ -27,6 +27,12 @@ npm install
 npm test
 \`\`\`
 
+### Initialize Database
+
+\`\`\`bash
+./scripts/init_postgres.sh
+\`\`\`
+
 ### Run
 
 \`\`\`bash
