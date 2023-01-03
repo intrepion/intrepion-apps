@@ -15,6 +15,43 @@ npm install react-router-dom
 git add --all
 git commit --message "npm install react-router-dom"
 
+FILE=src/App.tsx
+
+cat > $FILE << EOF
+import React from "react";
+import { Link } from "react-router-dom";
+import Main from "./Main";
+
+function App() {
+  return (
+    <>
+      <div>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/Login">Login</Link>
+          </li>
+          <li>
+            <Link to="/Logout">Logout</Link>
+          </li>
+          <li>
+            <Link to="/Register">Register</Link>
+          </li>
+        </ul>
+        <hr />
+        <Main />
+      </div>
+    </>
+  );
+}
+
+export default App;
+EOF
+
+git add $FILE
+
 mkdir -p src/components
 
 FILE=src/components/Home.tsx
@@ -23,7 +60,7 @@ cat > $FILE << EOF
 import React from "react";
 
 const Home = () => {
-  return <p>Home</p>;
+  return <h1>Home</h1>;
 };
 
 export default Home;
@@ -62,7 +99,7 @@ const Login = () => {
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.result) {
-          navigate("/Login");
+          navigate("/Home");
         } else if (responseJson.error) {
           console.error(responseJson.error);
         }
@@ -73,12 +110,12 @@ const Login = () => {
       });
   };
 
-  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(event.target.value);
-  };
-
   const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
+  };
+
+  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
   };
 
   return (
@@ -117,28 +154,46 @@ git add $FILE
 FILE=src/components/Logout.tsx
 
 cat > $FILE << EOF
-import React from "react";
-import { Navigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { v4 } from "uuid";
 
-const Logout = () => {
-  return <Navigate to="/" />;
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
+
+const Logout: React.FC = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetch(SERVER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: v4(),
+        jsonrpc: "2.0",
+        method: "logout",
+      }),
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        if (responseJson.result) {
+          navigate("/Home");
+        } else if (responseJson.error) {
+          console.error(responseJson.error);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  });
+
+  return (
+    <div>
+      <h1>Logout</h1>
+    </div>
+  );
 };
 
 export default Logout;
-EOF
-
-git add $FILE
-
-FILE=src/components/Profile.tsx
-
-cat > $FILE << EOF
-import React from "react";
-
-const Profile = () => {
-  return <h1>Profile</h1>;
-};
-
-export default Profile;
 EOF
 
 git add $FILE
@@ -187,8 +242,8 @@ const Register = () => {
       });
   };
 
-  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(event.target.value);
+  const handleChangeConfirm = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirm(event.target.value);
   };
 
   const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -199,8 +254,8 @@ const Register = () => {
     setPassword(event.target.value);
   };
 
-  const handleChangeConfirm = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirm(event.target.value);
+  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
   };
 
   return (
@@ -209,7 +264,7 @@ const Register = () => {
       <label htmlFor="username">
         Username:{" "}
         <input
-          id="name"
+          id="username"
           onChange={handleChangeUsername}
           type="text"
           value={username}
@@ -254,55 +309,28 @@ EOF
 
 git add $FILE
 
-FILE=src/components/ResetPassword.tsx
-
-cat > $FILE << EOF
-import React from "react";
-
-const ResetPassword = () => {
-  return <h1>ResetPassword</h1>;
-};
-
-export default ResetPassword;
-EOF
-
-git add $FILE
-
-FILE=src/components/VerifyEmail.tsx
-
-cat > $FILE << EOF
-import React from "react";
-
-const VerifyEmail = () => {
-  return <h1>VerifyEmail</h1>;
-};
-
-export default VerifyEmail;
-EOF
-
-git add $FILE
-
-FILE=src/components/VerifyReset.tsx
-
-cat > $FILE << EOF
-import React from "react";
-
-const VerifyReset = () => {
-  return <h1>VerifyReset</h1>;
-};
-
-export default VerifyReset;
-EOF
-
-git add $FILE
-
 FILE=src/index.tsx
 
-sed -i 's/    <App \/>/    <BrowserRouter>\
-      <App \/>\
-    <\/BrowserRouter>/' $FILE
-sed -i '/import reportWebVitals from "\.\/reportWebVitals";/a\
-import { BrowserRouter } from "react-router-dom";' $FILE
+cat > $FILE << EOF
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { BrowserRouter } from "react-router-dom";
+
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
+reportWebVitals();
+EOF
 
 git add $FILE
 
@@ -314,11 +342,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./components/Home";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
-import Profile from "./components/Profile";
 import Register from "./components/Register";
-import ResetPassword from "./components/ResetPassword";
-import VerifyEmail from "./components/VerifyEmail";
-import VerifyReset from "./components/VerifyReset";
 
 const Loading = () => <p>Loading ...</p>;
 
@@ -329,11 +353,7 @@ const Main = () => {
         <Route path="/" element={<Home />} />
         <Route path="/Login" element={<Login />} />
         <Route path="/Logout" element={<Logout />} />
-        <Route path="/Profile" element={<Profile />} />
         <Route path="/Register" element={<Register />} />
-        <Route path="/ResetPassword" element={<ResetPassword />} />
-        <Route path="/VerifyEmail" element={<VerifyEmail />} />
-        <Route path="/VerifyReset" element={<VerifyReset />} />
       </Routes>
     </React.Suspense>
   );
@@ -343,56 +363,6 @@ export default Main;
 EOF
 
 git add $FILE
-
-FILE=src/App.tsx
-
-cat > $FILE << EOF
-import React from "react";
-import { Link } from "react-router-dom";
-import Main from "./Main";
-
-function App() {
-  return (
-    <>
-      <div>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-          <li>
-            <Link to="/Login">Login</Link>
-          </li>
-          <li>
-            <Link to="/Logout">Logout</Link>
-          </li>
-          <li>
-            <Link to="/Profile">Profile</Link>
-          </li>
-          <li>
-            <Link to="/Register">Register</Link>
-          </li>
-          <li>
-            <Link to="/ResetPassword">ResetPassword</Link>
-          </li>
-          <li>
-            <Link to="/VerifyEmail">VerifyEmail</Link>
-          </li>
-          <li>
-            <Link to="/VerifyReset">VerifyReset</Link>
-          </li>
-        </ul>
-        <hr />
-        <Main />
-      </div>
-    </>
-  );
-}
-
-export default App;
-EOF
-
-git add $FILE
-
 git commit --message "Added user routes."
 
 npx prettier --write .

@@ -34,8 +34,8 @@ NAME=server
 # type - add json-rpc files
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY
 
-# framework - add local commands
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $PROJECT $REPOSITORY
+# type - add local commands
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_local_commands.sh $CLIENT $PROJECT $REPOSITORY
 
 # framework - add github actions
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_github_actions.sh $REPOSITORY

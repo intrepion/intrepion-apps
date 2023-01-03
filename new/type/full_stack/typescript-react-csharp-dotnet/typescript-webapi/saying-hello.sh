@@ -8,6 +8,7 @@ pushd .
 
 cd ..
 
+CLIENT="http://localhost:3000"
 FRAMEWORK=csharp-dotnet
 KEBOB=saying-hello
 PASCAL=SayingHello
@@ -100,6 +101,9 @@ cat > $FILE << EOF
   "ConnectionStrings": {  
     "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
   },
+  "JwtKey": "SOME_RANDOM_KEY_DO_NOT_SHARE",
+  "JwtIssuer": "http://yourdomain.com",
+  "JwtExpireDays": 30,
   "Logging": {
     "LogLevel": {
       "Default": "Information",
@@ -115,9 +119,11 @@ git commit --message "Updated app settings."
 FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SayingHelloLibrary.JsonRpc;
 using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Entities;
 using SayingHelloWebApi.JsonRpc;
 
 namespace SayingHelloWebApi.Controllers;
@@ -126,13 +132,25 @@ namespace SayingHelloWebApi.Controllers;
 [Route("/")]
 public class SayingHelloController : ControllerBase
 {
+    private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
     private readonly ILogger<SayingHelloController> _logger;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public SayingHelloController(ApplicationDbContext context, ILogger<SayingHelloController> logger)
+    public SayingHelloController(
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        ILogger<SayingHelloController> logger,
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager
+        )
     {
         _context = context;
+        _configuration = configuration;
         _logger = logger;
+        _signInManager = signInManager;
+        _userManager = userManager;
     }
 
     [HttpPost(Name = "PostSayingHello")]
@@ -144,7 +162,14 @@ public class SayingHelloController : ControllerBase
 
         var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
-        return await JsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary, _context);
+        return await JsonRpcService.ProcessRequest(
+            json,
+            FunctionCalls.Dictionary,
+            _configuration,
+            _context,
+            _signInManager,
+            _userManager
+        );
     }
 }
 EOF
@@ -163,7 +188,7 @@ using SayingHelloWebApi.Entities;
 
 namespace SayingHelloWebApi.Data;
 
-public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -181,8 +206,6 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>
     }
 
     public DbSet<Greeting> Greetings { get; set; }
-    public DbSet<Role> Roles { get; set; }
-    public DbSet<User> Users { get; set; }
 }
 EOF
 
@@ -234,6 +257,34 @@ git commit --message="Added data files."
 
 mkdir -p SayingHelloWebApi/Entities
 
+FILE=SayingHelloWebApi/Entities/ApplicationRole.cs
+
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+
+namespace SayingHelloWebApi.Entities;
+
+public class ApplicationRole : IdentityRole<Guid>
+{
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Entities/ApplicationUser.cs
+
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+
+namespace SayingHelloWebApi.Entities;
+
+public class ApplicationUser : IdentityUser<Guid>
+{
+}
+EOF
+
+git add $FILE
+
 FILE=SayingHelloWebApi/Entities/Greeting.cs
 
 cat > $FILE << EOF
@@ -251,34 +302,6 @@ public class Greeting
 
     [JsonPropertyName("message")]
     public string Message { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloWebApi/Entities/Role.cs
-
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Identity;
-
-namespace SayingHelloWebApi.Entities;
-
-public class Role : IdentityRole<Guid>
-{
-}
-EOF
-
-git add $FILE
-
-FILE=SayingHelloWebApi/Entities/User.cs
-
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Identity;
-
-namespace SayingHelloWebApi.Entities;
-
-public class User : IdentityUser<Guid>
-{
 }
 EOF
 
@@ -320,8 +343,8 @@ public static class FunctionCalls
             {
                 Parameters = new List<Parameter>
                 {
-                    new Parameter { Name = "password", Kind = "string" },
                     new Parameter { Name = "username", Kind = "string" },
+                    new Parameter { Name = "password", Kind = "string" },
                 }
             }
         },
@@ -361,9 +384,10 @@ git add $FILE
 FILE=SayingHelloWebApi/JsonRpc/JsonRpcService.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using SayingHelloLibrary.JsonRpc;
 using SayingHelloWebApi.Data;
-using SayingHelloWebApi.Params;
+using SayingHelloWebApi.Entities;
 using SayingHelloWebApi.Repositories;
 using System.Text.Json;
 
@@ -371,7 +395,14 @@ namespace SayingHelloWebApi.JsonRpc;
 
 public static class JsonRpcService
 {
-    public static async Task<JsonRpcResponse> ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls, ApplicationDbContext context)
+    public static async Task<JsonRpcResponse> ProcessRequest(
+        string json,
+        Dictionary<string, FunctionCall> functionCalls,
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager
+    )
     {
         if (string.IsNullOrEmpty(json) || double.TryParse(json, out _))
         {
@@ -381,8 +412,8 @@ public static class JsonRpcService
                 Error = new JsonRpcError
                 {
                     Code = -32600,
-                    Message = "Invalid Request - json is not found"
-                }
+                    Message = "Invalid Request - json is not found",
+                },
             };
         }
 
@@ -397,8 +428,8 @@ public static class JsonRpcService
                     Error = new JsonRpcError
                     {
                         Code = -32601,
-                        Message = "Method not found"
-                    }
+                        Message = "Method not found",
+                    },
                 };
             }
 
@@ -420,8 +451,8 @@ public static class JsonRpcService
                                 Error = new JsonRpcError
                                 {
                                     Code = -32602,
-                                    Message = "Invalid params - value is null"
-                                }
+                                    Message = "Invalid params - value is null",
+                                },
                             };
                         }
                         var parameter = functionCall.Parameters.First(p => p.Name == property.Name);
@@ -444,8 +475,8 @@ public static class JsonRpcService
                                 Error = new JsonRpcError
                                 {
                                     Code = -32602,
-                                    Message = "Invalid params - value is not of the correct type"
-                                }
+                                    Message = "Invalid params - value is not of the correct type",
+                                },
                             };
                         }
                     }
@@ -453,15 +484,15 @@ public static class JsonRpcService
             }
 
             if (request.Method == "get_all_greetings") {
-                return await GreetingRepository.GetAllGreetingsAsync(context, request);
+                return await GreetingRepository.GetAllGreetingsAsync(request, context);
             } else if (request.Method == "login") {
-                return await UserRepository.LoginAsync(context, request);
+                return await UserRepository.LoginAsync(request, configuration, context, signInManager, userManager);
             } else if (request.Method == "logout") {
-                return await UserRepository.LogoutAsync(context, request);
+                return await UserRepository.LogoutAsync(request, context);
             } else if (request.Method == "new_greeting") {
-                return await GreetingRepository.NewGreetingAsync(context, request);
+                return await GreetingRepository.NewGreetingAsync(request, context);
             } else if (request.Method == "register") {
-                return await UserRepository.RegisterAsync(context, request);
+                return await UserRepository.RegisterAsync(request, context, userManager);
             }
 
         } catch (JsonException) {
@@ -471,18 +502,19 @@ public static class JsonRpcService
                 Error = new JsonRpcError
                 {
                     Code = -32700,
-                    Message = "Parse error"
-                }
+                    Message = "Parse error",
+                },
             };
-        } catch (Exception) {
+        } catch (Exception exception) {
             return new JsonRpcResponse
             {
                 JsonRpc = "2.0",
                 Error = new JsonRpcError
                 {
                     Code = -32602,
-                    Message = "Invalid Request - internal error"
-                }
+                    Message = "Invalid Request - internal error",
+                    Data = exception,
+                },
             };
         }
 
@@ -492,7 +524,7 @@ public static class JsonRpcService
             Error = new JsonRpcError
             {
                 Code = -32600,
-                Message = "Invalid Request"
+                Message = "Invalid Request",
             }
         };
     }
@@ -532,7 +564,7 @@ public class LoginParams
     public string Password { get; set; }
 
     [JsonPropertyName("username")]
-    public string Username { get; set; }
+    public string UserName { get; set; }
 }
 EOF
 
@@ -587,26 +619,52 @@ SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 FILE=SayingHelloWebApi/Program.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SayingHelloWebApi.Data;
 using SayingHelloWebApi.Entities;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
     throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddIdentity<User, Role>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        
+    })
+    .AddJwtBearer(cfg =>
+    {
+        cfg.RequireHttpsMetadata = false;
+        cfg.SaveToken = true;
+        cfg.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["JwtIssuer"],
+            ValidAudience = builder.Configuration["JwtIssuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtKey"])),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -627,7 +685,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -639,9 +696,6 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
 
     var context = services.GetRequiredService<ApplicationDbContext>();
-    // Note: if you're having trouble with EF, database schema, etc.,
-    // uncomment the line below to re-create the database upon each run.
-    //context.Database.EnsureDeleted();
     context.Database.EnsureCreated();
     DBInitializer.Initialize(context);
 }
@@ -681,7 +735,7 @@ namespace SayingHelloWebApi.Repositories;
 
 public static class GreetingRepository
 {
-    public static async Task<JsonRpcResponse> GetAllGreetingsAsync(ApplicationDbContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> GetAllGreetingsAsync(JsonRpcRequest request, ApplicationDbContext context)
     {
         var greetings = await context.Greetings.ToListAsync();
 
@@ -696,7 +750,7 @@ public static class GreetingRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> NewGreetingAsync(ApplicationDbContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> NewGreetingAsync(JsonRpcRequest request, ApplicationDbContext context)
     {
         var newGreetingParams = JsonSerializer.Deserialize<NewGreetingParams>(request.Params.GetRawText());
         var name = newGreetingParams.Name.Trim();
@@ -743,41 +797,69 @@ git add $FILE
 FILE=SayingHelloWebApi/Repositories/UserRepository.cs
 
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using SayingHelloLibrary.JsonRpc;
 using SayingHelloWebApi.Data;
+using SayingHelloWebApi.Entities;
 using SayingHelloWebApi.Params;
 using SayingHelloWebApi.Results;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace SayingHelloWebApi.Repositories;
 
 public static class UserRepository
 {
-    public static async Task<JsonRpcResponse> LoginAsync(ApplicationDbContext context, JsonRpcRequest request)
+    private static async Task<object> GenerateJwtToken(string userName, ApplicationUser user, IConfiguration configuration)
     {
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, userName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtKey"]));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expires = DateTime.Now.AddDays(Convert.ToDouble(configuration["JwtExpireDays"]));
+
+        var token = new JwtSecurityToken(
+            configuration["JwtIssuer"],
+            configuration["JwtIssuer"],
+            claims,
+            expires: expires,
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    
+    public static async Task<JsonRpcResponse> LoginAsync(
+        JsonRpcRequest request,
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager
+    ) {
         var loginParams = JsonSerializer.Deserialize<LoginParams>(request.Params.GetRawText());
+        var userName = loginParams.UserName.Trim();
         var password = loginParams.Password;
-        var username = loginParams.Username.Trim();
 
-        if (password.Length < 8) {
+        var result = await signInManager.PasswordSignInAsync(userName, password, false, false);
+
+        if (result.Succeeded)
+        {
+            var appUser = userManager.Users.SingleOrDefault(r => r.UserName == userName);
+            var jwtToken = await GenerateJwtToken(userName, appUser, configuration);
+
             return new JsonRpcResponse {
                 Id = request.Id,
                 JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Password must be at least 8 characters.",
-                },
-            };
-        }
-
-        if (username.Length < 1) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 3,
-                    Message = "Username must be at least 1 character.",
+                Result = new LoginResult {
+                    Token = jwtToken,
                 },
             };
         }
@@ -785,11 +867,15 @@ public static class UserRepository
         return new JsonRpcResponse {
             Id = request.Id,
             JsonRpc = request.JsonRpc,
-            Result = new LoginResult {},
+            Error = new JsonRpcError {
+                Code = 7,
+                Message = "Invalid login attempt.",
+                Data = result,
+            },
         };
     }
 
-    public static async Task<JsonRpcResponse> LogoutAsync(ApplicationDbContext context, JsonRpcRequest request)
+    public static async Task<JsonRpcResponse> LogoutAsync(JsonRpcRequest request, ApplicationDbContext context)
     {
         return new JsonRpcResponse {
             Id = request.Id,
@@ -797,13 +883,16 @@ public static class UserRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> RegisterAsync(ApplicationDbContext context, JsonRpcRequest request)
-    {
+    public static async Task<JsonRpcResponse> RegisterAsync(
+        JsonRpcRequest request,
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager
+    ) {
         var registerParams = JsonSerializer.Deserialize<RegisterParams>(request.Params.GetRawText());
         var confirm = registerParams.Confirm;
         var email = registerParams.Email.Trim();
         var password = registerParams.Password;
-        var username = registerParams.Username.Trim();
+        var userName = registerParams.Username.Trim();
 
         if (confirm != password) {
             return new JsonRpcResponse {
@@ -816,53 +905,29 @@ public static class UserRepository
             };
         }
 
-        if (password.Length < 8) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Password must be at least 8 characters.",
-                },
-            };
-        }
+        var user = new ApplicationUser {
+            Email = email,
+            UserName = userName,
+        };
 
-        if (username.Length < 1) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 3,
-                    Message = "Username must be at least 1 character.",
-                },
-            };
-        }
+        var result = await userManager.CreateAsync(user, password);
 
-        if (email.Length < 1) {
+        if (result.Succeeded)
+        {
             return new JsonRpcResponse {
                 Id = request.Id,
                 JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 4,
-                    Message = "Email must be at least 1 character.",
-                },
-            };
-        }
-
-        if (!Regex.Match(email, "^.*@.*[.].*$").Success) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 5,
-                    Message = "Email must have an amperat and a period.",
-                },
             };
         }
 
         return new JsonRpcResponse {
             Id = request.Id,
             JsonRpc = request.JsonRpc,
+            Error = new JsonRpcError {
+                Code = 6,
+                Message = "User could not be created.",
+                Data = result,
+            },
         };
     }
 }
@@ -897,6 +962,7 @@ namespace SayingHelloWebApi.Results;
 
 public class LoginResult
 {
+    public object Token { get; set; }
 }
 EOF
 
@@ -933,7 +999,7 @@ TEMPLATE=typescript
 REPOSITORY=intrepion-$KEBOB-json-rpc-client-web-$FRAMEWORK-$TEMPLATE
 
 # framework - the works
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $REPOSITORY $TEMPLATE
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE
 
 # project - add saying hello
 cd $REPOSITORY
@@ -948,7 +1014,7 @@ import SayingHello from "./SayingHello";
 const Home = () => {
   return (
     <>
-      <p>Home</p>
+      <h1>Home</h1>
       <SayingHello />
     </>
   );
@@ -964,6 +1030,7 @@ FILE=src/components/SayingHello.tsx
 cat > $FILE << EOF
 import React, { useEffect, useState } from "react";
 import Greeting from "./Greeting";
+import { v4 } from "uuid";
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
 
@@ -983,7 +1050,7 @@ const SayingHello: React.FC = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id: "1",
+        id: v4(),
         jsonrpc: "2.0",
         method: "get_all_greetings",
       }),
@@ -1012,7 +1079,7 @@ const SayingHello: React.FC = () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        id: "1",
+        id: v4(),
         jsonrpc: "2.0",
         method: "new_greeting",
         params: { name },
@@ -1030,6 +1097,7 @@ const SayingHello: React.FC = () => {
 
   return (
     <div>
+      <h2>Saying Hello</h2>
       <input type="text" value={name} onChange={handleChange} />
       <button onClick={callSayHello}>Say Hello</button>
       <div>{message}</div>

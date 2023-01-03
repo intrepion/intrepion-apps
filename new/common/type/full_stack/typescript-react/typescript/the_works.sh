@@ -5,7 +5,7 @@ FRAMEWORK=$1
 REPOSITORY=$2
 TEMPLATE=$3
 
-echo "Running $SCRIPT $FRAMEWORK $REPOSITORY $TEMPLATE"
+echo "Running $SCRIPT $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE"
 
 pushd .
 
@@ -26,8 +26,8 @@ NAME=client-web
 # type - add user routes
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_user_routes.sh $REPOSITORY
 
-# framework - add local commands
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_local_commands.sh $REPOSITORY
+# type - add local commands
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_local_commands.sh $REPOSITORY $SERVER
 
 # framework - add digital ocean files
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $REPOSITORY
