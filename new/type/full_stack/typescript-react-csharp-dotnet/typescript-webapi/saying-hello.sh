@@ -98,7 +98,7 @@ FILE=SayingHelloWebApi/appsettings.Development.json
 cat > $FILE << EOF
 {
   "ConnectionStrings": {  
-    "DefaultConnection": "Host=localhost;Database=intrepion;Username=postgres;Password=password"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
   },
   "Logging": {
     "LogLevel": {
@@ -792,6 +792,8 @@ const Greeting = (props: GreetingInterface) => {
 
 export default Greeting;
 EOF
+
+git add $FILE
 
 npx prettier --write .
 git commit --message "Added saying hello form."
