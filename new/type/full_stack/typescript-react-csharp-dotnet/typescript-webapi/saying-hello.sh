@@ -260,17 +260,11 @@ FILE=SayingHelloWebApi/Entities/Role.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using System.Text.Json.Serialization;
 
 namespace SayingHelloWebApi.Entities;
 
 public class Role : IdentityRole<Guid>
 {
-    [JsonPropertyName("id")]
-    public Guid Id { get; set; }
-
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
 }
 EOF
 
@@ -280,44 +274,11 @@ FILE=SayingHelloWebApi/Entities/User.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using System.Text.Json.Serialization;
 
 namespace SayingHelloWebApi.Entities;
 
 public class User : IdentityUser<Guid>
 {
-    [JsonPropertyName("id")]
-    public Guid Id { get; set; }
-
-    [JsonPropertyName("email")]
-    public string Email { get; set; }
-
-    [JsonPropertyName("email_verified")]
-    public string EmailVerified { get; set; }
-
-    [JsonPropertyName("password")]
-    public string Password { get; set; }
-
-    [JsonPropertyName("password_verified")]
-    public string PasswordVerified { get; set; }
-
-    [JsonPropertyName("registered_when")]
-    public DateTime RegisteredWhen { get; set; }
-
-    [JsonPropertyName("username")]
-    public string Username { get; set; }
-
-    [JsonPropertyName("verify_email")]
-    public string VerifyEmail { get; set; }
-
-    [JsonPropertyName("verify_email_expiration")]
-    public DateTime VerifyEmailExpiration { get; set; }
-
-    [JsonPropertyName("verify_password")]
-    public string VerifyPassword { get; set; }
-
-    [JsonPropertyName("verify_password_expiration")]
-    public DateTime VerifyPasswordExpiration { get; set; }
 }
 EOF
 
@@ -640,7 +601,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddIdentity<User, Role>()
+builder.Services.AddIdentity<User, Role>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
