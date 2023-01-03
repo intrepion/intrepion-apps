@@ -119,11 +119,8 @@ git commit --message "Updated app settings."
 FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
 
 cat > $FILE << EOF
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SayingHelloLibrary.JsonRpc;
-using SayingHelloWebApi.Data;
-using SayingHelloWebApi.Entities;
 using SayingHelloWebApi.JsonRpc;
 
 namespace SayingHelloWebApi.Controllers;
@@ -132,25 +129,16 @@ namespace SayingHelloWebApi.Controllers;
 [Route("/")]
 public class SayingHelloController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
-    private readonly ApplicationDbContext _context;
+    private readonly IJsonRpcService _jsonRpcService;
     private readonly ILogger<SayingHelloController> _logger;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly UserManager<ApplicationUser> _userManager;
 
     public SayingHelloController(
-        IConfiguration configuration,
-        ApplicationDbContext context,
-        ILogger<SayingHelloController> logger,
-        SignInManager<ApplicationUser> signInManager,
-        UserManager<ApplicationUser> userManager
+        IJsonRpcService jsonRpcService,
+        ILogger<SayingHelloController> logger
         )
     {
-        _context = context;
-        _configuration = configuration;
+        _jsonRpcService = jsonRpcService;
         _logger = logger;
-        _signInManager = signInManager;
-        _userManager = userManager;
     }
 
     [HttpPost(Name = "PostSayingHello")]
@@ -162,14 +150,7 @@ public class SayingHelloController : ControllerBase
 
         var json = await new StreamReader(Request.Body).ReadToEndAsync();
 
-        return await JsonRpcService.ProcessRequest(
-            json,
-            FunctionCalls.Dictionary,
-            _configuration,
-            _context,
-            _signInManager,
-            _userManager
-        );
+        return await _jsonRpcService.ProcessRequest(json, FunctionCalls.Dictionary);
     }
 }
 EOF
@@ -381,6 +362,22 @@ EOF
 
 git add $FILE
 
+FILE=SayingHelloWebApi/JsonRpc/IJsonRpcService.cs
+
+cat > $FILE << EOF
+using SayingHelloLibrary.JsonRpc;
+
+namespace SayingHelloWebApi.JsonRpc
+{
+    public interface IJsonRpcService : IDisposable
+    {
+        Task<JsonRpcResponse> ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls);
+    }
+}
+EOF
+
+git add $FILE
+
 FILE=SayingHelloWebApi/JsonRpc/JsonRpcService.cs
 
 cat > $FILE << EOF
@@ -393,16 +390,33 @@ using System.Text.Json;
 
 namespace SayingHelloWebApi.JsonRpc;
 
-public static class JsonRpcService
+public class JsonRpcService : IJsonRpcService, IDisposable
 {
-    public static async Task<JsonRpcResponse> ProcessRequest(
-        string json,
-        Dictionary<string, FunctionCall> functionCalls,
+    private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
+    private readonly IGreetingRepository _greetingRepository;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserRepository _userRepository;
+
+    public JsonRpcService(
         IConfiguration configuration,
         ApplicationDbContext context,
+        IGreetingRepository greetingRepository,
         SignInManager<ApplicationUser> signInManager,
-        UserManager<ApplicationUser> userManager
-    )
+        UserManager<ApplicationUser> userManager,
+        IUserRepository userRepository
+        )
+    {
+        _context = context;
+        _configuration = configuration;
+        _greetingRepository = greetingRepository;
+        _signInManager = signInManager;
+        _userManager = userManager;
+        _userRepository = userRepository;
+    }
+
+    public async Task<JsonRpcResponse> ProcessRequest(string json, Dictionary<string, FunctionCall> functionCalls)
     {
         if (string.IsNullOrEmpty(json) || double.TryParse(json, out _))
         {
@@ -484,15 +498,15 @@ public static class JsonRpcService
             }
 
             if (request.Method == "get_all_greetings") {
-                return await GreetingRepository.GetAllGreetingsAsync(request, context);
+                return await _greetingRepository.GetAllGreetingsAsync(request);
             } else if (request.Method == "login") {
-                return await UserRepository.LoginAsync(request, configuration, context, signInManager, userManager);
+                return await _userRepository.LoginAsync(request);
             } else if (request.Method == "logout") {
-                return await UserRepository.LogoutAsync(request, context);
+                return await _userRepository.LogoutAsync(request);
             } else if (request.Method == "new_greeting") {
-                return await GreetingRepository.NewGreetingAsync(request, context);
+                return await _greetingRepository.NewGreetingAsync(request);
             } else if (request.Method == "register") {
-                return await UserRepository.RegisterAsync(request, context, userManager);
+                return await _userRepository.RegisterAsync(request);
             }
 
         } catch (JsonException) {
@@ -527,6 +541,26 @@ public static class JsonRpcService
                 Message = "Invalid Request",
             }
         };
+    }
+
+    private bool disposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+        }
+        this.disposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
 EOF
@@ -733,11 +767,18 @@ using System.Text.Json;
 
 namespace SayingHelloWebApi.Repositories;
 
-public static class GreetingRepository
+public class GreetingRepository : IGreetingRepository, IDisposable
 {
-    public static async Task<JsonRpcResponse> GetAllGreetingsAsync(JsonRpcRequest request, ApplicationDbContext context)
+    private readonly ApplicationDbContext _context;
+
+    public GreetingRepository(ApplicationDbContext context)
     {
-        var greetings = await context.Greetings.ToListAsync();
+        _context = context;
+    }
+
+    public async Task<JsonRpcResponse> GetAllGreetingsAsync(JsonRpcRequest request)
+    {
+        var greetings = await _context.Greetings.ToListAsync();
 
         return new JsonRpcResponse
         {
@@ -750,12 +791,12 @@ public static class GreetingRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> NewGreetingAsync(JsonRpcRequest request, ApplicationDbContext context)
+    public async Task<JsonRpcResponse> NewGreetingAsync(JsonRpcRequest request)
     {
         var newGreetingParams = JsonSerializer.Deserialize<NewGreetingParams>(request.Params.GetRawText());
         var name = newGreetingParams.Name.Trim();
 
-        var greeting = await context.Greetings.Where(greeting => greeting.Name == name).FirstOrDefaultAsync();
+        var greeting = await _context.Greetings.Where(greeting => greeting.Name == name).FirstOrDefaultAsync();
         if (greeting != null) {
             return new JsonRpcResponse
             {
@@ -776,8 +817,8 @@ public static class GreetingRepository
             Message = message,
         };
 
-        await context.AddAsync(greeting);
-        context.SaveChanges();
+        await _context.AddAsync(greeting);
+        _context.SaveChanges();
 
         return new JsonRpcResponse
         {
@@ -788,6 +829,61 @@ public static class GreetingRepository
                 Message = message
             },
         };
+    }
+
+    private bool disposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+        }
+        this.disposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Repositories/IGreetingRepository.cs
+
+cat > $FILE << EOF
+using SayingHelloLibrary.JsonRpc;
+
+namespace SayingHelloWebApi.Repositories
+{
+    public interface IGreetingRepository : IDisposable
+    {
+        Task<JsonRpcResponse> GetAllGreetingsAsync(JsonRpcRequest request);
+        Task<JsonRpcResponse> NewGreetingAsync(JsonRpcRequest request);
+    }
+}
+EOF
+
+git add $FILE
+
+FILE=SayingHelloWebApi/Repositories/IUserRepository.cs
+
+cat > $FILE << EOF
+using SayingHelloLibrary.JsonRpc;
+
+namespace SayingHelloWebApi.Repositories
+{
+    public interface IUserRepository : IDisposable
+    {
+        Task<JsonRpcResponse> LoginAsync(JsonRpcRequest request);
+        Task<JsonRpcResponse> LogoutAsync(JsonRpcRequest request);
+        Task<JsonRpcResponse> RegisterAsync(JsonRpcRequest request);
     }
 }
 EOF
@@ -811,9 +907,27 @@ using System.Text.Json;
 
 namespace SayingHelloWebApi.Repositories;
 
-public static class UserRepository
+public class UserRepository : IUserRepository, IDisposable
 {
-    private static async Task<object> GenerateJwtToken(string userName, ApplicationUser user, IConfiguration configuration)
+    private readonly IConfiguration _configuration;
+    private readonly ApplicationDbContext _context;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public UserRepository(
+        IConfiguration configuration,
+        ApplicationDbContext context,
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager
+        )
+    {
+        _context = context;
+        _configuration = configuration;
+        _signInManager = signInManager;
+        _userManager = userManager;
+    }
+
+    private async Task<object> GenerateJwtToken(string userName, ApplicationUser user)
     {
         var claims = new List<Claim>
         {
@@ -822,13 +936,13 @@ public static class UserRepository
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtKey"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.Now.AddDays(Convert.ToDouble(configuration["JwtExpireDays"]));
+        var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
 
         var token = new JwtSecurityToken(
-            configuration["JwtIssuer"],
-            configuration["JwtIssuer"],
+            _configuration["JwtIssuer"],
+            _configuration["JwtIssuer"],
             claims,
             expires: expires,
             signingCredentials: creds
@@ -837,23 +951,18 @@ public static class UserRepository
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    public static async Task<JsonRpcResponse> LoginAsync(
-        JsonRpcRequest request,
-        IConfiguration configuration,
-        ApplicationDbContext context,
-        SignInManager<ApplicationUser> signInManager,
-        UserManager<ApplicationUser> userManager
-    ) {
+    public async Task<JsonRpcResponse> LoginAsync(JsonRpcRequest request)
+    {
         var loginParams = JsonSerializer.Deserialize<LoginParams>(request.Params.GetRawText());
         var userName = loginParams.UserName.Trim();
         var password = loginParams.Password;
 
-        var result = await signInManager.PasswordSignInAsync(userName, password, false, false);
+        var result = await _signInManager.PasswordSignInAsync(userName, password, false, false);
 
         if (result.Succeeded)
         {
-            var appUser = userManager.Users.SingleOrDefault(r => r.UserName == userName);
-            var jwtToken = await GenerateJwtToken(userName, appUser, configuration);
+            var appUser = _userManager.Users.SingleOrDefault(r => r.UserName == userName);
+            var jwtToken = await GenerateJwtToken(userName, appUser);
 
             return new JsonRpcResponse {
                 Id = request.Id,
@@ -875,7 +984,7 @@ public static class UserRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> LogoutAsync(JsonRpcRequest request, ApplicationDbContext context)
+    public async Task<JsonRpcResponse> LogoutAsync(JsonRpcRequest request)
     {
         return new JsonRpcResponse {
             Id = request.Id,
@@ -883,11 +992,8 @@ public static class UserRepository
         };
     }
 
-    public static async Task<JsonRpcResponse> RegisterAsync(
-        JsonRpcRequest request,
-        ApplicationDbContext context,
-        UserManager<ApplicationUser> userManager
-    ) {
+    public async Task<JsonRpcResponse> RegisterAsync(JsonRpcRequest request)
+    {
         var registerParams = JsonSerializer.Deserialize<RegisterParams>(request.Params.GetRawText());
         var confirm = registerParams.Confirm;
         var email = registerParams.Email.Trim();
@@ -910,7 +1016,7 @@ public static class UserRepository
             UserName = userName,
         };
 
-        var result = await userManager.CreateAsync(user, password);
+        var result = await _userManager.CreateAsync(user, password);
 
         if (result.Succeeded)
         {
@@ -929,6 +1035,26 @@ public static class UserRepository
                 Data = result,
             },
         };
+    }
+
+    private bool disposed = false;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+        }
+        this.disposed = true;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
 EOF
