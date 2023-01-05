@@ -10,97 +10,226 @@ cd ..
 pwd
 
 CLIENT="http://localhost:3000"
-FRAMEWORK=csharp-dotnet
-KEBOB=saying-hello
-PASCAL=SayingHello
-TEMPLATE=webapi
+CLIENT_FRAMEWORK=typescript-react
+CLIENT_TEMPLATE=typescript
+KEBOB=to-do
+PASCAL=ToDo
+SERVER_FRAMEWORK=csharp-dotnet
+SERVER_TEMPLATE=webapi
 
+CLIENT_REPOSITORY=intrepion-$KEBOB-json-rpc-client-web-$CLIENT_FRAMEWORK-$CLIENT_TEMPLATE
+FRAMEWORK=$SERVER_FRAMEWORK
 PROJECT=${PASCAL}WebApi
+SERVER_REPOSITORY=intrepion-$KEBOB-json-rpc-server-$SERVER_FRAMEWORK-$SERVER_TEMPLATE
+TEMPLATE=$SERVER_TEMPLATE
 
-REPOSITORY=intrepion-$KEBOB-json-rpc-server-$FRAMEWORK-$TEMPLATE
+REPOSITORY=$SERVER_REPOSITORY
 
 # framework - the works
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/$TEMPLATE/the_works.sh $CLIENT $FRAMEWORK $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
-# project - add saying hello
+# project - add to do
 cd $REPOSITORY
 pwd
 
-mkdir -p SayingHelloTests/Domain
+mkdir -p ToDoTests/Domain
 
-FILE=SayingHelloTests/Domain/SayingHelloTest.cs
+FILE=ToDoTests/Domain/ToDoItemTest.cs
 
 cat > $FILE << EOF
-using SayingHelloLibrary.Domain;
+using ToDoLibrary.Domain;
 
-namespace SayingHelloTests.Domain;
+namespace ToDoTests.Domain;
 
-public class SayingHelloTest
+public class ToDoItemTest
 {
     [Theory]
-    [InlineData("", "Hello, world!")]
-    [InlineData("James", "Hello, James!")]
-    [InlineData("Oliver", "Hello, Oliver!")]
-    public void TestSayHelloHappyPath(string name, string expected)
+    [InlineData("", "make a to do list")]
+    [InlineData("do the dishes", "do the dishes")]
+    [InlineData("take out the trash", "take out the trash")]
+    public void TestToDoItem_CreateToDoItem_HappyPath(string actualText, string expectedText)
     {
         // Arrange
+        var expected = new ToDoItem {
+            Complete = false,
+            Text = expectedText,
+            Visible = true,
+        };
+
         // Act
-        var actual = SayingHello.SayHello(name);
+        var actual = ToDoItem.CreateToDoItem(actualText);
 
         // Assert
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.Complete, actual.Complete);
+        Assert.Equal(expected.Text, actual.Text);
+        Assert.Equal(expected.Visible, actual.Visible);
     }
 
     [Theory]
-    [InlineData("   ", "Hello, world!")]
-    [InlineData("Oliver  ", "Hello, Oliver!")]
-    [InlineData("   Oliver", "Hello, Oliver!")]
-    [InlineData("  Oliver ", "Hello, Oliver!")]
-    public void TestSayHelloUnhappyPath(string name, string expected)
+    [InlineData("   do the dishes", "do the dishes")]
+    [InlineData("take out the trash   ", "take out the trash")]
+    public void TestToDoItem_CreateToDoItem_TrimsText(string actualText, string expectedText)
     {
         // Arrange
+        var expected = new ToDoItem {
+            Complete = false,
+            Visible = true,
+            Text = expectedText,
+        };
+
         // Act
-        var actual = SayingHello.SayHello(name);
+        var actual = ToDoItem.CreateToDoItem(actualText);
 
         // Assert
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.Complete, actual.Complete);
+        Assert.Equal(expected.Text, actual.Text);
+        Assert.Equal(expected.Visible, actual.Visible);
+    }
+
+    [Fact]
+    public void TestToDoItem_MakeComplete() {
+        // Arrange
+        var expected = new ToDoItem {
+            Complete = true,
+            Visible = true,
+            Text = "do the dishes",
+        };
+
+        // Act
+        var actual = ToDoItem.CreateToDoItem("do the dishes");
+        actual.MakeComplete();
+
+        // Assert
+        Assert.Equal(expected.Complete, actual.Complete);
+        Assert.Equal(expected.Text, actual.Text);
+        Assert.Equal(expected.Visible, actual.Visible);
+    }
+
+    [Fact]
+    public void TestToDoItem_MakeHidden() {
+        // Arrange
+        var expected = new ToDoItem {
+            Complete = false,
+            Visible = false,
+            Text = "do the dishes",
+        };
+
+        // Act
+        var actual = ToDoItem.CreateToDoItem("do the dishes");
+        actual.MakeHidden();
+
+        // Assert
+        Assert.Equal(expected.Complete, actual.Complete);
+        Assert.Equal(expected.Text, actual.Text);
+        Assert.Equal(expected.Visible, actual.Visible);
+    }
+
+    [Fact]
+    public void TestToDoItem_Complete_ThenMakeIncomplete() {
+        // Arrange
+        var expected = new ToDoItem {
+            Complete = false,
+            Visible = true,
+            Text = "do the dishes",
+        };
+
+        // Act
+        var actual = ToDoItem.CreateToDoItem("do the dishes");
+        actual.MakeComplete();
+        actual.MakeIncomplete();
+
+        // Assert
+        Assert.Equal(expected.Complete, actual.Complete);
+        Assert.Equal(expected.Text, actual.Text);
+        Assert.Equal(expected.Visible, actual.Visible);
+    }
+
+    [Fact]
+    public void TestToDoItem_MakeHidden_ThenMakeVisible() {
+        // Arrange
+        var expected = new ToDoItem {
+            Complete = false,
+            Visible = true,
+            Text = "do the dishes",
+        };
+
+        // Act
+        var actual = ToDoItem.CreateToDoItem("do the dishes");
+        actual.MakeHidden();
+        actual.MakeVisible();
+
+        // Assert
+        Assert.Equal(expected.Complete, actual.Complete);
+        Assert.Equal(expected.Text, actual.Text);
+        Assert.Equal(expected.Visible, actual.Visible);
     }
 }
 EOF
 
 git add $FILE
-git commit --message="Added saying hello tests."
+git commit --message="Added to do tests."
 
-mkdir -p SayingHelloLibrary/Domain
+mkdir -p ToDoLibrary/Domain
 
-FILE=SayingHelloLibrary/Domain/SayingHello.cs
+FILE=ToDoLibrary/Domain/ToDoItem.cs
 
 cat > $FILE << EOF
-namespace SayingHelloLibrary.Domain;
+using System.Text.Json.Serialization;
 
-static public class SayingHello
+namespace ToDoLibrary.Domain;
+
+public class ToDoItem
 {
-    static public string SayHello(string name) {
-        name = name.Trim();
+    [JsonPropertyName("complete")]
+    public bool Complete { get; set; }
 
-        if (string.IsNullOrEmpty(name)) {
-            name = "world";
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
+
+    [JsonPropertyName("visible")]
+    public bool Visible { get; set; }
+
+    public static ToDoItem CreateToDoItem(string text) {
+        text = text.Trim();
+
+        if (string.IsNullOrEmpty(text)) {
+            text = "make a to do list";
         }
 
-        return $"Hello, {name}!";
+        return new ToDoItem() {
+            Complete = false,
+            Text = text,
+            Visible = true,
+        };
     }
+
+    public void MakeComplete() {
+        Complete = true;
+    }
+
+    public void MakeHidden() {
+        Visible = false;
+    }
+
+    public void MakeIncomplete() {
+        Complete = false;
+    }
+
+    public void MakeVisible() {
+        Visible = true;
+    }    
 }
 EOF
 
 git add $FILE
-git commit --message="Added saying hello code."
+git commit --message="Added to do code."
 
-FILE=SayingHelloWebApi/appsettings.Development.json
+FILE=ToDoWebApi/appsettings.Development.json
 
 cat > $FILE << EOF
 {
   "ConnectionStrings": {  
-    "DefaultConnection": "Host=localhost;Port=5432;Database=$KEBOB;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
   },
   "JwtKey": "SOME_RANDOM_KEY_DO_NOT_SHARE",
   "JwtIssuer": "http://yourdomain.com",
@@ -116,7 +245,7 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/appsettings.json
+FILE=ToDoWebApi/appsettings.json
 
 cat > $FILE << EOF
 {
@@ -134,32 +263,32 @@ EOF
 git add $FILE
 git commit --message "Updated app settings."
 
-FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
+FILE=ToDoWebApi/Controllers/ToDoController.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
-using SayingHelloLibrary.JsonRpc;
-using SayingHelloWebApi.JsonRpc;
+using ToDoLibrary.JsonRpc;
+using ToDoWebApi.JsonRpc;
 
-namespace SayingHelloWebApi.Controllers;
+namespace ToDoWebApi.Controllers;
 
 [ApiController]
 [Route("/")]
-public class SayingHelloController : ControllerBase
+public class ToDoController : ControllerBase
 {
     private readonly IJsonRpcService _jsonRpcService;
-    private readonly ILogger<SayingHelloController> _logger;
+    private readonly ILogger<ToDoController> _logger;
 
-    public SayingHelloController(
+    public ToDoController(
         IJsonRpcService jsonRpcService,
-        ILogger<SayingHelloController> logger
+        ILogger<ToDoController> logger
         )
     {
         _jsonRpcService = jsonRpcService;
         _logger = logger;
     }
 
-    [HttpPost(Name = "PostSayingHello")]
+    [HttpPost(Name = "PostToDo")]
     public async Task<JsonRpcResponse> Post()
     {
         Request.EnableBuffering();
@@ -174,18 +303,18 @@ public class SayingHelloController : ControllerBase
 EOF
 
 git add $FILE
-git commit --message="Added saying hello controller."
+git commit --message="Added to do controller."
 
-mkdir -p SayingHelloWebApi/Data
+mkdir -p ToDoWebApi/Data
 
-FILE=SayingHelloWebApi/Data/ApplicationDbContext.cs
+FILE=ToDoWebApi/Data/ApplicationDbContext.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using SayingHelloWebApi.Entities;
+using ToDoWebApi.Entities;
 
-namespace SayingHelloWebApi.Data;
+namespace ToDoWebApi.Data;
 
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 {
@@ -198,55 +327,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-
-        builder.Entity<Greeting>(greeting => {
-            greeting.HasIndex(g => g.Name).IsUnique();
-        });
     }
 
-    public DbSet<Greeting> Greetings { get; set; }
+    public DbSet<ToDoItemEntity> ToDoItems { get; set; }
 }
 EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Data/DbInitializer.cs
+FILE=ToDoWebApi/Data/DbInitializer.cs
 
 cat > $FILE << EOF
-using SayingHelloWebApi.Entities;
-
-namespace SayingHelloWebApi.Data;
+namespace ToDoWebApi.Data;
 
 public static class DbInitializer
 {
     public static void Initialize(ApplicationDbContext context)
     {
-        if (context.Greetings.Any())
-        {
-            return;
-        }
-
-        var greetings = new Greeting[]
-        {
-            new Greeting
-            {
-                Message = "Hello, world!",
-                Name = "",
-            },
-            new Greeting
-            {
-                Message = "Hello, Oliver!",
-                Name = "Oliver",
-            },
-            new Greeting
-            {
-                Message = "Hello, James!",
-                Name = "James",
-            },
-        };
-
-        context.Greetings.AddRange(greetings);
-        context.SaveChanges();
     }
 }
 EOF
@@ -254,14 +351,14 @@ EOF
 git add $FILE
 git commit --message="Added data files."
 
-mkdir -p SayingHelloWebApi/Entities
+mkdir -p ToDoWebApi/Entities
 
-FILE=SayingHelloWebApi/Entities/ApplicationRole.cs
+FILE=ToDoWebApi/Entities/ApplicationRole.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 
-namespace SayingHelloWebApi.Entities;
+namespace ToDoWebApi.Entities;
 
 public class ApplicationRole : IdentityRole<Guid>
 {
@@ -270,12 +367,12 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Entities/ApplicationUser.cs
+FILE=ToDoWebApi/Entities/ApplicationUser.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 
-namespace SayingHelloWebApi.Entities;
+namespace ToDoWebApi.Entities;
 
 public class ApplicationUser : IdentityUser<Guid>
 {
@@ -284,35 +381,33 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Entities/Greeting.cs
+FILE=ToDoWebApi/Entities/ToDoItemEntity.cs
 
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
+using ToDoLibrary.Domain;
 
-namespace SayingHelloWebApi.Entities;
+namespace ToDoWebApi.Entities;
 
-public class Greeting
+public class ToDoItemEntity : ToDoItem
 {
     [JsonPropertyName("id")]
     public Guid Id { get; set; }
 
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
-
-    [JsonPropertyName("message")]
-    public string Message { get; set; }
+    [JsonPropertyName("guid")]
+    public Guid Guid { get; set; }
 }
 EOF
 
 git add $FILE
 git commit --message="Added entities."
 
-mkdir -p SayingHelloWebApi/JsonRpc
+mkdir -p ToDoWebApi/JsonRpc
 
-FILE=SayingHelloWebApi/JsonRpc/FunctionCall.cs
+FILE=ToDoWebApi/JsonRpc/FunctionCall.cs
 
 cat > $FILE << EOF
-namespace SayingHelloWebApi.JsonRpc;
+namespace ToDoWebApi.JsonRpc;
 
 public class FunctionCall
 {
@@ -322,17 +417,17 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/JsonRpc/FunctionCalls.cs
+FILE=ToDoWebApi/JsonRpc/FunctionCalls.cs
 
 cat > $FILE << EOF
-namespace SayingHelloWebApi.JsonRpc;
+namespace ToDoWebApi.JsonRpc;
 
 public static class FunctionCalls
 {
     public static Dictionary<string, FunctionCall> Dictionary = new Dictionary<string, FunctionCall>
     {
         {
-            "get_all_greetings", new FunctionCall
+            "get_all_to_do_items", new FunctionCall
             {
                 Parameters = new List<Parameter> {}
             }
@@ -354,11 +449,13 @@ public static class FunctionCalls
             }
         },
         {
-            "new_greeting", new FunctionCall
+            "new_to_do_item", new FunctionCall
             {
                 Parameters = new List<Parameter>
                 {
+                    new Parameter { Name = "complete", Kind = "bool" },
                     new Parameter { Name = "name", Kind = "string" },
+                    new Parameter { Name = "visible", Kind = "bool" },
                 }
             }
         },
@@ -380,12 +477,12 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/JsonRpc/IJsonRpcService.cs
+FILE=ToDoWebApi/JsonRpc/IJsonRpcService.cs
 
 cat > $FILE << EOF
-using SayingHelloLibrary.JsonRpc;
+using ToDoLibrary.JsonRpc;
 
-namespace SayingHelloWebApi.JsonRpc
+namespace ToDoWebApi.JsonRpc
 {
     public interface IJsonRpcService : IDisposable
     {
@@ -396,23 +493,23 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/JsonRpc/JsonRpcService.cs
+FILE=ToDoWebApi/JsonRpc/JsonRpcService.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using SayingHelloLibrary.JsonRpc;
-using SayingHelloWebApi.Data;
-using SayingHelloWebApi.Entities;
-using SayingHelloWebApi.Repositories;
+using ToDoLibrary.JsonRpc;
+using ToDoWebApi.Data;
+using ToDoWebApi.Entities;
+using ToDoWebApi.Repositories;
 using System.Text.Json;
 
-namespace SayingHelloWebApi.JsonRpc;
+namespace ToDoWebApi.JsonRpc;
 
 public class JsonRpcService : IJsonRpcService, IDisposable
 {
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
-    private readonly IGreetingRepository _greetingRepository;
+    private readonly IToDoItemRepository _toDoItemRepository;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserRepository _userRepository;
@@ -420,7 +517,7 @@ public class JsonRpcService : IJsonRpcService, IDisposable
     public JsonRpcService(
         IConfiguration configuration,
         ApplicationDbContext context,
-        IGreetingRepository greetingRepository,
+        IToDoItemRepository toDoItemRepository,
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
         IUserRepository userRepository
@@ -428,7 +525,7 @@ public class JsonRpcService : IJsonRpcService, IDisposable
     {
         _context = context;
         _configuration = configuration;
-        _greetingRepository = greetingRepository;
+        _toDoItemRepository = toDoItemRepository;
         _signInManager = signInManager;
         _userManager = userManager;
         _userRepository = userRepository;
@@ -515,14 +612,14 @@ public class JsonRpcService : IJsonRpcService, IDisposable
                 }
             }
 
-            if (request.Method == "get_all_greetings") {
-                return await _greetingRepository.GetAllGreetingsAsync(request);
+            if (request.Method == "get_all_to_do_items") {
+                return await _toDoItemRepository.GetAllToDoItemsAsync(request);
             } else if (request.Method == "login") {
                 return await _userRepository.LoginAsync(request);
             } else if (request.Method == "logout") {
                 return await _userRepository.LogoutAsync(request);
-            } else if (request.Method == "new_greeting") {
-                return await _greetingRepository.NewGreetingAsync(request);
+            } else if (request.Method == "new_to_do_item") {
+                return await _toDoItemRepository.NewToDoItemAsync(request);
             } else if (request.Method == "register") {
                 return await _userRepository.RegisterAsync(request);
             }
@@ -585,10 +682,10 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/JsonRpc/Parameter.cs
+FILE=ToDoWebApi/JsonRpc/Parameter.cs
 
 cat > $FILE << EOF
-namespace SayingHelloWebApi.JsonRpc;
+namespace ToDoWebApi.JsonRpc;
 
 public class Parameter
 {
@@ -601,14 +698,14 @@ EOF
 git add $FILE
 git commit --message="Added project json rpc files."
 
-mkdir -p SayingHelloWebApi/Params
+mkdir -p ToDoWebApi/Params
 
-FILE=SayingHelloWebApi/Params/LoginParams.cs
+FILE=ToDoWebApi/Params/LoginParams.cs
 
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace SayingHelloWebApi.Params;
+namespace ToDoWebApi.Params;
 
 public class LoginParams
 {
@@ -622,28 +719,28 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Params/NewGreetingParams.cs
+FILE=ToDoWebApi/Params/NewToDoItemParams.cs
 
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace SayingHelloWebApi.Params;
+namespace ToDoWebApi.Params;
 
-public class NewGreetingParams
+public class NewToDoItemParams
 {
-    [JsonPropertyName("name")]
-    public string Name { get; set; }
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
 }
 EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Params/RegisterParams.cs
+FILE=ToDoWebApi/Params/RegisterParams.cs
 
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace SayingHelloWebApi.Params;
+namespace ToDoWebApi.Params;
 
 public class RegisterParams
 {
@@ -664,21 +761,21 @@ EOF
 git add $FILE
 git commit --message="Added params."
 
-FILE=SayingHelloWebApi/Properties/launchSettings.json
+FILE=ToDoWebApi/Properties/launchSettings.json
 
 SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 
-FILE=SayingHelloWebApi/Program.cs
+FILE=ToDoWebApi/Program.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SayingHelloWebApi.Data;
-using SayingHelloWebApi.Entities;
-using SayingHelloWebApi.JsonRpc;
-using SayingHelloWebApi.Repositories;
+using ToDoWebApi.Data;
+using ToDoWebApi.Entities;
+using ToDoWebApi.JsonRpc;
+using ToDoWebApi.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
@@ -722,7 +819,7 @@ builder.Services
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<IJsonRpcService, JsonRpcService>();
-builder.Services.AddScoped<IGreetingRepository, GreetingRepository>();
+builder.Services.AddScoped<IToDoItemRepository, ToDoItemRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -777,82 +874,87 @@ EOF
 git add $FILE
 git commit --message "Updated Program class."
 
-mkdir -p SayingHelloWebApi/Repositories
+mkdir -p ToDoWebApi/Repositories
 
-FILE=SayingHelloWebApi/Repositories/GreetingRepository.cs
+FILE=ToDoWebApi/Repositories/ToDoItemRepository.cs
 
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
-using SayingHelloLibrary.Domain;
-using SayingHelloLibrary.JsonRpc;
-using SayingHelloWebApi.Data;
-using SayingHelloWebApi.Entities;
-using SayingHelloWebApi.Params;
-using SayingHelloWebApi.Results;
+using ToDoLibrary.Domain;
+using ToDoLibrary.JsonRpc;
+using ToDoWebApi.Data;
+using ToDoWebApi.Entities;
+using ToDoWebApi.Params;
+using ToDoWebApi.Results;
 using System.Text.Json;
 
-namespace SayingHelloWebApi.Repositories;
+namespace ToDoWebApi.Repositories;
 
-public class GreetingRepository : IGreetingRepository, IDisposable
+public class ToDoItemRepository : IToDoItemRepository, IDisposable
 {
     private readonly ApplicationDbContext _context;
 
-    public GreetingRepository(ApplicationDbContext context)
+    public ToDoItemRepository(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    public async Task<JsonRpcResponse> GetAllGreetingsAsync(JsonRpcRequest request)
+    public async Task<JsonRpcResponse> GetAllToDoItemsAsync(JsonRpcRequest request)
     {
-        var greetings = await _context.Greetings.ToListAsync();
+        var toDoItems = await _context.ToDoItems.ToListAsync();
 
         return new JsonRpcResponse
         {
             Id = request.Id,
             JsonRpc = request.JsonRpc,
-            Result = new GetAllGreetingsResult
+            Result = new GetAllToDoItemsResult
             {
-                Greetings = greetings
+                ToDoItems = toDoItems.Select(toDoItem => new GetAllToDoItemsResultToDoItem
+                {
+                    Complete = toDoItem.Complete,
+                    Guid = toDoItem.Guid,
+                    Text = toDoItem.Text,
+                    Visible = toDoItem.Visible,
+                }).ToList()
             },
         };
     }
 
-    public async Task<JsonRpcResponse> NewGreetingAsync(JsonRpcRequest request)
+    public async Task<JsonRpcResponse> NewToDoItemAsync(JsonRpcRequest request)
     {
-        var newGreetingParams = JsonSerializer.Deserialize<NewGreetingParams>(request.Params.GetRawText());
-        var name = newGreetingParams.Name.Trim();
+        var newToDoItemParams = JsonSerializer.Deserialize<NewToDoItemParams>(request.Params.GetRawText());
+        var text = newToDoItemParams.Text.Trim();
 
-        var greeting = await _context.Greetings.Where(greeting => greeting.Name == name).FirstOrDefaultAsync();
-        if (greeting != null) {
+        var toDoItem = await _context.ToDoItems.Where(toDoItem => toDoItem.Text == text).FirstOrDefaultAsync();
+        if (toDoItem != null) {
             return new JsonRpcResponse
             {
                 Id = request.Id,
                 JsonRpc = request.JsonRpc,
-                Result = new NewGreetingResult
+                Result = new NewToDoItemResult
                 {
-                    Message = greeting.Message
+                    Text = toDoItem.Text
                 },
             };
         }
 
-        var message = SayingHello.SayHello(name);
+        var message = ToDoItem.CreateToDoItem(text);
 
-        greeting = new Greeting
+        toDoItem = new ToDoItemEntity
         {
-            Name = name,
-            Message = message,
+            Text = text,
         };
 
-        await _context.AddAsync(greeting);
+        await _context.AddAsync(toDoItem);
         _context.SaveChanges();
 
         return new JsonRpcResponse
         {
             Id = request.Id,
             JsonRpc = request.JsonRpc,
-            Result = new NewGreetingResult
+            Result = new NewToDoItemResult
             {
-                Message = message
+                Text = text
             },
         };
     }
@@ -881,29 +983,29 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Repositories/IGreetingRepository.cs
+FILE=ToDoWebApi/Repositories/IToDoItemRepository.cs
 
 cat > $FILE << EOF
-using SayingHelloLibrary.JsonRpc;
+using ToDoLibrary.JsonRpc;
 
-namespace SayingHelloWebApi.Repositories
+namespace ToDoWebApi.Repositories
 {
-    public interface IGreetingRepository : IDisposable
+    public interface IToDoItemRepository : IDisposable
     {
-        Task<JsonRpcResponse> GetAllGreetingsAsync(JsonRpcRequest request);
-        Task<JsonRpcResponse> NewGreetingAsync(JsonRpcRequest request);
+        Task<JsonRpcResponse> GetAllToDoItemsAsync(JsonRpcRequest request);
+        Task<JsonRpcResponse> NewToDoItemAsync(JsonRpcRequest request);
     }
 }
 EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Repositories/IUserRepository.cs
+FILE=ToDoWebApi/Repositories/IUserRepository.cs
 
 cat > $FILE << EOF
-using SayingHelloLibrary.JsonRpc;
+using ToDoLibrary.JsonRpc;
 
-namespace SayingHelloWebApi.Repositories
+namespace ToDoWebApi.Repositories
 {
     public interface IUserRepository : IDisposable
     {
@@ -916,22 +1018,22 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Repositories/UserRepository.cs
+FILE=ToDoWebApi/Repositories/UserRepository.cs
 
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using SayingHelloLibrary.JsonRpc;
-using SayingHelloWebApi.Data;
-using SayingHelloWebApi.Entities;
-using SayingHelloWebApi.Params;
-using SayingHelloWebApi.Results;
+using ToDoLibrary.JsonRpc;
+using ToDoWebApi.Data;
+using ToDoWebApi.Entities;
+using ToDoWebApi.Params;
+using ToDoWebApi.Results;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 
-namespace SayingHelloWebApi.Repositories;
+namespace ToDoWebApi.Repositories;
 
 public class UserRepository : IUserRepository, IDisposable
 {
@@ -1091,29 +1193,53 @@ EOF
 git add $FILE
 git commit --message="Added repository files."
 
-mkdir -p SayingHelloWebApi/Results
+mkdir -p ToDoWebApi/Results
 
-FILE=SayingHelloWebApi/Results/GetAllGreetingsResult.cs
+FILE=ToDoWebApi/Results/GetAllToDoItemsResult.cs
 
 cat > $FILE << EOF
-using SayingHelloWebApi.Entities;
 using System.Text.Json.Serialization;
 
-namespace SayingHelloWebApi.Results;
+namespace ToDoWebApi.Results;
 
-public class GetAllGreetingsResult
+public class GetAllToDoItemsResult
 {
-    [JsonPropertyName("greetings")]
-    public List<Greeting> Greetings { get; set; }
+    [JsonPropertyName("to_do_items")]
+    public List<GetAllToDoItemsResultToDoItem> ToDoItems { get; set; }
 }
 EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Results/LoginResult.cs
+FILE=ToDoWebApi/Results/GetAllToDoItemsResultToDoItem.cs
 
 cat > $FILE << EOF
-namespace SayingHelloWebApi.Results;
+using System.Text.Json.Serialization;
+
+namespace ToDoWebApi.Results;
+
+public class GetAllToDoItemsResultToDoItem
+{
+    [JsonPropertyName("complete")]
+    public bool Complete { get; set; }
+
+    [JsonPropertyName("guid")]
+    public Guid Guid { get; set; }
+
+    [JsonPropertyName("Text")]
+    public string Text { get; set; }
+
+    [JsonPropertyName("visible")]
+    public bool Visible { get; set; }
+}
+EOF
+
+git add $FILE
+
+FILE=ToDoWebApi/Results/LoginResult.cs
+
+cat > $FILE << EOF
+namespace ToDoWebApi.Results;
 
 public class LoginResult
 {
@@ -1123,17 +1249,17 @@ EOF
 
 git add $FILE
 
-FILE=SayingHelloWebApi/Results/NewGreetingResult.cs
+FILE=ToDoWebApi/Results/NewToDoItemResult.cs
 
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace SayingHelloWebApi.Results;
+namespace ToDoWebApi.Results;
 
-public class NewGreetingResult
+public class NewToDoItemResult
 {
-    [JsonPropertyName("message")]
-    public string Message { get; set; }
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
 }
 EOF
 
@@ -1142,21 +1268,20 @@ git commit --message="Added result files."
 
 git push --force
 
-FILE=SayingHelloWebApi/Properties/launchSettings.json
+FILE=ToDoWebApi/Properties/launchSettings.json
 
 SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 
 cd ..
 
-FRAMEWORK=typescript-react
-TEMPLATE=typescript
-
-REPOSITORY=intrepion-$KEBOB-json-rpc-client-web-$FRAMEWORK-$TEMPLATE
+FRAMEWORK=$CLIENT_FRAMEWORK
+REPOSITORY=$CLIENT_REPOSITORY
+TEMPLATE=$CLIENT_TEMPLATE
 
 # framework - the works
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE
 
-# project - add saying hello
+# project - add to do
 cd $REPOSITORY
 pwd
 
@@ -1164,13 +1289,13 @@ FILE=src/components/Home.tsx
 
 cat > $FILE << EOF
 import React from "react";
-import SayingHello from "./SayingHello";
+import ToDoItemForm from "./ToDoItemForm";
 
 const Home = () => {
   return (
     <>
       <h1>Home</h1>
-      <SayingHello />
+      <ToDoItemForm />
     </>
   );
 };
@@ -1180,24 +1305,19 @@ EOF
 
 git add $FILE
 
-FILE=src/components/SayingHello.tsx
+FILE=src/components/ToDoItemForm.tsx
 
 cat > $FILE << EOF
 import React, { useEffect, useState } from "react";
-import Greeting from "./Greeting";
+import ToDoItem from "./ToDoItem";
 import { v4 } from "uuid";
+import { ToDoItemType } from "../types/ToDoItemType";
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "http://localhost:3000";
 
-type GreetingType = {
-  id: string;
-  message: string;
-  name: string;
-};
-
-const SayingHello: React.FC = () => {
-  const [greetings, setGreetings] = useState<GreetingType[]>([]);
-  const [name, setName] = useState("");
+const ToDoItemForm: React.FC = () => {
+  const [toDoItems, setToDoItems] = useState<ToDoItemType[]>([]);
+  const [text, setText] = useState("");
   const [message, setMessage] = useState("Hello, world!");
 
   useEffect(() => {
@@ -1207,14 +1327,14 @@ const SayingHello: React.FC = () => {
       body: JSON.stringify({
         id: v4(),
         jsonrpc: "2.0",
-        method: "get_all_greetings",
+        method: "get_all_to_do_items",
       }),
     })
       .then((response) => response.json())
       .then((responseJson) => {
         if (responseJson.result) {
           const result = responseJson.result;
-          setGreetings(result.greetings);
+          setToDoItems(result.to_do_items);
         } else if (responseJson.error) {
           console.error(responseJson.error);
         }
@@ -1225,10 +1345,10 @@ const SayingHello: React.FC = () => {
   }, [message]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setName(event.target.value);
+    setText(event.target.value);
   };
 
-  const callSayHello = (event: React.MouseEvent<HTMLElement>) => {
+  const callToDo = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
     fetch(SERVER_URL, {
       method: "POST",
@@ -1236,8 +1356,8 @@ const SayingHello: React.FC = () => {
       body: JSON.stringify({
         id: v4(),
         jsonrpc: "2.0",
-        method: "new_greeting",
-        params: { name },
+        method: "new_to_do_item",
+        params: { text },
       }),
     })
       .then((response) => response.json())
@@ -1252,18 +1372,19 @@ const SayingHello: React.FC = () => {
 
   return (
     <div>
-      <h2>Saying Hello</h2>
-      <input type="text" value={name} onChange={handleChange} />
-      <button onClick={callSayHello}>Say Hello</button>
+      <h2>To Do</h2>
+      <input type="text" value={text} onChange={handleChange} />
+      <button onClick={callToDo}>New To Do</button>
       <div>{message}</div>
-      <p>Previous Greetings</p>
+      <p>Previous ToDoItems</p>
       <ul>
-        {greetings.map((greeting) => (
-          <li key={greeting.id}>
-            <Greeting
-              id={greeting.id}
-              message={greeting.message}
-              name={greeting.name}
+        {toDoItems.map((toDoItem) => (
+          <li key={toDoItem.guid}>
+            <ToDoItem
+              complete={toDoItem.complete}
+              guid={toDoItem.guid}
+              text={toDoItem.text}
+              visible={toDoItem.visible}
             />
           </li>
         ))}
@@ -1272,39 +1393,58 @@ const SayingHello: React.FC = () => {
   );
 };
 
-export default SayingHello;
+export default ToDoItemForm;
 EOF
 
 git add $FILE
 
-FILE=src/components/Greeting.tsx
+FILE=src/components/ToDoItem.tsx
 
 cat > $FILE << EOF
 import React from "react";
 
-interface GreetingInterface {
-  id: string;
-  message: string;
-  name: string;
+export interface ToDoItemInterface {
+  complete: boolean;
+  guid: string;
+  text: string;
+  visible: boolean;
 }
 
-const Greeting = (props: GreetingInterface) => {
-  const { id, name, message } = props;
+const ToDoItem = (props: ToDoItemInterface) => {
+  const { complete, guid, text, visible } = props;
 
   return (
     <>
-      {id}: {name}, {message}
+      {guid}: {complete}, {text}, {visible}
     </>
   );
 };
 
-export default Greeting;
+export default ToDoItem;
 EOF
 
 git add $FILE
 
+mkdir -p src/types
+
+FILE=src/types/ToDoItemType.ts
+
+cat > $FILE << EOF
+export type ToDoItemType = {
+  complete: boolean;
+  guid: string;
+  text: string;
+  visible: boolean;
+};
+EOF
+
+git add $FILE
+git commit --message "Added to do form."
+
 npx prettier --write .
-git commit --message "Added saying hello form."
+git add --all
+git commit --message "npx prettier --write ."
+
 git push --force
 
 cd ..
@@ -1316,4 +1456,4 @@ CLIENT="http://localhost:3000"
 
 popd
 
-echo " - Completed $SCRIPT"
+echo "Complete $SCRIPT"

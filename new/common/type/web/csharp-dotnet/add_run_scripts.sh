@@ -7,7 +7,12 @@ PROJECT=$3
 REPOSITORY=$4
 TEMPLATE=$5
 
-echo "Running $SCRIPT $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE"
+
+if [ $# -ne 5 ]; then
+  echo "usage: $SCRIPT <FRAMEWORK> <KEBOB> <PROJECT> <REPOSITORY> <TEMPLATE>"
+  exit 1
+fi
 
 pushd .
 
@@ -33,4 +38,4 @@ git commit -m "Add run scripts."
 
 popd
 
-echo "Completed $SCRIPT $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $FRAMEWORK $KEBOB $PROJECT $REPOSITORY $TEMPLATE"

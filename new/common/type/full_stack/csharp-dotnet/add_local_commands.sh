@@ -5,7 +5,12 @@ CLIENT=$1
 PROJECT=$2
 REPOSITORY=$3
 
-echo "Running $SCRIPT $CLIENT $PROJECT $REPOSITORY"
+echo " - Running $SCRIPT $CLIENT $PROJECT $REPOSITORY"
+
+if [ $# -ne 3 ]; then
+  echo "usage: $SCRIPT <CLIENT> <PROJECT> <REPOSITORY>"
+  exit 1
+fi
 
 pushd .
 
@@ -43,4 +48,4 @@ git commit -m "Added commands section to README file.";
 
 popd
 
-echo "Completed $SCRIPT $CLIENT $PROJECT $REPOSITORY"
+echo " - Completed $SCRIPT $CLIENT $PROJECT $REPOSITORY"

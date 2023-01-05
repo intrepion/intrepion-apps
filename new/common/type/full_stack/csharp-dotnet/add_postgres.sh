@@ -1,12 +1,18 @@
 #!/bin/bash
 
 SCRIPT=$0
-PASCAL=$1
-PROJECT=$2
-REPOSITORY=$3
-TEMPLATE=$4
+KEBOB=$1
+PASCAL=$2
+PROJECT=$3
+REPOSITORY=$4
+TEMPLATE=$5
 
-echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+
+if [ $# -ne 5 ]; then
+  echo "usage: $SCRIPT <KEBOB> <PASCAL> <PROJECT> <REPOSITORY> <TEMPLATE>"
+  exit 1
+fi
 
 pushd .
 
@@ -54,7 +60,7 @@ until psql -h "localhost" -U "\${DB_USER}" -p "\${DB_PORT}" -d "postgres" -c '\q
     sleep 1
 done
 
->&2 echo "Postgres is up and running on port \${DB_PORT} - running migrations now!"
+>&2 echo "Postgres is up and running on port \${DB_PORT}"
 
 DATABASE_URL=postgres://\${DB_USER}:\${DB_PASSWORD}@localhost:\${DB_PORT}/\${DB_NAME}
 export DATABASE_URL
@@ -66,4 +72,4 @@ git commit --message "Added init postgres script."
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE"

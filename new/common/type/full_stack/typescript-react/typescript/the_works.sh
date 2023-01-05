@@ -6,7 +6,12 @@ REPOSITORY=$2
 SERVER=$3
 TEMPLATE=$4
 
-echo "Running $SCRIPT $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE"
+echo " - Running $SCRIPT $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE"
+
+if [ $# -ne 4 ]; then
+  echo "usage: $SCRIPT <REPOSITORY> <SERVER>"
+  exit 1
+fi
 
 pushd .
 
@@ -35,4 +40,4 @@ NAME=client-web
 
 popd
 
-echo "Completed $SCRIPT $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE"
+echo " - Completed $SCRIPT $FRAMEWORK $REPOSITORY $SERVER $TEMPLATE"

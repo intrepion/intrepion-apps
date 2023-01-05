@@ -6,7 +6,12 @@ PROJECT=$2
 REPOSITORY=$3
 TEMPLATE=$4
 
-echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+
+if [ $# -ne 4 ]; then
+  echo "usage: $SCRIPT <PASCAL> <PROJECT> <REPOSITORY> <TEMPLATE>"
+  exit 1
+fi
 
 pushd .
 
@@ -41,6 +46,10 @@ dotnet add $PROJECT reference ${PASCAL}Library
 git add $PROJECT
 git commit --message "dotnet add $PROJECT reference ${PASCAL}Library"
 
+dotnet add $PROJECT package Microsoft.AspNetCore.Cors
+git add $PROJECT
+git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Cors"
+
 dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore
 git add $PROJECT
 git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore"
@@ -71,4 +80,4 @@ git commit --message "dotnet add ${PASCAL}Tests reference $PROJECT"
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"

@@ -6,7 +6,12 @@ PROJECT=$2
 REPOSITORY=$3
 TEMPLATE=$4
 
-echo "Running $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+
+if [ $# -ne 4 ]; then
+  echo "usage: $SCRIPT <PASCAL> <PROJECT> <REPOSITORY> <TEMPLATE>"
+  exit 1
+fi
 
 pushd .
 
@@ -63,4 +68,4 @@ git commit --message "dotnet add ${PASCAL}Tests reference $PROJECT"
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $PASCAL $PROJECT $REPOSITORY $TEMPLATE"

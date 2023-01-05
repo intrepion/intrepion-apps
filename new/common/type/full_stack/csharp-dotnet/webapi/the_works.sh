@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-FRAMEWORK=$1
-PASCAL=$2
-PROJECT=$3
-REPOSITORY=$4
-TEMPLATE=$5
+CLIENT=$1
+FRAMEWORK=$2
+KEBOB=$3
+PASCAL=$4
+PROJECT=$5
+REPOSITORY=$6
+TEMPLATE=$7
 
-echo "Running $SCRIPT $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $CLIENT $FRAMEWORK $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+
+if [ $# -ne 7 ]; then
+  echo "usage: $SCRIPT <CLIENT> <FRAMEWORK> <KEBOB> <PASCAL> <PROJECT> <REPOSITORY> <TEMPLATE>"
+  exit 1
+fi
 
 pushd .
 
@@ -25,11 +32,8 @@ NAME=server
 # template - add health check
 ./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PASCAL $REPOSITORY
 
-# type - add cors
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_cors.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
-
 # type - add postgres
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_postgres.sh $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_postgres.sh $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 # type - add json-rpc files
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY
@@ -37,11 +41,11 @@ NAME=server
 # type - add local commands
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_local_commands.sh $CLIENT $PROJECT $REPOSITORY
 
-# framework - add github actions
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_github_actions.sh $REPOSITORY
+# type - add github actions
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_github_actions.sh $KEBOB $REPOSITORY
 
 # framework - add digital ocean files
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $PASCAL $PROJECT $REPOSITORY
+./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $KEBOB $NAME $PASCAL $PROJECT $REPOSITORY
 popd
 
-echo "Completed $SCRIPT $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $CLIENT $FRAMEWORK $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE"

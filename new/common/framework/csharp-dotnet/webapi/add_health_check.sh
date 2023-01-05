@@ -4,7 +4,12 @@ SCRIPT=$0
 PASCAL=$1
 REPOSITORY=$2
 
-echo "Running $SCRIPT $PASCAL $REPOSITORY"
+echo " - Running $SCRIPT $PASCAL $REPOSITORY"
+
+if [ $# -ne 2 ]; then
+  echo "usage: $SCRIPT <PASCAL> <REPOSITORY>"
+  exit 1
+fi
 
 pushd .
 
@@ -92,4 +97,4 @@ git commit --message="Added health check controller."
 
 popd
 
-echo "Completed $SCRIPT $PASCAL $REPOSITORY"
+echo " - Completed $SCRIPT $PASCAL $REPOSITORY"

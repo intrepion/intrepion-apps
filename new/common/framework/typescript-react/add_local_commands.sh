@@ -3,7 +3,12 @@
 SCRIPT=$0
 REPOSITORY=$1
 
-echo "Running $SCRIPT $REPOSITORY"
+echo " - Running $SCRIPT $REPOSITORY"
+
+if [ $# -ne 1 ]; then
+  echo "usage: $SCRIPT <REPOSITORY>"
+  exit 1
+fi
 
 pushd .
 
@@ -38,4 +43,4 @@ git commit -m "Added commands section to README file.";
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY"
+echo " - Completed $SCRIPT $REPOSITORY"

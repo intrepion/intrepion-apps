@@ -3,7 +3,12 @@
 SCRIPT=$0
 REPOSITORY=$1
 
-echo "Running $SCRIPT $REPOSITORY"
+echo " - Running $SCRIPT $REPOSITORY"
+
+if [ $# -ne 1 ]; then
+  echo "usage: $SCRIPT <REPOSITORY>"
+  exit 1
+fi
 
 pushd .
 
@@ -371,4 +376,4 @@ git commit --message "npx prettier --write ."
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY"
+echo " - Completed $SCRIPT $REPOSITORY"

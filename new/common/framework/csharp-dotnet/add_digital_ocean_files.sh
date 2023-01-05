@@ -6,7 +6,12 @@ PASCAL=$2
 PROJECT=$3
 REPOSITORY=$4
 
-echo "Running $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
+echo " - Running $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
+
+if [ $# -ne 4 ]; then
+  echo "usage: $SCRIPT <NAME> <PASCAL> <PROJECT> <REPOSITORY>"
+  exit 1
+fi
 
 pushd .
 
@@ -177,4 +182,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo "Completed $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
+echo " - Completed $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"

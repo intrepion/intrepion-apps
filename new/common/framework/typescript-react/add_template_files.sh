@@ -4,7 +4,12 @@ SCRIPT=$0
 REPOSITORY=$1
 TEMPLATE=$2
 
-echo "Running $SCRIPT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $REPOSITORY $TEMPLATE"
+
+if [ $# -ne 2 ]; then
+  echo "usage: $SCRIPT <REPOSITORY> <TEMPLATE>"
+  exit 1
+fi
 
 pushd .
 
@@ -49,4 +54,4 @@ git commit --message "npx prettier --write ."
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $REPOSITORY $TEMPLATE"

@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-REPOSITORY=$1
+KEBOB=$1
+REPOSITORY=$2
 
-echo " - Running $SCRIPT $REPOSITORY"
+echo " - Running $SCRIPT $KEBOB $REPOSITORY"
 
-if [ $# -ne 1 ]; then
-  echo "usage: $SCRIPT <REPOSITORY>"
+if [ $# -ne 2 ]; then
+  echo "usage: $SCRIPT <KEBOB> <REPOSITORY>"
   exit 1
 fi
 
@@ -20,9 +21,6 @@ mkdir -p .github/workflows
 FILE=.github/workflows/dotnet.yml
 
 cat > $FILE << EOF
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: .NET
 
 on:
@@ -35,6 +33,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: intrepion
+        ports:
+          - 5432:5432
 
     steps:
     - uses: actions/checkout@v3
@@ -58,7 +65,7 @@ cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/intrepion-hello-world-web-csharp-dotnet-web/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/intrepion-hello-world-web-csharp-dotnet-web/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/intrepion/intrepion-$KEBOB-web-csharp-dotnet-web/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/intrepion-$KEBOB-web-csharp-dotnet-web/actions/workflows/dotnet.yml)
 EOF
 
 git add $FILE
@@ -67,4 +74,4 @@ git commit --message="Added GitHub Action files."
 
 popd
 
-echo " - Completed $SCRIPT $REPOSITORY"
+echo " - Completed $SCRIPT $KEBOB $REPOSITORY"

@@ -6,7 +6,12 @@ KEBOB=$2
 PROJECT=$3
 SERVER=$4
 
-echo "Running $SCRIPT $CLIENT $KEBOB $PROJECT $SERVER"
+echo " - Running $SCRIPT $CLIENT $KEBOB $PROJECT $SERVER"
+
+if [ $# -ne 4 ]; then
+  echo "usage: $SCRIPT <CLIENT> <KEBOB> <PROJECT> <SERVER>"
+  exit 1
+fi
 
 pushd .
 
@@ -78,4 +83,4 @@ git commit -m "Add run scripts."
 
 popd
 
-echo "Completed $SCRIPT $CLIENT $KEBOB $PROJECT $SERVER"
+echo " - Completed $SCRIPT $CLIENT $KEBOB $PROJECT $SERVER"

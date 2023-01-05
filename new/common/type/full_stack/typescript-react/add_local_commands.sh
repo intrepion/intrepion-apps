@@ -4,7 +4,12 @@ SCRIPT=$0
 REPOSITORY=$1
 SERVER=$2
 
-echo "Running $SCRIPT $REPOSITORY $SERVER"
+echo " - Running $SCRIPT $REPOSITORY $SERVER"
+
+if [ $# -ne 2 ]; then
+  echo "usage: $SCRIPT <REPOSITORY> <SERVER>"
+  exit 1
+fi
 
 pushd .
 
@@ -45,4 +50,4 @@ git commit -m "Added commands section to README file.";
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY $SERVER"
+echo " - Completed $SCRIPT $REPOSITORY $SERVER"

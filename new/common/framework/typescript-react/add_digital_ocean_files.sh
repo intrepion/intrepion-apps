@@ -4,7 +4,12 @@ SCRIPT=$0
 NAME=$1
 REPOSITORY=$2
 
-echo "Running $SCRIPT $NAME $REPOSITORY"
+echo " - Running $SCRIPT $NAME $REPOSITORY"
+
+if [ $# -ne 2 ]; then
+  echo "usage: $SCRIPT <NAME> <REPOSITORY>"
+  exit 1
+fi
 
 pushd .
 
@@ -95,4 +100,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo "Completed $SCRIPT $NAME $REPOSITORY"
+echo " - Completed $SCRIPT $NAME $REPOSITORY"

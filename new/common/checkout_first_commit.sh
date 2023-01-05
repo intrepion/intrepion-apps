@@ -3,7 +3,7 @@
 SCRIPT=$0
 REPOSITORY=$1
 
-echo "Running $SCRIPT $REPOSITORY"
+echo " - Running $SCRIPT $REPOSITORY"
 
 pushd .
 
@@ -27,4 +27,4 @@ git clean -d --force
 
 popd
 
-echo "Completed $SCRIPT $REPOSITORY"
+echo " - Completed $SCRIPT $REPOSITORY"

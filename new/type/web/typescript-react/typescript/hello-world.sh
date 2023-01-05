@@ -2,7 +2,7 @@
 
 SCRIPT=$0
 
-echo "Running $SCRIPT"
+echo " - Running $SCRIPT"
 
 pushd .
 
@@ -40,4 +40,4 @@ cd ..
 
 popd
 
-echo "Completed $SCRIPT"
+echo " - Completed $SCRIPT"
