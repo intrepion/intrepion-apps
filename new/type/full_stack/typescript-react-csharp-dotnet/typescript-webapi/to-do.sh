@@ -3110,7 +3110,7 @@ api.interceptors.request.use(
     const token = localStorage.getItem("@Auth:access_token");
     if (token) {
       config.headers = {
-        Authorization: `Bearer \${token}`,
+        Authorization: \`Bearer \${token}\`,
       };
     }
     return config;
