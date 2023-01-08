@@ -1674,7 +1674,7 @@ public class ToDoListRepository : IToDoListRepository, IDisposable
         }
 
         var toDoLists = await (from ToDoLists in _context.ToDoLists
-                               join Users in _context.Users on ToDoLists.ApplicationUser.Id equals Users.Id
+                               join Users in _context.Users on ToDoLists.ApplicationUser!.Id equals Users.Id
                                where Users.UserName == userName
                                select ToDoLists).ToListAsync();
 
