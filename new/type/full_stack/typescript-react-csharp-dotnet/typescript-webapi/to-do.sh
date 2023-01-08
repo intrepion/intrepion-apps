@@ -182,7 +182,7 @@ namespace ToDoTests.Domain;
 public class ToDoListTest
 {
     [Theory]
-    [InlineData("", "make a to do list")]
+    [InlineData("", "shopping list")]
     [InlineData("do the dishes", "do the dishes")]
     [InlineData("take out the trash", "take out the trash")]
     public void TestToDoList_CreateToDoList_HappyPath(string actualTitle, string expectedTitle)
@@ -383,7 +383,7 @@ public class ToDoList
         title = title.Trim();
 
         if (string.IsNullOrEmpty(title)) {
-            title = "everyday list";
+            title = "shopping list";
         }
 
         return new ToDoList {
@@ -418,10 +418,10 @@ FILE=ToDoWebApi/appsettings.Development.json
 
 cat > $FILE << EOF
 {
+  "ClientUrl": "$CLIENT",
   "ConnectionStrings": {  
     "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
   },
-  "JwtAudience": "$CLIENT",
   "JwtIssuer": $SERVER,
   "JwtSecretKey": "SOME_RANDOM_KEY_DO_NOT_SHARE",
   "Logging": {
