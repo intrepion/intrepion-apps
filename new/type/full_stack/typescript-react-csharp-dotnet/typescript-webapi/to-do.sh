@@ -573,20 +573,6 @@ git add $FILE
 FILE=ToDoWebApi/Entities/ApplicationUser.cs
 
 cat > $FILE << EOF
-using Microsoft.AspNetCore.Identity;
-
-namespace ToDoWebApi.Entities;
-
-public class ApplicationUser : IdentityUser<Guid>
-{
-}
-EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Entities/ToDoItemEntity.cs
-
-cat > $FILE << EOF
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 
