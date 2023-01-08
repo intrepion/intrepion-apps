@@ -80,6 +80,7 @@ chmod +x $FILE
 git add $FILE
 
 git commit -m "Add run scripts."
+git push
 
 popd
 

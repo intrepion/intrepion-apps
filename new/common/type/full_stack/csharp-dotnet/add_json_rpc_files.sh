@@ -23,18 +23,18 @@ FILE=${PASCAL}Library/JsonRpc/JsonRpcError.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ${PASCAL}Library.JsonRpc;
+namespace ToDoLibrary.JsonRpc;
 
 public class JsonRpcError
 {
     [JsonPropertyName("code")]
-    public int Code { get; set; }
+    public int? Code { get; set; }
 
     [JsonPropertyName("message")]
-    public string Message { get; set; }
+    public string? Message { get; set; }
 
     [JsonPropertyName("data")]
-    public object Data { get; set; }
+    public object? Data { get; set; }
 }
 EOF
 
@@ -46,21 +46,21 @@ cat > $FILE << EOF
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ${PASCAL}Library.JsonRpc;
+namespace ToDoLibrary.JsonRpc;
 
 public class JsonRpcRequest
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonPropertyName("jsonrpc")]
-    public string JsonRpc { get; set; }
+    public string? JsonRpc { get; set; }
 
     [JsonPropertyName("method")]
-    public string Method { get; set; }
+    public string? Method { get; set; }
 
     [JsonPropertyName("params")]
-    public JsonElement Params { get; set; }
+    public JsonElement? Params { get; set; }
 }
 EOF
 
@@ -71,21 +71,21 @@ FILE=${PASCAL}Library/JsonRpc/JsonRpcResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ${PASCAL}Library.JsonRpc;
+namespace ToDoLibrary.JsonRpc;
 
 public class JsonRpcResponse
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [JsonPropertyName("jsonrpc")]
-    public string JsonRpc { get; set; }
+    public string? JsonRpc { get; set; }
 
     [JsonPropertyName("result")]
-    public object Result { get; set; }
+    public object? Result { get; set; }
 
     [JsonPropertyName("error")]
-    public JsonRpcError Error { get; set; }
+    public JsonRpcError? Error { get; set; }
 }
 EOF
 
