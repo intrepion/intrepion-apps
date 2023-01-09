@@ -186,11 +186,11 @@ git commit --message="Added entities."
 
 mkdir -p $PROJECT/Params
 
-FILE=ToDoWebApi/Params/LoginParams.cs
+FILE=$PROJECT/Params/LoginParams.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoWebApi.Params;
+namespace $PROJECT.Params;
 
 public class LoginParams
 {
@@ -203,11 +203,11 @@ public class LoginParams
 EOF
 git add $FILE
 
-FILE=ToDoWebApi/Params/RefreshParams.cs
+FILE=$PROJECT/Params/RefreshParams.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoWebApi.Params;
+namespace $PROJECT.Params;
 
 public class RefreshParams
 {
@@ -220,11 +220,11 @@ public class RefreshParams
 EOF
 git add $FILE
 
-FILE=ToDoWebApi/Params/RegisterParams.cs
+FILE=$PROJECT/Params/RegisterParams.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoWebApi.Params;
+namespace $PROJECT.Params;
 
 public class RegisterParams
 {
@@ -897,11 +897,11 @@ git commit --message="Added repository files."
 
 mkdir -p $PROJECT/Results
 
-FILE=ToDoWebApi/Results/LoginResult.cs
+FILE=$PROJECT/Results/LoginResult.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoWebApi.Results;
+namespace $PROJECT.Results;
 
 public class LoginResult
 {
@@ -917,11 +917,11 @@ public class LoginResult
 EOF
 git add $FILE
 
-FILE=ToDoWebApi/Results/LoginResultUser.cs
+FILE=$PROJECT/Results/LoginResultUser.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoWebApi.Results;
+namespace $PROJECT.Results;
 
 public class LoginResultUser
 {
@@ -934,11 +934,11 @@ public class LoginResultUser
 EOF
 git add $FILE
 
-FILE=ToDoWebApi/Results/RefreshResult.cs
+FILE=$PROJECT/Results/RefreshResult.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoWebApi.Results;
+namespace $PROJECT.Results;
 
 public class RefreshResult
 {
@@ -953,13 +953,13 @@ git add $FILE
 
 git commit --message="Added result files."
 
-mkdir -p ToDoWebApi/Token
+mkdir -p $PROJECT/Token
 
-FILE=ToDoWebApi/Token/ITokenService.cs
+FILE=$PROJECT/Token/ITokenService.cs
 cat > $FILE << EOF
 using System.Security.Claims;
 
-namespace ToDoWebApi.Token;
+namespace $PROJECT.Token;
 
 public interface ITokenService
 {
@@ -970,7 +970,7 @@ public interface ITokenService
 EOF
 git add $FILE
 
-FILE=ToDoWebApi/Token/TokenService.cs
+FILE=$PROJECT/Token/TokenService.cs
 cat > $FILE << EOF
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -978,7 +978,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ToDoWebApi.Token;
+namespace $PROJECT.Token;
 
 public class TokenService : ITokenService
 {

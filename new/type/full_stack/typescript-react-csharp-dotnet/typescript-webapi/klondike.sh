@@ -30,7 +30,7 @@ REPOSITORY=$SERVER_REPOSITORY
 cd $REPOSITORY
 pwd
 
-FILE=ToDoWebApi/Properties/launchSettings.json
+FILE=$PROJECT/Properties/launchSettings.json
 SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 
 git push --force
