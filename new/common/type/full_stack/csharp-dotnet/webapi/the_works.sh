@@ -50,7 +50,7 @@ cd ..
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_local_commands.sh $CLIENT $PROJECT $REPOSITORY
 
 # type - add github actions
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_github_actions.sh $KEBOB $REPOSITORY
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_github_actions.sh $REPOSITORY
 
 # framework - add digital ocean files
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $KEBOB $NAME $PASCAL $PROJECT $REPOSITORY
