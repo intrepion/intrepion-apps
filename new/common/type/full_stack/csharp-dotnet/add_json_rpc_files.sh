@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-PASCAL=$1
-REPOSITORY=$2
+REPOSITORY=$1
 
-echo " - Running $SCRIPT $PASCAL $REPOSITORY"
+echo " - Running $SCRIPT $REPOSITORY"
 
 if [ $# -ne 2 ]; then
-  echo "usage: $SCRIPT <PASCAL> <REPOSITORY>"
+  echo "usage: $SCRIPT <REPOSITORY>"
   exit 1
 fi
 
@@ -16,13 +15,11 @@ pushd .
 cd $REPOSITORY
 pwd
 
-mkdir -p ${PASCAL}JsonRpc/JsonRpc
-
-FILE=${PASCAL}JsonRpc/JsonRpc/JsonRpcError.cs
+FILE=JsonRpc/JsonRpcError.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ${PASCAL}JsonRpc.JsonRpc;
+namespace JsonRpc;
 
 public class JsonRpcError
 {
@@ -38,12 +35,12 @@ public class JsonRpcError
 EOF
 git add $FILE
 
-FILE=${PASCAL}JsonRpc/JsonRpc/JsonRpcRequest.cs
+FILE=JsonRpc/JsonRpcRequest.cs
 cat > $FILE << EOF
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ${PASCAL}JsonRpc.JsonRpc;
+namespace JsonRpc;
 
 public class JsonRpcRequest
 {
@@ -62,11 +59,11 @@ public class JsonRpcRequest
 EOF
 git add $FILE
 
-FILE=${PASCAL}JsonRpc/JsonRpc/JsonRpcResponse.cs
+FILE=JsonRpc/JsonRpcResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ${PASCAL}JsonRpc.JsonRpc;
+namespace JsonRpc;
 
 public class JsonRpcResponse
 {
@@ -89,4 +86,4 @@ git commit --message="Added JSON-RPC code."
 
 popd
 
-echo " - Completed $SCRIPT $PASCAL $REPOSITORY"
+echo " - Completed $SCRIPT $REPOSITORY"
