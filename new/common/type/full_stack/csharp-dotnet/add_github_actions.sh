@@ -19,7 +19,6 @@ pwd
 mkdir -p .github/workflows
 
 FILE=.github/workflows/dotnet.yml
-
 cat > $FILE << EOF
 name: .NET
 
@@ -56,18 +55,15 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 EOF
-
 git add $FILE
 
 FILE=README.md
-
 cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/intrepion-$KEBOB-web-csharp-dotnet-web/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/intrepion-$KEBOB-web-csharp-dotnet-web/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/intrepion/intrepion-$KEBOB-json-rpc-server-csharp-dotnet-web/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/intrepion-$KEBOB-json-rpc-server-csharp-dotnet-web/actions/workflows/dotnet.yml)
 EOF
-
 git add $FILE
 
 git commit --message="Added GitHub Action files."

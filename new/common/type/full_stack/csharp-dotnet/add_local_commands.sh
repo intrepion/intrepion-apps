@@ -18,7 +18,6 @@ cd $REPOSITORY
 pwd
 
 FILE=README.md
-
 cat << EOF >> $FILE
 
 
@@ -42,8 +41,8 @@ dotnet test
 CLIENT_URL="$CLIENT" dotnet run --project ${PROJECT}
 \`\`\`
 EOF
-
 git add $FILE
+
 git commit -m "Added commands section to README file.";
 
 popd

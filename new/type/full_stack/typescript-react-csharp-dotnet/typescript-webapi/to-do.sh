@@ -39,7 +39,6 @@ SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 mkdir -p ToDoTests/Domain
 
 FILE=ToDoTests/Domain/ToDoItemTest.cs
-
 cat > $FILE << EOF
 using ToDoLibrary.Domain;
 
@@ -169,11 +168,9 @@ public class ToDoItemTest
     }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoTests/Domain/ToDoListTest.cs
-
 cat > $FILE << EOF
 using ToDoLibrary.Domain;
 
@@ -303,14 +300,13 @@ public class ToDoListTest
     }
 }
 EOF
-
 git add $FILE
+
 git commit --message="Added domain tests."
 
 mkdir -p ToDoLibrary/Domain
 
 FILE=ToDoLibrary/Domain/ToDoItem.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -358,11 +354,9 @@ public class ToDoItem
     }    
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoLibrary/Domain/ToDoList.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -410,50 +404,11 @@ public class ToDoList
     }    
 }
 EOF
-
 git add $FILE
+
 git commit --message="Added domain code."
 
-FILE=ToDoWebApi/appsettings.Development.json
-
-cat > $FILE << EOF
-{
-  "ClientUrl": "$CLIENT",
-  "ConnectionStrings": {  
-    "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
-  },
-  "JwtIssuer": $SERVER,
-  "JwtSecretKey": "SOME_RANDOM_KEY_DO_NOT_SHARE",
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  }
-}
-EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/appsettings.json
-
-cat > $FILE << EOF
-{
-  "AllowedHosts": "*",
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  }
-}
-EOF
-
-git add $FILE
-git commit --message "Updated app settings."
-
 FILE=ToDoWebApi/Controllers/ToDoController.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 using ToDoLibrary.JsonRpc;
@@ -490,14 +445,13 @@ public class ToDoController : ControllerBase
     }
 }
 EOF
-
 git add $FILE
+
 git commit --message="Added controllers."
 
 mkdir -p ToDoWebApi/Data
 
 FILE=ToDoWebApi/Data/ApplicationDbContext.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -505,7 +459,7 @@ using ToDoWebApi.Entities;
 
 namespace ToDoWebApi.Data;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -522,9 +476,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             .WithOne(toDoItem => toDoItem.ToDoList)
             .IsRequired();
 
-        modelBuilder.Entity<ApplicationUser>()
+        modelBuilder.Entity<UserEntity>()
             .HasMany(applicationUser => applicationUser.ToDoLists)
-            .WithOne(toDoList => toDoList.ApplicationUser)
+            .WithOne(toDoList => toDoList.UserEntity)
             .IsRequired();
     }
 
@@ -532,53 +486,35 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ToDoListEntity>? ToDoLists { get; set; }
 }
 EOF
-
 git add $FILE
 
-FILE=ToDoWebApi/Data/DbInitializer.cs
-
-cat > $FILE << EOF
-namespace ToDoWebApi.Data;
-
-public static class DbInitializer
-{
-    public static void Initialize(ApplicationDbContext context)
-    {
-    }
-}
-EOF
-
-git add $FILE
 git commit --message="Added data files."
 
 mkdir -p ToDoWebApi/Entities
 
-FILE=ToDoWebApi/Entities/ApplicationRole.cs
-
+FILE=ToDoWebApi/Entities/RoleEntity.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 
 namespace ToDoWebApi.Entities;
 
-public class ApplicationRole : IdentityRole<Guid>
+public class RoleEntity : IdentityRole<Guid>
 {
     [JsonPropertyName("guid")]
     public Guid? Guid { get; set; }
 }
 EOF
-
 git add $FILE
 
-FILE=ToDoWebApi/Entities/ApplicationUser.cs
-
+FILE=ToDoWebApi/Entities/UserEntity.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 
 namespace ToDoWebApi.Entities;
 
-public class ApplicationUser : IdentityUser<Guid>
+public class UserEntity : IdentityUser<Guid>
 {
     [JsonPropertyName("guid")]
     public Guid? Guid { get; set; }
@@ -593,11 +529,9 @@ public class ApplicationUser : IdentityUser<Guid>
     public ICollection<ToDoListEntity>? ToDoLists { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Entities/ToDoItemEntity.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 using ToDoLibrary.Domain;
@@ -616,11 +550,9 @@ public class ToDoItemEntity : ToDoItem
     public ToDoListEntity? ToDoList { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Entities/ToDoListEntity.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 using ToDoLibrary.Domain;
@@ -630,7 +562,7 @@ namespace ToDoWebApi.Entities;
 public class ToDoListEntity : ToDoList
 {
     [JsonPropertyName("application_user")]
-    public ApplicationUser? ApplicationUser { get; set; }
+    public UserEntity? UserEntity { get; set; }
 
     [JsonPropertyName("guid")]
     public Guid? Guid { get; set; }
@@ -642,14 +574,13 @@ public class ToDoListEntity : ToDoList
     public ICollection<ToDoItemEntity>? ToDoItems { get; set; }
 }
 EOF
-
 git add $FILE
+
 git commit --message="Added entities."
 
 mkdir -p ToDoWebApi/JsonRpc
 
 FILE=ToDoWebApi/JsonRpc/FunctionCall.cs
-
 cat > $FILE << EOF
 namespace ToDoWebApi.JsonRpc;
 
@@ -658,11 +589,9 @@ public class FunctionCall
     public List<Parameter>? Parameters { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/JsonRpc/FunctionCalls.cs
-
 cat > $FILE << EOF
 namespace ToDoWebApi.JsonRpc;
 
@@ -773,11 +702,9 @@ public static class FunctionCalls
     };
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/JsonRpc/IJsonRpcService.cs
-
 cat > $FILE << EOF
 using System.Security.Claims;
 using ToDoLibrary.JsonRpc;
@@ -790,11 +717,9 @@ namespace ToDoWebApi.JsonRpc
     }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/JsonRpc/JsonRpcService.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using ToDoLibrary.JsonRpc;
@@ -812,8 +737,8 @@ public class JsonRpcService : IJsonRpcService, IDisposable
     private readonly ApplicationDbContext _context;
     private readonly IToDoItemRepository _toDoItemRepository;
     private readonly IToDoListRepository _toDoListRepository;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<UserEntity> _signInManager;
+    private readonly UserManager<UserEntity> _userManager;
     private readonly IUserRepository _userRepository;
 
     public JsonRpcService(
@@ -821,8 +746,8 @@ public class JsonRpcService : IJsonRpcService, IDisposable
         ApplicationDbContext context,
         IToDoItemRepository toDoItemRepository,
         IToDoListRepository toDoListRepository,
-        SignInManager<ApplicationUser> signInManager,
-        UserManager<ApplicationUser> userManager,
+        SignInManager<UserEntity> signInManager,
+        UserManager<UserEntity> userManager,
         IUserRepository userRepository
         )
     {
@@ -1008,11 +933,9 @@ public class JsonRpcService : IJsonRpcService, IDisposable
     }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/JsonRpc/Parameter.cs
-
 cat > $FILE << EOF
 namespace ToDoWebApi.JsonRpc;
 
@@ -1023,14 +946,13 @@ public class Parameter
     public object? Value { get; set; }
 }
 EOF
-
 git add $FILE
+
 git commit --message="Added project json rpc files."
 
 mkdir -p ToDoWebApi/Params
 
 FILE=ToDoWebApi/Params/EditToDoItemParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -1051,11 +973,9 @@ public class EditToDoItemParams
     public string? Visible { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Params/EditToDoListParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -1076,30 +996,9 @@ public class EditToDoListParams
     public string? Visible { get; set; }
 }
 EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Params/LoginParams.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace ToDoWebApi.Params;
-
-public class LoginParams
-{
-    [JsonPropertyName("password")]
-    public string? Password { get; set; }
-
-    [JsonPropertyName("username")]
-    public string? UserName { get; set; }
-}
-EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Params/NewToDoItemParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -1111,11 +1010,9 @@ public class NewToDoItemParams
     public string? Text { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Params/NewToDoListParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -1127,56 +1024,11 @@ public class NewToDoListParams
     public string? Title { get; set; }
 }
 EOF
-
 git add $FILE
 
-FILE=ToDoWebApi/Params/RefreshParams.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace ToDoWebApi.Params;
-
-public class RefreshParams
-{
-    [JsonPropertyName("access_token")]
-    public string? AccessToken { get; set; }
-
-    [JsonPropertyName("refresh_token")]
-    public string? RefreshToken { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Params/RegisterParams.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace ToDoWebApi.Params;
-
-public class RegisterParams
-{
-    [JsonPropertyName("confirm")]
-    public string? Confirm { get; set; }
-
-    [JsonPropertyName("email")]
-    public string? Email { get; set; }
-
-    [JsonPropertyName("password")]
-    public string? Password { get; set; }
-
-    [JsonPropertyName("username")]
-    public string? Username { get; set; }
-}
-EOF
-
-git add $FILE
 git commit --message="Added params."
 
 FILE=ToDoWebApi/Program.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -1212,7 +1064,7 @@ var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
+builder.Services.AddIdentity<UserEntity, RoleEntity>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -1289,14 +1141,13 @@ app.Run();
 
 public partial class Program {}
 EOF
-
 git add $FILE
+
 git commit --message "Updated Program class."
 
 mkdir -p ToDoWebApi/Repositories
 
 FILE=ToDoWebApi/Repositories/IToDoItemRepository.cs
-
 cat > $FILE << EOF
 using System.Security.Claims;
 using ToDoLibrary.JsonRpc;
@@ -1311,11 +1162,9 @@ namespace ToDoWebApi.Repositories
     }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Repositories/IToDoListRepository.cs
-
 cat > $FILE << EOF
 using System.Security.Claims;
 using ToDoLibrary.JsonRpc;
@@ -1330,32 +1179,9 @@ namespace ToDoWebApi.Repositories
     }
 }
 EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Repositories/IUserRepository.cs
-
-cat > $FILE << EOF
-using System.Security.Claims;
-using ToDoLibrary.JsonRpc;
-
-namespace ToDoWebApi.Repositories
-{
-    public interface IUserRepository : IDisposable
-    {
-        Task<JsonRpcResponse> LoginAsync(JsonRpcRequest request);
-        JsonRpcResponse Logout(JsonRpcRequest request);
-        JsonRpcResponse Refresh(JsonRpcRequest request);
-        Task<JsonRpcResponse> RegisterAsync(JsonRpcRequest request);
-        JsonRpcResponse Revoke(ClaimsPrincipal claimsPrincipal, JsonRpcRequest request);
-    }
-}
-EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Repositories/ToDoItemRepository.cs
-
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
 using ToDoLibrary.Domain;
@@ -1605,11 +1431,9 @@ public class ToDoItemRepository : IToDoItemRepository, IDisposable
     }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Repositories/ToDoListRepository.cs
-
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
 using ToDoLibrary.Domain;
@@ -1674,7 +1498,7 @@ public class ToDoListRepository : IToDoListRepository, IDisposable
         }
 
         var toDoLists = await (from ToDoLists in _context.ToDoLists
-                               join Users in _context.Users on ToDoLists.ApplicationUser!.Id equals Users.Id
+                               join Users in _context.Users on ToDoLists.UserEntity!.Id equals Users.Id
                                where Users.UserName == userName
                                select ToDoLists).ToListAsync();
 
@@ -1871,7 +1695,7 @@ public class ToDoListRepository : IToDoListRepository, IDisposable
 
         toDoList = new ToDoListEntity
         {
-            ApplicationUser = applicationUser,
+            UserEntity = applicationUser,
             Complete = false,
             Guid = Guid.NewGuid(),
             Title = title,
@@ -1913,531 +1737,13 @@ public class ToDoListRepository : IToDoListRepository, IDisposable
     }
 }
 EOF
-
 git add $FILE
 
-FILE=ToDoWebApi/Repositories/UserRepository.cs
-
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Identity;
-using ToDoLibrary.JsonRpc;
-using ToDoWebApi.Data;
-using ToDoWebApi.Entities;
-using ToDoWebApi.Params;
-using ToDoWebApi.Results;
-using System.Security.Claims;
-using System.Text.Json;
-using ToDoWebApi.Token;
-
-namespace ToDoWebApi.Repositories;
-
-public class UserRepository : IUserRepository, IDisposable
-{
-    private readonly IConfiguration _configuration;
-    private readonly ApplicationDbContext _context;
-    private readonly SignInManager<ApplicationUser> _signInManager;
-    private readonly ITokenService _tokenService;
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public UserRepository(
-        IConfiguration configuration,
-        ApplicationDbContext context,
-        SignInManager<ApplicationUser> signInManager,
-        ITokenService tokenService,
-        UserManager<ApplicationUser> userManager
-        )
-    {
-        _context = context;
-        _configuration = configuration;
-        _signInManager = signInManager;
-        _tokenService = tokenService;
-        _userManager = userManager;
-    }
-    
-    public async Task<JsonRpcResponse> LoginAsync(JsonRpcRequest request)
-    {
-        if (request.Params == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32602,
-                    Message = "Invalid params - request.Params is not found",
-                },
-            };
-        }
-
-        JsonElement requestParams = (JsonElement)request.Params;
-
-        var loginParams = JsonSerializer.Deserialize<LoginParams>(requestParams.GetRawText());
-        if (loginParams == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32602,
-                    Message = "Invalid params - loginParams is not found",
-                },
-            };
-        }
-
-        if (loginParams.UserName == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32602,
-                    Message = "Invalid params - loginParams.UserName is not found",
-                },
-            };
-        }
-
-        if (loginParams.Password == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32602,
-                    Message = "Invalid params - loginParams.Password is not found",
-                },
-            };
-        }
-
-        var userName = loginParams.UserName.Trim();
-        var password = loginParams.Password;
-
-        var result = await _signInManager.PasswordSignInAsync(userName, password, false, false);
-
-        if (result.Succeeded)
-        {
-            var clientUrl = _configuration["ClientUrl"] ??
-                Environment.GetEnvironmentVariable("CLIENT_URL");
-
-            if (clientUrl == null)
-            {
-                return new JsonRpcResponse
-                {
-                    JsonRpc = "2.0",
-                    Error = new JsonRpcError
-                    {
-                        Code = -32600,
-                        Message = "internal error - clientUrl is not found",
-                    },
-                };
-            }
-
-            var jwtIssuer = _configuration["JwtIssuer"] ??
-                Environment.GetEnvironmentVariable("JWT_ISSUER");
-
-            if (jwtIssuer == null)
-            {
-                return new JsonRpcResponse
-                {
-                    JsonRpc = "2.0",
-                    Error = new JsonRpcError
-                    {
-                        Code = -32600,
-                        Message = "internal error - jwtIssuer is not found",
-                    },
-                };
-            }
-
-            var jwtSecretKey = _configuration["JwtSecretKey"] ??
-                Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-
-            if (jwtSecretKey == null)
-            {
-                return new JsonRpcResponse
-                {
-                    JsonRpc = "2.0",
-                    Error = new JsonRpcError
-                    {
-                        Code = -32600,
-                        Message = "internal error - jwtSecretKey is not found",
-                    },
-                };
-            }
-
-            var user = _context.Users.FirstOrDefault(u => u.UserName == userName);
-
-            if (user == null)
-            {
-                return new JsonRpcResponse
-                {
-                    JsonRpc = "2.0",
-                    Error = new JsonRpcError
-                    {
-                        Code = -32600,
-                        Message = "internal error - user is not found",
-                    },
-                };
-            }
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, userName),
-            };
-            var accessToken = _tokenService.GenerateAccessToken(claims, clientUrl, jwtIssuer, jwtSecretKey);
-            var refreshToken = _tokenService.GenerateRefreshToken();
-
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
-
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Result = new LoginResult {
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken,
-                    User = new LoginResultUser {
-                        Guid = user.Guid,
-                        UserName = user.UserName,
-                    },
-                },
-            };
-        }
-
-        return new JsonRpcResponse {
-            Id = request.Id,
-            JsonRpc = request.JsonRpc,
-            Error = new JsonRpcError {
-                Code = 1,
-                Message = "Invalid login attempt.",
-                Data = result,
-            },
-        };
-    }
-
-    public JsonRpcResponse Logout(JsonRpcRequest request)
-    {
-        return new JsonRpcResponse {
-            Id = request.Id,
-            JsonRpc = request.JsonRpc,
-        };
-    }
-
-    public JsonRpcResponse Refresh(JsonRpcRequest request)
-    {
-        var clientUrl = _configuration["ClientUrl"] ??
-            Environment.GetEnvironmentVariable("CLIENT_URL");
-
-        if (clientUrl == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32600,
-                    Message = "internal error - clientUrl is not found",
-                },
-            };
-        }
-
-        var jwtIssuer = _configuration["JwtIssuer"] ??
-            Environment.GetEnvironmentVariable("JWT_ISSUER");
-
-        if (jwtIssuer == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32600,
-                    Message = "internal error - jwtIssuer is not found",
-                },
-            };
-        }
-
-        var jwtSecretKey = _configuration["JwtSecretKey"] ??
-            Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
-
-        if (jwtSecretKey == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32600,
-                    Message = "internal error - jwtSecretKey is not found",
-                },
-            };
-        }
-
-        if (request.Params == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32602,
-                    Message = "Invalid params - request.Params is not found",
-                },
-            };
-        }
-
-        JsonElement requestParams = (JsonElement)request.Params;
-
-        var refreshParams = JsonSerializer.Deserialize<RefreshParams>(requestParams.GetRawText());
-
-        if (refreshParams == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-        
-        if (refreshParams.AccessToken == null || refreshParams.RefreshToken == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        var accessToken = refreshParams.AccessToken;
-        var refreshToken = refreshParams.RefreshToken;
-        var principal = _tokenService.GetPrincipalFromExpiredToken(jwtSecretKey, accessToken);
-
-        if (principal == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        if (principal.Identity == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        if (principal.Identity.Name == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        var userName = principal.Identity.Name;
-        var user = _context.Users.SingleOrDefault(u => u.UserName == userName);
-        if (user is null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, userName),
-        };
-        var newAccessToken = _tokenService.GenerateAccessToken(claims, clientUrl, jwtIssuer, jwtSecretKey);
-        var newRefreshToken = _tokenService.GenerateRefreshToken();
-
-        user.RefreshToken = newRefreshToken;
-        _context.SaveChanges();
-
-        return new JsonRpcResponse {
-            Id = request.Id,
-            JsonRpc = request.JsonRpc,
-            Result = new LoginResult {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-            },
-        };
-    }
-
-    public async Task<JsonRpcResponse> RegisterAsync(JsonRpcRequest request)
-    {
-        if (request.Params == null)
-        {
-            return new JsonRpcResponse
-            {
-                JsonRpc = "2.0",
-                Error = new JsonRpcError
-                {
-                    Code = -32602,
-                    Message = "Invalid params - request.Params is not found",
-                },
-            };
-        }
-
-        JsonElement requestParams = (JsonElement)request.Params;
-
-        var registerParams = JsonSerializer.Deserialize<RegisterParams>(requestParams.GetRawText());
-
-        if (registerParams == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        if (registerParams.Email == null || registerParams.Username == null || registerParams.Password == null || registerParams.Confirm == null)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 2,
-                    Message = "Invalid client request.",
-                },
-            };
-        }
-
-        var confirm = registerParams.Confirm;
-        var password = registerParams.Password;
-
-        if (confirm != password) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 3,
-                    Message = "Passwords do not match.",
-                },
-            };
-        }
-
-        var email = registerParams.Email.Trim();
-        var userName = registerParams.Username.Trim();
-
-        var user = new ApplicationUser {
-            Email = email,
-            Guid = Guid.NewGuid(),
-            UserName = userName,
-        };
-
-        var result = await _userManager.CreateAsync(user, password);
-
-        if (result.Succeeded)
-        {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-            };
-        }
-
-        return new JsonRpcResponse {
-            Id = request.Id,
-            JsonRpc = request.JsonRpc,
-            Error = new JsonRpcError {
-                Code = 4,
-                Message = "User could not be created.",
-                Data = result,
-            },
-        };
-    }
-
-    public JsonRpcResponse Revoke(ClaimsPrincipal claimsPrincipal, JsonRpcRequest request)
-    {
-        if (claimsPrincipal == null || claimsPrincipal.Identity == null || claimsPrincipal.Identity.Name == null) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 5,
-                    Message = "Bad request.",
-                },
-            };
-        }
-
-        var userName = claimsPrincipal.Identity.Name;
-        var user = _context.Users.SingleOrDefault(u => u.UserName == userName);
-        if (user == null) {
-            return new JsonRpcResponse {
-                Id = request.Id,
-                JsonRpc = request.JsonRpc,
-                Error = new JsonRpcError {
-                    Code = 5,
-                    Message = "Bad request.",
-                },
-            };
-        }
-        user.RefreshToken = null;
-        _context.SaveChanges();
-        return new JsonRpcResponse {
-            Id = request.Id,
-            JsonRpc = request.JsonRpc,
-        };
-    }
-
-    private bool disposed = false;
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!this.disposed)
-        {
-            if (disposing)
-            {
-                _context.Dispose();
-            }
-        }
-        this.disposed = true;
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-}
-EOF
-
-git add $FILE
 git commit --message="Added repository files."
 
 mkdir -p ToDoWebApi/Results
 
 FILE=ToDoWebApi/Results/AllToDoItemsResult.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -2449,11 +1755,9 @@ public class AllToDoItemsResult
     public List<AllToDoItemsResultToDoItem>? ToDoItems { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Results/AllToDoItemsResultToDoItem.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -2474,11 +1778,9 @@ public class AllToDoItemsResultToDoItem
     public bool? Visible { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Results/AllToDoListsResult.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -2490,11 +1792,9 @@ public class AllToDoListsResult
     public List<AllToDoListsResultToDoList>? ToDoLists { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Results/AllToDoListsResultToDoList.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -2515,52 +1815,9 @@ public class AllToDoListsResultToDoList
     public bool? Visible { get; set; }
 }
 EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Results/LoginResult.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace ToDoWebApi.Results;
-
-public class LoginResult
-{
-    [JsonPropertyName("access_token")]
-    public string? AccessToken { get; set; }
-
-    [JsonPropertyName("refresh_token")]
-    public string? RefreshToken { get; set; }
-
-    [JsonPropertyName("user")]
-    public LoginResultUser? User { get; set; }
-}
-EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Results/LoginResultUser.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace ToDoWebApi.Results;
-
-public class LoginResultUser
-{
-    [JsonPropertyName("guid")]
-    public Guid? Guid { get; set; }
-
-    [JsonPropertyName("username")]
-    public string? UserName { get; set; }
-}
-EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Results/NewToDoItemResult.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -2572,11 +1829,9 @@ public class NewToDoItemResult
     public string? Text { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=ToDoWebApi/Results/NewToDoListResult.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -2588,107 +1843,10 @@ public class NewToDoListResult
     public string? Title { get; set; }
 }
 EOF
-
 git add $FILE
 
-FILE=ToDoWebApi/Results/RefreshResult.cs
-
-cat > $FILE << EOF
-using System.Text.Json.Serialization;
-
-namespace ToDoWebApi.Results;
-
-public class RefreshResult
-{
-    [JsonPropertyName("access_token")]
-    public string? AccessToken { get; set; }
-
-    [JsonPropertyName("refresh_token")]
-    public string? RefreshToken { get; set; }
-}
-EOF
-
-git add $FILE
 git commit --message="Added result files."
 
-mkdir -p ToDoWebApi/Token
-
-FILE=ToDoWebApi/Token/ITokenService.cs
-
-cat > $FILE << EOF
-using System.Security.Claims;
-
-namespace ToDoWebApi.Token;
-
-public interface ITokenService
-{
-    string GenerateAccessToken(IEnumerable<Claim> claims, string clientUrl, string jwtIssuer, string jwtSecretKey);
-    string GenerateRefreshToken();
-    ClaimsPrincipal GetPrincipalFromExpiredToken(string jwtSecretKey, string token);
-}
-EOF
-
-git add $FILE
-
-FILE=ToDoWebApi/Token/TokenService.cs
-
-cat > $FILE << EOF
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-
-namespace ToDoWebApi.Token;
-
-public class TokenService : ITokenService
-{
-    public string GenerateAccessToken(IEnumerable<Claim> claims, string clientUrl, string jwtIssuer, string jwtSecretKey)
-    {
-        var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey));
-        var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-        var tokeOptions = new JwtSecurityToken(
-            issuer: jwtIssuer,
-            audience: clientUrl,
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(5),
-            signingCredentials: signinCredentials
-        );
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-        return tokenString;
-    }
-    public string GenerateRefreshToken()
-    {
-        var randomNumber = new byte[32];
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
-    }
-    public ClaimsPrincipal GetPrincipalFromExpiredToken(string jwtSecretKey, string token)
-    {
-        var tokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
-            ValidateLifetime = false
-        };
-        var tokenHandler = new JwtSecurityTokenHandler();
-        SecurityToken securityToken;
-        var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
-        var jwtSecurityToken = securityToken as JwtSecurityToken;
-        if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-            throw new SecurityTokenException("Invalid token");
-        return principal;
-    }
-}
-EOF
-
-git add $FILE
-git commit --message="Added token service."
 git push --force
 
 cd ..

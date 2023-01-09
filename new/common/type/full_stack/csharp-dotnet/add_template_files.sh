@@ -34,6 +34,14 @@ dotnet sln ${PASCAL}App.sln add ${PASCAL}Library
 git add ${PASCAL}App.sln
 git commit --message "dotnet sln ${PASCAL}App.sln add ${PASCAL}Library"
 
+dotnet new classlib --name ${PASCAL}JsonRpc
+git add ${PASCAL}JsonRpc
+git commit --message "dotnet new classlib --name ${PASCAL}JsonRpc"
+
+dotnet sln ${PASCAL}App.sln add ${PASCAL}JsonRpc
+git add ${PASCAL}App.sln
+git commit --message "dotnet sln ${PASCAL}App.sln add ${PASCAL}JsonRpc"
+
 dotnet new $TEMPLATE --name $PROJECT
 git add $PROJECT
 git commit --message "dotnet new $TEMPLATE --auth Individual --name $PROJECT --use-local-db"
@@ -45,6 +53,10 @@ git commit --message "dotnet sln ${PASCAL}App.sln add $PROJECT"
 dotnet add $PROJECT reference ${PASCAL}Library
 git add $PROJECT
 git commit --message "dotnet add $PROJECT reference ${PASCAL}Library"
+
+dotnet add $PROJECT reference ${PASCAL}JsonRpc
+git add $PROJECT
+git commit --message "dotnet add $PROJECT reference ${PASCAL}JsonRpc"
 
 dotnet add $PROJECT package Microsoft.AspNetCore.Cors
 git add $PROJECT
@@ -73,6 +85,10 @@ git commit --message "dotnet sln ${PASCAL}App.sln add ${PASCAL}Tests"
 dotnet add ${PASCAL}Tests reference ${PASCAL}Library
 git add ${PASCAL}Tests
 git commit --message "dotnet add ${PASCAL}Tests reference ${PASCAL}Library"
+
+dotnet add ${PASCAL}Tests reference ${PASCAL}JsonRpc
+git add ${PASCAL}Tests
+git commit --message "dotnet add ${PASCAL}Tests reference ${PASCAL}JsonRpc"
 
 dotnet add ${PASCAL}Tests reference $PROJECT
 git add ${PASCAL}Tests

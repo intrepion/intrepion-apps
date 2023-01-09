@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-NAME=$1
-PASCAL=$2
-PROJECT=$3
-REPOSITORY=$4
+KEBOB=$1
+NAME=$2
+PASCAL=$3
+PROJECT=$4
+REPOSITORY=$5
 
-echo " - Running $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
+echo " - Running $SCRIPT $KEBOB $NAME $PASCAL $PROJECT $REPOSITORY"
 
-if [ $# -ne 4 ]; then
-  echo "usage: $SCRIPT <NAME> <PASCAL> <PROJECT> <REPOSITORY>"
+if [ $# -ne 5 ]; then
+  echo "usage: $SCRIPT <KEBOB> <NAME> <PASCAL> <PROJECT> <REPOSITORY>"
   exit 1
 fi
 
@@ -23,7 +24,7 @@ mkdir -p .do
 FILE=.do/app.yaml
 
 cat > $FILE << EOF
-name: app-$NAME
+name: $KEBOB-$NAME
 region: sfo
 services:
   - dockerfile_path: Dockerfile
@@ -48,7 +49,7 @@ FILE=.do/deploy.template.yaml
 
 cat > $FILE << EOF
 spec:
-  name: app-$NAME
+  name: $KEBOB-$NAME
   region: sfo
   services:
     - dockerfile_path: Dockerfile
@@ -182,4 +183,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo " - Completed $SCRIPT $NAME $PASCAL $PROJECT $REPOSITORY"
+echo " - Completed $SCRIPT $KEBOB $NAME $PASCAL $PROJECT $REPOSITORY"

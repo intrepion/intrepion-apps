@@ -16,14 +16,13 @@ pushd .
 cd $REPOSITORY
 pwd
 
-mkdir -p ${PASCAL}Library/JsonRpc
+mkdir -p ${PASCAL}JsonRpc/JsonRpc
 
-FILE=${PASCAL}Library/JsonRpc/JsonRpcError.cs
-
+FILE=${PASCAL}JsonRpc/JsonRpc/JsonRpcError.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoLibrary.JsonRpc;
+namespace ${PASCAL}JsonRpc.JsonRpc;
 
 public class JsonRpcError
 {
@@ -37,16 +36,14 @@ public class JsonRpcError
     public object? Data { get; set; }
 }
 EOF
-
 git add $FILE
 
-FILE=${PASCAL}Library/JsonRpc/JsonRpcRequest.cs
-
+FILE=${PASCAL}JsonRpc/JsonRpc/JsonRpcRequest.cs
 cat > $FILE << EOF
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace ToDoLibrary.JsonRpc;
+namespace ${PASCAL}JsonRpc.JsonRpc;
 
 public class JsonRpcRequest
 {
@@ -63,15 +60,13 @@ public class JsonRpcRequest
     public JsonElement? Params { get; set; }
 }
 EOF
-
 git add $FILE
 
-FILE=${PASCAL}Library/JsonRpc/JsonRpcResponse.cs
-
+FILE=${PASCAL}JsonRpc/JsonRpc/JsonRpcResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace ToDoLibrary.JsonRpc;
+namespace ${PASCAL}JsonRpc.JsonRpc;
 
 public class JsonRpcResponse
 {
@@ -88,7 +83,6 @@ public class JsonRpcResponse
     public JsonRpcError? Error { get; set; }
 }
 EOF
-
 git add $FILE
 
 git commit --message="Added JSON-RPC code."

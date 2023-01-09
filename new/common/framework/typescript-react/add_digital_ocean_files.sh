@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-NAME=$1
-REPOSITORY=$2
+KEBOB=$1
+NAME=$2
+REPOSITORY=$3
 
-echo " - Running $SCRIPT $NAME $REPOSITORY"
+echo " - Running $SCRIPT $KEBOB $NAME $REPOSITORY"
 
-if [ $# -ne 2 ]; then
-  echo "usage: $SCRIPT <NAME> <REPOSITORY>"
+if [ $# -ne 3 ]; then
+  echo "usage: $SCRIPT <KEBOB> <NAME> <REPOSITORY>"
   exit 1
 fi
 
@@ -21,7 +22,7 @@ mkdir -p .do
 FILE=.do/app.yaml
 
 cat > $FILE << EOF
-name: app-$NAME
+name: $KEBOB-$NAME
 region: sfo
 static_sites:
   - build_command: npm run build
@@ -42,7 +43,7 @@ FILE=.do/deploy.template.yaml
 
 cat > $FILE << EOF
 spec:
-  name: app-$NAME
+  name: $KEBOB-$NAME
   region: sfo
   static_sites:
     - build_command: npm run build
@@ -100,4 +101,4 @@ git commit --message="Added Digital Ocean files."
 
 popd
 
-echo " - Completed $SCRIPT $NAME $REPOSITORY"
+echo " - Completed $SCRIPT $KEBOB $NAME $REPOSITORY"

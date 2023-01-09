@@ -31,7 +31,7 @@ NAME=web
 ./intrepion-apps/new/common/framework/$FRAMEWORK/add_github_actions.sh $REPOSITORY
 
 # framework - add digital ocean files
-./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $NAME $PASCAL $PROJECT $REPOSITORY
+./intrepion-apps/new/common/framework/$FRAMEWORK/add_digital_ocean_files.sh $KEBOB $NAME $PASCAL $PROJECT $REPOSITORY
 
 # template - add health check
 ./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PROJECT $REPOSITORY
