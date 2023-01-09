@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 
 SCRIPT=$0
-KEBOB=$1
-REPOSITORY=$2
+REPOSITORY=$1
 
-echo " - Running $SCRIPT $KEBOB $REPOSITORY"
+echo " - Running $SCRIPT $REPOSITORY"
 
-if [ $# -ne 2 ]; then
-  echo "usage: $SCRIPT <KEBOB> <REPOSITORY>"
+if [ $# -ne 1 ]; then
+  echo "usage: $SCRIPT <REPOSITORY>"
   exit 1
 fi
 
@@ -62,7 +61,7 @@ cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/intrepion-$KEBOB-json-rpc-server-csharp-dotnet-web/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/intrepion-$KEBOB-json-rpc-server-csharp-dotnet-web/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml)
 EOF
 git add $FILE
 
@@ -70,4 +69,4 @@ git commit --message="Added GitHub Action files."
 
 popd
 
-echo " - Completed $SCRIPT $KEBOB $REPOSITORY"
+echo " - Completed $SCRIPT $REPOSITORY"
