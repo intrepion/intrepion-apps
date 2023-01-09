@@ -5,7 +5,7 @@ REPOSITORY=$1
 
 echo " - Running $SCRIPT $REPOSITORY"
 
-if [ $# -ne 2 ]; then
+if [ $# -ne 1 ]; then
   echo "usage: $SCRIPT <REPOSITORY>"
   exit 1
 fi

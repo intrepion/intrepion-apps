@@ -44,7 +44,7 @@ cd ..
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_postgres.sh $CLIENT $KEBOB $PASCAL $PROJECT $REPOSITORY $SERVER $TEMPLATE
 
 # type - add json-rpc files
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $REPOSITORY
 
 # type - add local commands
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_local_commands.sh $CLIENT $PROJECT $REPOSITORY
