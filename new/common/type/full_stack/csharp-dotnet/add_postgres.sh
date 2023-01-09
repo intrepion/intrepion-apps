@@ -116,7 +116,7 @@ using $PROJECT.Entities;
 
 namespace $PROJECT.Data;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
+public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
