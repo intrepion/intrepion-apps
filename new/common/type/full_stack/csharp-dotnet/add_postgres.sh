@@ -1,16 +1,18 @@
 #!/bin/bash
 
 SCRIPT=$0
-KEBOB=$1
-PASCAL=$2
-PROJECT=$3
-REPOSITORY=$4
-TEMPLATE=$5
+CLIENT=$1
+KEBOB=$2
+PASCAL=$3
+PROJECT=$4
+REPOSITORY=$5
+SERVER=$6
+TEMPLATE=$7
 
-echo " - Running $SCRIPT $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Running $SCRIPT $CLIENT $KEBOB $PASCAL $PROJECT $REPOSITORY $SERVER $TEMPLATE"
 
-if [ $# -ne 5 ]; then
-  echo "usage: $SCRIPT <KEBOB> <PASCAL> <PROJECT> <REPOSITORY> <TEMPLATE>"
+if [ $# -ne 7 ]; then
+  echo "usage: $SCRIPT <CLIENT> <KEBOB> <PASCAL> <PROJECT> <REPOSITORY> <SERVER> <TEMPLATE>"
   exit 1
 fi
 
@@ -110,6 +112,7 @@ FILE=$PROJECT/Data/ApplicationDbContext.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using $PROJECT.Entities;
 
 namespace $PROJECT.Data;
 
@@ -253,7 +256,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using $PROJECT.Data;
 using $PROJECT.Entities;
+using $PROJECT.Repositories;
 using $PROJECT.Token;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -1031,4 +1036,4 @@ git commit --message="Added token service."
 
 popd
 
-echo " - Completed $SCRIPT $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE"
+echo " - Completed $SCRIPT $CLIENT $KEBOB $PASCAL $PROJECT $REPOSITORY $SERVER $TEMPLATE"

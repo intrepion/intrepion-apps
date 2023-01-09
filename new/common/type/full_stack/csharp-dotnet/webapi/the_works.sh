@@ -32,8 +32,16 @@ NAME=server
 # template - add health check
 ./intrepion-apps/new/common/framework/$FRAMEWORK/$TEMPLATE/add_health_check.sh $PASCAL $REPOSITORY
 
+cd $REPOSITORY
+pwd
+
+FILE=$PROJECT/Properties/launchSettings.json
+SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
+
+cd ..
+
 # type - add postgres
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_postgres.sh $KEBOB $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_postgres.sh $CLIENT $KEBOB $PASCAL $PROJECT $REPOSITORY $SERVER $TEMPLATE
 
 # type - add json-rpc files
 ./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/add_json_rpc_files.sh $PASCAL $REPOSITORY
