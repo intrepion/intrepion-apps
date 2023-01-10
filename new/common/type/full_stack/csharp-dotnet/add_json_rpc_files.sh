@@ -15,11 +15,11 @@ pushd .
 cd $REPOSITORY
 pwd
 
-FILE=JsonRpc/JsonRpcError.cs
+FILE=Intrepion.JsonRpc/JsonRpcError.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace JsonRpc;
+namespace Intrepion.JsonRpc;
 
 public class JsonRpcError
 {
@@ -35,12 +35,12 @@ public class JsonRpcError
 EOF
 git add $FILE
 
-FILE=JsonRpc/JsonRpcRequest.cs
+FILE=Intrepion.JsonRpc/JsonRpcRequest.cs
 cat > $FILE << EOF
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace JsonRpc;
+namespace Intrepion.JsonRpc;
 
 public class JsonRpcRequest
 {
@@ -59,11 +59,11 @@ public class JsonRpcRequest
 EOF
 git add $FILE
 
-FILE=JsonRpc/JsonRpcResponse.cs
+FILE=Intrepion.JsonRpc/JsonRpcResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace JsonRpc;
+namespace Intrepion.JsonRpc;
 
 public class JsonRpcResponse
 {

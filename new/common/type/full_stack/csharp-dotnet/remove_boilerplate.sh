@@ -20,7 +20,7 @@ FILE=${PASCAL}Library/Class1.cs
 rm -rf $FILE
 git add $FILE
 
-FILE=JsonRpc/Class1.cs
+FILE=Intrepion.JsonRpc/Class1.cs
 rm -rf $FILE
 git add $FILE
 

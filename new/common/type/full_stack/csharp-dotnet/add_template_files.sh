@@ -34,13 +34,13 @@ dotnet sln ${PASCAL}App.sln add ${PASCAL}Library
 git add ${PASCAL}App.sln
 git commit --message "dotnet sln ${PASCAL}App.sln add ${PASCAL}Library"
 
-dotnet new classlib --name JsonRpc
-git add JsonRpc
-git commit --message "dotnet new classlib --name JsonRpc"
+dotnet new classlib --name Intrepion.JsonRpc
+git add Intrepion.JsonRpc
+git commit --message "dotnet new classlib --name Intrepion.JsonRpc"
 
-dotnet sln ${PASCAL}App.sln add JsonRpc
+dotnet sln ${PASCAL}App.sln add Intrepion.JsonRpc
 git add ${PASCAL}App.sln
-git commit --message "dotnet sln ${PASCAL}App.sln add JsonRpc"
+git commit --message "dotnet sln ${PASCAL}App.sln add Intrepion.JsonRpc"
 
 dotnet new $TEMPLATE --name $PROJECT
 git add $PROJECT
@@ -54,9 +54,9 @@ dotnet add $PROJECT reference ${PASCAL}Library
 git add $PROJECT
 git commit --message "dotnet add $PROJECT reference ${PASCAL}Library"
 
-dotnet add $PROJECT reference JsonRpc
+dotnet add $PROJECT reference Intrepion.JsonRpc
 git add $PROJECT
-git commit --message "dotnet add $PROJECT reference JsonRpc"
+git commit --message "dotnet add $PROJECT reference Intrepion.JsonRpc"
 
 dotnet add $PROJECT package Microsoft.AspNetCore.Cors
 git add $PROJECT
@@ -86,9 +86,9 @@ dotnet add ${PASCAL}Tests reference ${PASCAL}Library
 git add ${PASCAL}Tests
 git commit --message "dotnet add ${PASCAL}Tests reference ${PASCAL}Library"
 
-dotnet add ${PASCAL}Tests reference JsonRpc
+dotnet add ${PASCAL}Tests reference Intrepion.JsonRpc
 git add ${PASCAL}Tests
-git commit --message "dotnet add ${PASCAL}Tests reference JsonRpc"
+git commit --message "dotnet add ${PASCAL}Tests reference Intrepion.JsonRpc"
 
 dotnet add ${PASCAL}Tests reference $PROJECT
 git add ${PASCAL}Tests

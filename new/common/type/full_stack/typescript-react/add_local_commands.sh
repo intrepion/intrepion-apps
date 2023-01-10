@@ -16,7 +16,8 @@ pushd .
 cd $REPOSITORY
 pwd
 
-cat << EOF >> README.md
+FILE=README.md
+cat << EOF >> $FILE
 
 ## Commands
 
@@ -44,8 +45,8 @@ npm test
 REACT_APP_SERVER_URL=$SERVER npm start
 \`\`\`
 EOF
-
 git add README.md
+
 git commit -m "Added commands section to README file.";
 
 popd

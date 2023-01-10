@@ -20,7 +20,7 @@ PROJECT=${PASCAL}WebApi
 REPOSITORY=intrepion-$KEBOB-json-rpc-server-$FRAMEWORK-$TEMPLATE
 
 # framework - the works
-./intrepion-apps/new/common/type/full_stack/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE
+./intrepion-apps/new/common/type/full_stack/jwt/$FRAMEWORK/$TEMPLATE/the_works.sh $FRAMEWORK $PASCAL $PROJECT $REPOSITORY $TEMPLATE
 
 # project - add saying hello
 cd $REPOSITORY
@@ -1312,7 +1312,7 @@ cd ..
 CLIENT="http://localhost:3000"
 
 # type - add run scripts
-./intrepion-apps/new/common/type/full_stack/typescript-react-typescript-csharp-dotnet-webapi/add_run_scripts.sh $CLIENT $KEBOB $PROJECT $SERVER
+./intrepion-apps/new/common/type/full_stack/jwt/typescript-react-typescript-csharp-dotnet-webapi/add_run_scripts.sh $CLIENT $KEBOB $PROJECT $SERVER
 
 popd
 

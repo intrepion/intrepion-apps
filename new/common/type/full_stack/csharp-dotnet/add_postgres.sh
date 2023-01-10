@@ -366,8 +366,8 @@ mkdir -p $PROJECT/Repositories
 FILE=$PROJECT/Repositories/IUserRepository.cs
 
 cat > $FILE << EOF
+using Intrepion.JsonRpc;
 using System.Security.Claims;
-using ${PASCAL}JsonRpc.JsonRpc;
 
 namespace $PROJECT.Repositories
 {
@@ -385,10 +385,10 @@ git add $FILE
 
 FILE=$PROJECT/Repositories/UserRepository.cs
 cat > $FILE << EOF
+using Intrepion.JsonRpc;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using System.Text.Json;
-using ${PASCAL}JsonRpc.JsonRpc;
 using $PROJECT.Data;
 using $PROJECT.Entities;
 using $PROJECT.Params;
