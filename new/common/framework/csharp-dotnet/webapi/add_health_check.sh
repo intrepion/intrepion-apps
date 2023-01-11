@@ -22,14 +22,12 @@ cat << EOF >> $FILE
 
 public partial class Program {}
 EOF
-
 git add $FILE
 git commit -m "Added public partial to Program class.";
 
 mkdir -p ${PASCAL}Tests/Controllers
 
 FILE=${PASCAL}Tests/Controllers/HealthCheckControllerTest.cs
-
 cat > $FILE << EOF
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -62,12 +60,10 @@ public class HealthCheckControllerTest : IClassFixture<WebApplicationFactory<Pro
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added health check controller tests."
 
 FILE=${PASCAL}WebApi/Controllers/HealthCheckController.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
@@ -91,7 +87,6 @@ public class HealthCheckController : ControllerBase
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added health check controller."
 

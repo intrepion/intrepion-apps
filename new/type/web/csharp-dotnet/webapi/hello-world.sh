@@ -27,7 +27,6 @@ pwd
 mkdir -p HelloWorldTests/Controllers
 
 FILE=HelloWorldTests/Controllers/HelloWorldControllerTest.cs
-
 cat > $FILE << EOF
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -60,12 +59,10 @@ public class HelloWorldControllerTest : IClassFixture<WebApplicationFactory<Prog
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added hello world controller tests."
 
 FILE=HelloWorldWebApi/Controllers/HelloWorldController.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
@@ -89,7 +86,6 @@ public class HelloWorldController : ControllerBase
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added hello world controller."
 git push --force

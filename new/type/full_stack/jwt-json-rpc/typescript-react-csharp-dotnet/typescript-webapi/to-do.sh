@@ -301,7 +301,6 @@ public class ToDoListTest
 }
 EOF
 git add $FILE
-
 git commit --message="Added domain tests."
 
 mkdir -p ToDoLibrary/Domain
@@ -405,7 +404,6 @@ public class ToDoList
 }
 EOF
 git add $FILE
-
 git commit --message="Added domain code."
 
 FILE=ToDoWebApi/Controllers/ToDoController.cs
@@ -446,7 +444,6 @@ public class ToDoController : ControllerBase
 }
 EOF
 git add $FILE
-
 git commit --message="Added controllers."
 
 mkdir -p ToDoWebApi/Data
@@ -487,7 +484,6 @@ public class ApplicationDbContext : IdentityDbContext<UserEntity, RoleEntity, Gu
 }
 EOF
 git add $FILE
-
 git commit --message="Added data files."
 
 mkdir -p ToDoWebApi/Entities
@@ -575,7 +571,6 @@ public class ToDoListEntity : ToDoList
 }
 EOF
 git add $FILE
-
 git commit --message="Added entities."
 
 mkdir -p ToDoWebApi/JsonRpc
@@ -947,7 +942,6 @@ public class Parameter
 }
 EOF
 git add $FILE
-
 git commit --message="Added project json rpc files."
 
 mkdir -p ToDoWebApi/Params
@@ -1025,7 +1019,6 @@ public class NewToDoListParams
 }
 EOF
 git add $FILE
-
 git commit --message="Added params."
 
 FILE=ToDoWebApi/Program.cs
@@ -1142,7 +1135,6 @@ app.Run();
 public partial class Program {}
 EOF
 git add $FILE
-
 git commit --message "Updated Program class."
 
 mkdir -p ToDoWebApi/Repositories
@@ -1738,7 +1730,6 @@ public class ToDoListRepository : IToDoListRepository, IDisposable
 }
 EOF
 git add $FILE
-
 git commit --message="Added repository files."
 
 mkdir -p ToDoWebApi/Results
@@ -1844,7 +1835,6 @@ public class NewToDoListResult
 }
 EOF
 git add $FILE
-
 git commit --message="Added result files."
 
 git push --force
@@ -1863,7 +1853,6 @@ cd $REPOSITORY
 pwd
 
 FILE=src/App.tsx
-
 cat > $FILE << EOF
 import { AuthProvider } from "./context/auth";
 import { Routes } from "./routes";
@@ -1878,11 +1867,9 @@ function App() {
 
 export default App;
 EOF
-
 git add $FILE
 
 FILE=src/index.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -1901,14 +1888,12 @@ root.render(
 
 reportWebVitals();
 EOF
-
 git add $FILE
 git commit --message "Updated App and index files."
 
 mkdir -p src/components
 
 FILE=src/components/Logout.tsx
-
 cat > $FILE << EOF
 import React, { useEffect } from "react";
 import { redirect } from "react-router-dom";
@@ -1951,11 +1936,9 @@ const Logout: React.FC = () => {
 
 export default Logout;
 EOF
-
 git add $FILE
 
 FILE=src/components/ToDoItem.tsx
-
 cat > $FILE << EOF
 import React from "react";
 
@@ -1978,11 +1961,9 @@ const ToDoItem = (props: ToDoItemInterface) => {
 
 export default ToDoItem;
 EOF
-
 git add $FILE
 
 FILE=src/components/ToDoItemForm.tsx
-
 cat > $FILE << EOF
 import React, { useEffect, useState } from "react";
 import ToDoItem from "./ToDoItem";
@@ -2071,14 +2052,12 @@ const ToDoItemForm: React.FC = () => {
 
 export default ToDoItemForm;
 EOF
-
 git add $FILE
 git commit --message "Added components."
 
 mkdir -p src/context
 
 FILE=src/context/auth.tsx
-
 cat > $FILE << EOF
 import { createContext, useContext, useEffect, useState } from "react";
 import { v4 } from "uuid";
@@ -2243,14 +2222,12 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 EOF
-
 git add $FILE
 git commit --message "Added context."
 
 mkdir -p src/lib
 
 FILE=src/lib/api.ts
-
 cat > $FILE << EOF
 import axios from "axios";
 
@@ -2278,14 +2255,12 @@ api.interceptors.request.use(
   }
 );
 EOF
-
 git add $FILE
 git commit --message "Added lib."
 
 mkdir -p src/pages
 
 FILE=src/pages/Home.tsx
-
 cat > $FILE << EOF
 import { useAuth } from "../context/auth";
 import ToDoLists from "./ToDoLists";
@@ -2308,11 +2283,9 @@ export const Home = () => {
 
 export default Home;
 EOF
-
 git add $FILE
 
 FILE=src/pages/Homeless.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import { Link } from "react-router-dom";
@@ -2331,11 +2304,9 @@ const Homeless = () => {
 
 export default Homeless;
 EOF
-
 git add $FILE
 
 FILE=src/pages/Login.tsx
-
 cat > $FILE << EOF
 import React, { useState } from "react";
 import { useAuth } from "../context/auth";
@@ -2389,11 +2360,9 @@ export const Login = () => {
 
 export default Login;
 EOF
-
 git add $FILE
 
 FILE=src/pages/Loginless.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import { Navigate } from "react-router-dom";
@@ -2404,11 +2373,9 @@ export const Loginless = () => {
 
 export default Loginless;
 EOF
-
 git add $FILE
 
 FILE=src/pages/Register.tsx
-
 cat > $FILE << EOF
 import React, { useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -2516,11 +2483,9 @@ const Register = () => {
 
 export default Register;
 EOF
-
 git add $FILE
 
 FILE=src/pages/ToDoLists.tsx
-
 cat > $FILE << EOF
 import React, { useEffect, useRef, useState } from "react";
 import { AllToDoListsResultType } from "../types/apiTypes";
@@ -2607,14 +2572,12 @@ const ToDoLists: React.FC = () => {
 
 export default ToDoLists;
 EOF
-
 git add $FILE
 git commit --message "Added pages."
 
 mkdir -p src/routes
 
 FILE=src/routes/index.tsx
-
 cat > $FILE << EOF
 import { useAuth } from "../context/auth";
 
@@ -2635,11 +2598,9 @@ export const Routes = () => {
   return signed ? <ProtectRoutes /> : <SignRoutes />;
 };
 EOF
-
 git add $FILE
 
 FILE=src/routes/ProtectRoutes.tsx
-
 cat > $FILE << EOF
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "../pages/Home";
@@ -2656,11 +2617,9 @@ export const ProtectRoutes = () => {
   );
 };
 EOF
-
 git add $FILE
 
 FILE=src/routes/SignRoutes.tsx
-
 cat > $FILE << EOF
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Homeless from "../pages/Homeless";
@@ -2679,14 +2638,12 @@ export const SignRoutes = () => {
   );
 };
 EOF
-
 git add $FILE
 git commit --message "Added routes."
 
 mkdir -p src/types
 
 FILE=src/types/apiTypes.ts
-
 cat > $FILE << EOF
 import { ToDoListType } from "./ToDoTypes";
 
@@ -2750,11 +2707,9 @@ export type RegisterParamsType = {
 
 export type RegisterResultType = {};
 EOF
-
 git add $FILE
 
 FILE=src/types/authContext.ts
-
 cat > $FILE << EOF
 import { JsonRpcResponseType, NewToDoListParamsType } from "./apiTypes";
 
@@ -2773,11 +2728,9 @@ export interface AuthContextData {
   newToDoList: (data: NewToDoListParamsType) => Promise<JsonRpcResponseType>;
 }
 EOF
-
 git add $FILE
 
 FILE=src/types/ToDoTypes.ts
-
 cat > $FILE << EOF
 export type ToDoItemType = {
   complete: boolean;
@@ -2793,7 +2746,6 @@ export type ToDoListType = {
   visible: boolean;
 };
 EOF
-
 git add $FILE
 git commit --message "Added types."
 

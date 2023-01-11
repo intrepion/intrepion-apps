@@ -21,7 +21,6 @@ git add --all
 git commit --message "npm install react-router-dom"
 
 FILE=src/App.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import { Link } from "react-router-dom";
@@ -54,13 +53,11 @@ function App() {
 
 export default App;
 EOF
-
 git add $FILE
 
 mkdir -p src/components
 
 FILE=src/components/Home.tsx
-
 cat > $FILE << EOF
 import React from "react";
 
@@ -70,11 +67,9 @@ const Home = () => {
 
 export default Home;
 EOF
-
 git add $FILE
 
 FILE=src/components/Login.tsx
-
 cat > $FILE << EOF
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -153,11 +148,9 @@ const Login = () => {
 
 export default Login;
 EOF
-
 git add $FILE
 
 FILE=src/components/Logout.tsx
-
 cat > $FILE << EOF
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -200,11 +193,9 @@ const Logout: React.FC = () => {
 
 export default Logout;
 EOF
-
 git add $FILE
 
 FILE=src/components/Register.tsx
-
 cat > $FILE << EOF
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -311,11 +302,9 @@ const Register = () => {
 
 export default Register;
 EOF
-
 git add $FILE
 
 FILE=src/index.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -336,11 +325,9 @@ root.render(
 
 reportWebVitals();
 EOF
-
 git add $FILE
 
 FILE=src/Main.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import { Routes, Route } from "react-router-dom";
@@ -366,7 +353,6 @@ const Main = () => {
 
 export default Main;
 EOF
-
 git add $FILE
 git commit --message "Added user routes."
 

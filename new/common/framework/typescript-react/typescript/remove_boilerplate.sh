@@ -16,7 +16,6 @@ cd $REPOSITORY
 pwd
 
 FILE=src/App.tsx
-
 cat > $FILE << EOF
 import React from "react";
 
@@ -26,7 +25,6 @@ function App() {
 
 export default App;
 EOF
-
 git add $FILE
 
 FILE=src/App.css
@@ -48,7 +46,6 @@ git add $FILE
 FILE=src/logo.svg
 rm -rf $FILE
 git add $FILE
-
 git commit --message="Removed boilerplate."
 
 npx prettier --write .

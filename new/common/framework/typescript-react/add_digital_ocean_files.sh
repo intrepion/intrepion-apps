@@ -20,7 +20,6 @@ pwd
 mkdir -p .do
 
 FILE=.do/app.yaml
-
 cat > $FILE << EOF
 name: $KEBOB-$NAME
 region: sfo
@@ -36,11 +35,9 @@ static_sites:
       - path: /
     source_dir: /
 EOF
-
 git add $FILE
 
 FILE=.do/deploy.template.yaml
-
 cat > $FILE << EOF
 spec:
   name: $KEBOB-$NAME
@@ -57,7 +54,6 @@ spec:
         - path: /
       source_dir: /
 EOF
-
 git add $FILE
 
 FILE=README.md
@@ -70,13 +66,11 @@ cat << EOF >> $FILE
 
 [![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$REPOSITORY/tree/main)
 EOF
-
 git add $FILE
 
 mkdir -p scripts
 
 FILE=scripts/doctl_apps_create.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
@@ -87,7 +81,6 @@ chmod +x $FILE
 git add $FILE
 
 FILE=scripts/doctl_apps_update.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
@@ -96,7 +89,6 @@ EOF
 
 chmod +x $FILE
 git add $FILE
-
 git commit --message="Added Digital Ocean files."
 
 popd

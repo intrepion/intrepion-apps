@@ -18,7 +18,6 @@ pwd
 mkdir -p .github/workflows
 
 FILE=.github/workflows/dotnet.yml
-
 cat > $FILE << EOF
 # This workflow will build a .NET project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
@@ -49,20 +48,16 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal
 EOF
-
 git add $FILE
 
 FILE=README.md
-
 cat << EOF >> $FILE
 
 ## CI/CD
 
 [![.NET](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml)
 EOF
-
 git add $FILE
-
 git commit --message="Added GitHub Action files."
 
 popd

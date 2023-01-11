@@ -29,7 +29,6 @@ pwd
 mkdir -p SayingHelloTests/Domain
 
 FILE=SayingHelloTests/Domain/SayingHelloTest.cs
-
 cat > $FILE << EOF
 using SayingHelloLibrary.Domain;
 
@@ -67,14 +66,12 @@ public class SayingHelloTest
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added saying hello tests."
 
 mkdir -p SayingHelloLibrary/Domain
 
 FILE=SayingHelloLibrary/Domain/SayingHello.cs
-
 cat > $FILE << EOF
 namespace SayingHelloLibrary.Domain;
 
@@ -91,12 +88,10 @@ static public class SayingHello
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added saying hello code."
 
 FILE=SayingHelloWebApi/appsettings.Development.json
-
 cat > $FILE << EOF
 {
   "ConnectionStrings": {  
@@ -113,11 +108,9 @@ cat > $FILE << EOF
   }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/appsettings.json
-
 cat > $FILE << EOF
 {
   "AllowedHosts": "*",
@@ -130,12 +123,10 @@ cat > $FILE << EOF
   }
 }
 EOF
-
 git add $FILE
 git commit --message "Updated app settings."
 
 FILE=SayingHelloWebApi/Controllers/SayingHelloController.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 using SayingHelloLibrary.JsonRpc;
@@ -172,14 +163,12 @@ public class SayingHelloController : ControllerBase
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added saying hello controller."
 
 mkdir -p SayingHelloWebApi/Data
 
 FILE=SayingHelloWebApi/Data/ApplicationDbContext.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -207,11 +196,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Greeting> Greetings { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Data/DbInitializer.cs
-
 cat > $FILE << EOF
 using SayingHelloWebApi.Entities;
 
@@ -250,14 +237,12 @@ public static class DbInitializer
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added data files."
 
 mkdir -p SayingHelloWebApi/Entities
 
 FILE=SayingHelloWebApi/Entities/ApplicationRole.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 
@@ -267,11 +252,9 @@ public class ApplicationRole : IdentityRole<Guid>
 {
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Entities/ApplicationUser.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 
@@ -281,11 +264,9 @@ public class ApplicationUser : IdentityUser<Guid>
 {
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Entities/Greeting.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -303,14 +284,12 @@ public class Greeting
     public string Message { get; set; }
 }
 EOF
-
 git add $FILE
 git commit --message="Added entities."
 
 mkdir -p SayingHelloWebApi/JsonRpc
 
 FILE=SayingHelloWebApi/JsonRpc/FunctionCall.cs
-
 cat > $FILE << EOF
 namespace SayingHelloWebApi.JsonRpc;
 
@@ -319,11 +298,9 @@ public class FunctionCall
     public List<Parameter> Parameters { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/JsonRpc/FunctionCalls.cs
-
 cat > $FILE << EOF
 namespace SayingHelloWebApi.JsonRpc;
 
@@ -377,11 +354,9 @@ public static class FunctionCalls
     };
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/JsonRpc/IJsonRpcService.cs
-
 cat > $FILE << EOF
 using SayingHelloLibrary.JsonRpc;
 
@@ -393,11 +368,9 @@ namespace SayingHelloWebApi.JsonRpc
     }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/JsonRpc/JsonRpcService.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using SayingHelloLibrary.JsonRpc;
@@ -582,11 +555,9 @@ public class JsonRpcService : IJsonRpcService, IDisposable
     }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/JsonRpc/Parameter.cs
-
 cat > $FILE << EOF
 namespace SayingHelloWebApi.JsonRpc;
 
@@ -597,14 +568,12 @@ public class Parameter
     public object Value { get; set; }
 }
 EOF
-
 git add $FILE
 git commit --message="Added project json rpc files."
 
 mkdir -p SayingHelloWebApi/Params
 
 FILE=SayingHelloWebApi/Params/LoginParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -619,11 +588,9 @@ public class LoginParams
     public string UserName { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Params/NewGreetingParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -635,11 +602,9 @@ public class NewGreetingParams
     public string Name { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Params/RegisterParams.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -660,7 +625,6 @@ public class RegisterParams
     public string Username { get; set; }
 }
 EOF
-
 git add $FILE
 git commit --message="Added params."
 
@@ -669,7 +633,6 @@ FILE=SayingHelloWebApi/Properties/launchSettings.json
 SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 
 FILE=SayingHelloWebApi/Program.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -773,14 +736,12 @@ app.Run();
 
 public partial class Program {}
 EOF
-
 git add $FILE
 git commit --message "Updated Program class."
 
 mkdir -p SayingHelloWebApi/Repositories
 
 FILE=SayingHelloWebApi/Repositories/GreetingRepository.cs
-
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
 using SayingHelloLibrary.Domain;
@@ -878,11 +839,9 @@ public class GreetingRepository : IGreetingRepository, IDisposable
     }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Repositories/IGreetingRepository.cs
-
 cat > $FILE << EOF
 using SayingHelloLibrary.JsonRpc;
 
@@ -895,11 +854,9 @@ namespace SayingHelloWebApi.Repositories
     }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Repositories/IUserRepository.cs
-
 cat > $FILE << EOF
 using SayingHelloLibrary.JsonRpc;
 
@@ -913,11 +870,9 @@ namespace SayingHelloWebApi.Repositories
     }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Repositories/UserRepository.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -1087,14 +1042,12 @@ public class UserRepository : IUserRepository, IDisposable
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added repository files."
 
 mkdir -p SayingHelloWebApi/Results
 
 FILE=SayingHelloWebApi/Results/GetAllGreetingsResult.cs
-
 cat > $FILE << EOF
 using SayingHelloWebApi.Entities;
 using System.Text.Json.Serialization;
@@ -1107,11 +1060,9 @@ public class GetAllGreetingsResult
     public List<Greeting> Greetings { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Results/LoginResult.cs
-
 cat > $FILE << EOF
 namespace SayingHelloWebApi.Results;
 
@@ -1120,11 +1071,9 @@ public class LoginResult
     public object Token { get; set; }
 }
 EOF
-
 git add $FILE
 
 FILE=SayingHelloWebApi/Results/NewGreetingResult.cs
-
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
@@ -1136,7 +1085,6 @@ public class NewGreetingResult
     public string Message { get; set; }
 }
 EOF
-
 git add $FILE
 git commit --message="Added result files."
 
@@ -1161,7 +1109,6 @@ cd $REPOSITORY
 pwd
 
 FILE=src/components/Home.tsx
-
 cat > $FILE << EOF
 import React from "react";
 import SayingHello from "./SayingHello";
@@ -1177,11 +1124,9 @@ const Home = () => {
 
 export default Home;
 EOF
-
 git add $FILE
 
 FILE=src/components/SayingHello.tsx
-
 cat > $FILE << EOF
 import React, { useEffect, useState } from "react";
 import Greeting from "./Greeting";
@@ -1274,11 +1219,9 @@ const SayingHello: React.FC = () => {
 
 export default SayingHello;
 EOF
-
 git add $FILE
 
 FILE=src/components/Greeting.tsx
-
 cat > $FILE << EOF
 import React from "react";
 
@@ -1300,7 +1243,6 @@ const Greeting = (props: GreetingInterface) => {
 
 export default Greeting;
 EOF
-
 git add $FILE
 
 npx prettier --write .

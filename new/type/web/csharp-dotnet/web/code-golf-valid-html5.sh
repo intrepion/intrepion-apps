@@ -25,7 +25,6 @@ cd $REPOSITORY
 pwd
 
 FILE=CodeGolfValidHtml5Tests/CodeGolfValidHtml5Test.cs
-
 cat > $FILE << EOF
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -58,7 +57,6 @@ public class CodeGolfValidHtml5Test : IClassFixture<WebApplicationFactory<Progra
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added hello world controller tests."
 

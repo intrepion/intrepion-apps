@@ -68,7 +68,6 @@ export DATABASE_URL
 EOF
 chmod +x $FILE
 git add $FILE
-
 git commit --message "Added init postgres script."
 
 FILE=$PROJECT/appsettings.Development.json
@@ -103,7 +102,6 @@ cat > $FILE << EOF
 }
 EOF
 git add $FILE
-
 git commit --message "Updated app settings."
 
 mkdir -p $PROJECT/Data
@@ -144,7 +142,6 @@ public static class DbInitializer
 }
 EOF
 git add $FILE
-
 git commit --message="Added data files."
 
 mkdir -p $PROJECT/Entities
@@ -184,7 +181,6 @@ public class UserEntity : IdentityUser<Guid>
 }
 EOF
 git add $FILE
-
 git commit --message="Added entities."
 
 mkdir -p $PROJECT/Params
@@ -245,7 +241,6 @@ public class RegisterParams
 }
 EOF
 git add $FILE
-
 git commit --message="Added params."
 
 FILE=$PROJECT/Program.cs
@@ -358,13 +353,11 @@ app.Run();
 public partial class Program {}
 EOF
 git add $FILE
-
 git commit --message="Updated Program class."
 
 mkdir -p $PROJECT/Repositories
 
 FILE=$PROJECT/Repositories/IUserRepository.cs
-
 cat > $FILE << EOF
 using Intrepion.JsonRpc;
 using System.Security.Claims;
@@ -897,7 +890,6 @@ public class UserRepository : IUserRepository, IDisposable
 }
 EOF
 git add $FILE
-
 git commit --message="Added repository files."
 
 mkdir -p $PROJECT/Results
@@ -955,7 +947,6 @@ public class RefreshResult
 }
 EOF
 git add $FILE
-
 git commit --message="Added result files."
 
 mkdir -p $PROJECT/Token
@@ -1031,7 +1022,6 @@ public class TokenService : ITokenService
 }
 EOF
 git add $FILE
-
 git commit --message="Added token service."
 
 popd

@@ -35,7 +35,6 @@ git add $FILE
 FILE=${PASCAL}WebApi/WeatherForecast.cs
 rm -rf $FILE
 git add $FILE
-
 git commit --message="Removed boilerplate."
 
 popd

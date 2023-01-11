@@ -25,7 +25,6 @@ if [ ! -d $FOLDER ]; then
 fi
 
 FILE=$FOLDER/start_web-$FRAMEWORK-$TEMPLATE.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 

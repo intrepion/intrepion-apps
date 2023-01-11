@@ -81,7 +81,6 @@ public class JsonRpcResponse
 }
 EOF
 git add $FILE
-
 git commit --message="Added JSON-RPC code."
 
 popd

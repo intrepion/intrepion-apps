@@ -27,7 +27,6 @@ pwd
 mkdir -p CodeGolfValidHtml5Tests/Controllers
 
 FILE=CodeGolfValidHtml5Tests/Controllers/CodeGolfValidHtml5ControllerTest.cs
-
 cat > $FILE << EOF
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -60,12 +59,10 @@ public class CodeGolfValidHtml5ControllerTest : IClassFixture<WebApplicationFact
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added hello world controller tests."
 
 FILE=$PROJECT/Controllers/CodeGolfValidHtml5Controller.cs
-
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
@@ -93,7 +90,6 @@ public class CodeGolfValidHtml5Controller : ControllerBase
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added code golf valid html5 controller."
 git push --force

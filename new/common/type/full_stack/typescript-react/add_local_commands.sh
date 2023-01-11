@@ -46,7 +46,6 @@ REACT_APP_SERVER_URL=$SERVER npm start
 \`\`\`
 EOF
 git add README.md
-
 git commit -m "Added commands section to README file.";
 
 popd

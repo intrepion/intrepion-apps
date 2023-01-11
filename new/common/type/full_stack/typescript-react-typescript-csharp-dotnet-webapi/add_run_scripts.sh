@@ -24,7 +24,6 @@ if [ ! -d $FOLDER ]; then
 fi
 
 FILE=$FOLDER/start_server-csharp-dotnet-webapi.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
@@ -41,7 +40,6 @@ if [ ! -d $FOLDER ]; then
 fi
 
 FILE=$FOLDER/start_client-web-typescript-react-typescript.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
@@ -58,7 +56,6 @@ if [ ! -d $FOLDER ]; then
 fi
 
 FILE=$FOLDER/start_full_stack-typescript-webapi_server.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
@@ -69,7 +66,6 @@ chmod +x $FILE
 git add $FILE
 
 FILE=$FOLDER/start_full_stack-typescript-webapi_client.sh
-
 cat > $FILE << EOF
 #!/usr/bin/env bash
 
@@ -78,7 +74,6 @@ EOF
 
 chmod +x $FILE
 git add $FILE
-
 git commit -m "Add run scripts."
 git push
 

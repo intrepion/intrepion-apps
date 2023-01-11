@@ -64,7 +64,6 @@ cat << EOF >> $FILE
 [![.NET](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml)
 EOF
 git add $FILE
-
 git commit --message="Added GitHub Action files."
 
 popd

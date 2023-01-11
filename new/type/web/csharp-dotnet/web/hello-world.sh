@@ -25,7 +25,6 @@ cd $REPOSITORY
 pwd
 
 FILE=HelloWorldTests/HelloWorldTest.cs
-
 cat > $FILE << EOF
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -58,7 +57,6 @@ public class HelloWorldTest : IClassFixture<WebApplicationFactory<Program>>
     }
 }
 EOF
-
 git add $FILE
 git commit --message="Added hello world controller tests."
 
