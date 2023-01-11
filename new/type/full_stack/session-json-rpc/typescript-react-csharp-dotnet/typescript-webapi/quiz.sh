@@ -336,8 +336,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
-git commit --message="red - testing the health check controller for 200 status"
-dotnet test
+dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
 
 mkdir -p $SOLUTION.WebApi/HealthCheck
 
@@ -366,8 +365,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
-git commit --message="green - testing the health check controller for 200 status"
-dotnet test
+dotnet test && git commit --message="green - testing the health check controller for 200 status" || exit 1
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -389,8 +387,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
-git commit --message="red - trying to use the get endpoint"
-dotnet test
+dotnet test && exit 1 || git commit --message="red - trying to use the get endpoint"
 
 FILE=$SOLUTION.WebApi/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
@@ -405,8 +402,7 @@ public class HealthCheckController
 }
 EOF
 git add $FILE
-git commit --message="green - trying to use the get endpoint"
-dotnet test
+dotnet test && git commit --message="green - trying to use the get endpoint" || exit 1
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -426,13 +422,12 @@ public class TestHealthCheckController
         var actualResult = controller.Get();
 
         // Assert
-        actualResult.StatusCode.Should().Be(200);
+        actualResult.Should().BeOfType<OkObjectResult>();
     }
 }
 EOF
 git add $FILE
-git commit --message="red - using fluent assertions to check the status code"
-dotnet test
+dotnet test && exit 1 || git commit --message="red - using fluent assertions to check the status code"
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -445,13 +440,13 @@ namespace QuizApp.Tests.WebApi.HealthCheck;
 public class TestHealthCheckController
 {
     [Fact]
-    public async void Get_Returns200()
+    public void Get_Returns200()
     {
         // Arrange
         var controller = new HealthCheckController();
 
         // Act
-        var actualResult = await controller.Get();
+        var actualResult = controller.Get();
         
         // Assert
         actualResult.Should().BeOfType<OkObjectResult>();
@@ -468,15 +463,42 @@ namespace QuizApp.WebApi.HealthCheck;
 
 public class HealthCheckController : ControllerBase
 {
-    public async Task<IActionResult> Get()
+    public IActionResult Get()
     {
         return Ok("");
     }
 }
 EOF
 git add $FILE
-git commit --message="green - using fluent assertions to check the status code"
-dotnet test
+dotnet test && git commit --message="green - using fluent assertions to check the status code" || exit 1
+
+FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
+cat > $FILE << EOF
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using QuizApp.WebApi.HealthCheck;
+
+namespace QuizApp.Tests.WebApi.HealthCheck;
+
+public class TestHealthCheckController
+{
+    [Fact]
+    public void Get_Returns200()
+    {
+        // Arrange
+        var controller = new HealthCheckController();
+
+        // Act
+        var actualResult = controller.Get();
+        
+        // Assert
+        actualResult.Should().BeOfType<OkObjectResult>();
+        var okObjectResult = (OkObjectResult)actualResult;
+        okObjectResult.StatusCode.Should().Be(200);
+    }
+}
+EOF
+dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 
 git push --force
 
