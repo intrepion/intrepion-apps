@@ -225,13 +225,11 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
 WORKDIR /source
 
-COPY $SOLUTION.App.sln .
-COPY $SOLUTION.Library/*.csproj ./$SOLUTION.Library/
+COPY $SOLUTION.sln .
 COPY $SOLUTION.Tests/*.csproj ./$SOLUTION.Tests/
 COPY $PROJECT/*.csproj ./$PROJECT/
 RUN dotnet restore
 
-COPY $SOLUTION.Library/. ./$SOLUTION.Library/
 COPY $SOLUTION.Tests/. ./$SOLUTION.Tests/
 COPY $PROJECT/. ./$PROJECT/
 WORKDIR /source/$PROJECT
