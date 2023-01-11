@@ -451,7 +451,35 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 
-git commit --message="refactor - using fluent assertions to check the status code"
+git commit --message="red - using fluent assertions to check the status code"
+
+FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
+cat > $FILE << EOF
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using QuizApp.WebApi.Controllers;
+
+namespace QuizApp.Tests.Systems.Controllers;
+
+public class TestHealthCheckController
+{
+    [Fact]
+    public async Task Get_OnSuccess_ReturnsStatusCode200()
+    {
+        // Arrange
+        var sut = new HealthCheckController();
+
+        // Act
+        var result = await sut.Get();
+
+        // Assert
+        result.StatusCode.Should().Be(200);
+    }
+}
+EOF
+git add $FILE
+
+git commit --message="green - using fluent assertions to check the status code"
 
 git push --force
 
