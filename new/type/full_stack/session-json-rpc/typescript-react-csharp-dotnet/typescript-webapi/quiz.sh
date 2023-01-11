@@ -498,6 +498,8 @@ public class TestHealthCheckController
     }
 }
 EOF
+git add $FILE
+
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 
 git push --force
