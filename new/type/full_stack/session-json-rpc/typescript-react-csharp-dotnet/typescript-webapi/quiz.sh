@@ -67,10 +67,6 @@ dotnet new $SERVER_TEMPLATE --name $PROJECT
 git add $PROJECT
 git commit --message "dotnet new $SERVER_TEMPLATE --auth Individual --name $PROJECT --use-local-db"
 
-dotnet sln $SOLUTION.sln add $PROJECT
-git add $SOLUTION.sln
-git commit --message "dotnet sln $SOLUTION.sln add $PROJECT"
-
 dotnet add $PROJECT reference $SOLUTION.Library
 git add $PROJECT
 git commit --message "dotnet add $PROJECT reference $SOLUTION.Library"
@@ -87,6 +83,10 @@ dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore
 git add $PROJECT
 git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore"
 
+dotnet sln $SOLUTION.sln add $PROJECT
+git add $SOLUTION.sln
+git commit --message "dotnet sln $SOLUTION.sln add $PROJECT"
+
 dotnet new xunit --name $SOLUTION.Tests
 git add $SOLUTION.Tests
 git commit --message "dotnet new xunit --name $SOLUTION.Tests"
@@ -94,6 +94,10 @@ git commit --message "dotnet new xunit --name $SOLUTION.Tests"
 dotnet add $SOLUTION.Tests package Microsoft.AspNetCore.Mvc.Testing
 git add $SOLUTION.Tests
 git commit --message "dotnet add $SOLUTION.Tests package Microsoft.AspNetCore.Mvc.Testing"
+
+dotnet add $SOLUTION.Tests package FluentAssertions
+git add $SOLUTION.Tests
+git commit --message "dotnet add $SOLUTION.Tests package FluentAssertions"
 
 dotnet sln $SOLUTION.sln add $SOLUTION.Tests
 git add $SOLUTION.sln
@@ -331,7 +335,7 @@ namespace QuizApp.Tests.Systems.Controllers;
 public class TestHealthCheckController
 {
     [Fact]
-    public async Task Get_OnSuccess_ReturnsStatusCode200()
+    public void Get_OnSuccess_ReturnsStatusCode200()
     {
         // Arrange
         var sut = new HealthCheckController();
@@ -354,8 +358,101 @@ public class HealthCheckController {}
 EOF
 git add $FILE
 
+FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+using QuizApp.WebApi.Controllers;
+
+namespace QuizApp.Tests.Systems.Controllers;
+
+public class TestHealthCheckController
+{
+    [Fact]
+    public async Task Get_OnSuccess_ReturnsStatusCode200()
+    {
+        // Arrange
+        var sut = new HealthCheckController();
+
+        // Act
+
+        // Assert
+    }
+}
+EOF
+git add $FILE
+
 git commit --message="green - testing the health check controller for 200 status"
 
-#git push --force
+FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+using QuizApp.WebApi.Controllers;
+
+namespace QuizApp.Tests.Systems.Controllers;
+
+public class TestHealthCheckController
+{
+    [Fact]
+    public async Task Get_OnSuccess_ReturnsStatusCode200()
+    {
+        // Arrange
+        var sut = new HealthCheckController();
+
+        // Act
+        var result = await sut.Get();
+
+        // Assert
+    }
+}
+EOF
+git add $FILE
+
+git commit --message="red - trying to use the get endpoint"
+
+FILE=$SOLUTION.WebApi/Controllers/HealthCheckController.cs
+cat > $FILE << EOF
+namespace QuizApp.WebApi.Controllers;
+using Microsoft.AspNetCore.Mvc;
+
+public class HealthCheckController : ControllerBase
+{
+    public async Task<IActionResult> Get()
+    {
+        return Ok();
+    }
+}
+EOF
+git add $FILE
+
+git commit --message="green - trying to use the get endpoint"
+
+FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+using QuizApp.WebApi.Controllers;
+
+namespace QuizApp.Tests.Systems.Controllers;
+
+public class TestHealthCheckController
+{
+    [Fact]
+    public async Task Get_OnSuccess_ReturnsStatusCode200()
+    {
+        // Arrange
+        var sut = new HealthCheckController();
+
+        // Act
+        var result = await sut.Get();
+
+        // Assert
+        result.StatusCode.Should().Be(200);
+    }
+}
+EOF
+git add $FILE
+
+git commit --message="refactor - using fluent assertions to check the status code"
+
+git push --force
 
 cd ..
