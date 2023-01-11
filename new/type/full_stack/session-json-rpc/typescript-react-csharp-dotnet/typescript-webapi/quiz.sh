@@ -399,7 +399,7 @@ public class TestHealthCheckController
         var sut = new HealthCheckController();
 
         // Act
-        var result = await sut.Get();
+        var result = (OkResult)await sut.Get();
 
         // Assert
     }
@@ -442,7 +442,7 @@ public class TestHealthCheckController
         var sut = new HealthCheckController();
 
         // Act
-        var result = await sut.Get();
+        var result = (OkResult)await sut.Get();
 
         // Assert
         result.StatusCode.Should().Be(200);
@@ -470,7 +470,7 @@ public class TestHealthCheckController
         var sut = new HealthCheckController();
 
         // Act
-        var result = await sut.Get();
+        var result = (OkResult)await sut.Get();
 
         // Assert
         result.StatusCode.Should().Be(200);
