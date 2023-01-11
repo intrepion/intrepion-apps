@@ -349,6 +349,7 @@ EOF
 git add $FILE
 
 git commit --message="red - testing the health check controller for 200 status"
+dotnet test
 
 FILE=$SOLUTION.WebApi/Controllers/HealthCheckController.cs
 cat > $FILE << EOF
@@ -382,6 +383,7 @@ EOF
 git add $FILE
 
 git commit --message="green - testing the health check controller for 200 status"
+dotnet test
 
 FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -408,6 +410,7 @@ EOF
 git add $FILE
 
 git commit --message="red - trying to use the get endpoint"
+dotnet test
 
 FILE=$SOLUTION.WebApi/Controllers/HealthCheckController.cs
 cat > $FILE << EOF
@@ -425,6 +428,7 @@ EOF
 git add $FILE
 
 git commit --message="green - trying to use the get endpoint"
+dotnet test
 
 FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -452,6 +456,7 @@ EOF
 git add $FILE
 
 git commit --message="red - using fluent assertions to check the status code"
+dotnet test
 
 FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -480,6 +485,7 @@ EOF
 git add $FILE
 
 git commit --message="green - using fluent assertions to check the status code"
+dotnet test
 
 git push --force
 
