@@ -91,9 +91,9 @@ FILE=$SOLUTION.Tests/UnitTest1.cs
 rm -rf $FILE
 git add $FILE
 
-FILE=$SOLUTION.WebApi/Controllers/WeatherForecastController.cs
-rm -rf $FILE
-git add $FILE
+FOLDER=$SOLUTION.WebApi/Controllers
+rm -rf $FOLDER
+git add $FOLDER
 
 FILE=$SOLUTION.WebApi/WeatherForecast.cs
 rm -rf $FILE
@@ -338,6 +338,8 @@ EOF
 git add $FILE
 git commit --message="red - testing the health check controller for 200 status"
 dotnet test
+
+mkdir -p $SOLUTION.WebApi/HealthCheck
 
 FILE=$SOLUTION.WebApi/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
