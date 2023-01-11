@@ -320,6 +320,42 @@ git add $FILE
 
 git commit --message="Added Digital Ocean files."
 
-# git push --force
+mkdir -p $SOLUTION.Tests/Systems/Controllers
+
+FILE=$SOLUTION.Tests/Systems/Controllers/TestHealthCheckController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace QuizApp.Tests.Systems.Controllers;
+
+public class TestHealthCheckController
+{
+    [Fact]
+    public async Task Get_OnSuccess_ReturnsStatusCode200()
+    {
+        // Arrange
+        var sut = new HealthCheckController();
+
+        // Act
+
+        // Assert
+    }
+}
+EOF
+git add $FILE
+
+git commit --message="red - testing the health check controller for 200 status"
+
+FILE=$SOLUTION.WebApi/Controllers/HealthCheckController.cs
+cat > $FILE << EOF
+namespace QuizApp.WebApi.Controllers;
+
+public class HealthCheckController {}
+EOF
+git add $FILE
+
+git commit --message="green - testing the health check controller for 200 status"
+
+#git push --force
 
 cd ..
