@@ -33,7 +33,6 @@ cd $REPOSITORY
 pwd
 
 FILE=ToDoWebApi/Properties/launchSettings.json
-
 SERVER=$(jq '.profiles.http.applicationUrl' $FILE)
 
 mkdir -p ToDoTests/Domain

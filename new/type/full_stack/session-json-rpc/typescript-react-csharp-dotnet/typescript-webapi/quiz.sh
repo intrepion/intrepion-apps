@@ -9,7 +9,7 @@ pushd .
 cd ..
 pwd
 
-CLIENT="http://localhost:3000"
+CLIENT_URL="http://localhost:3000"
 CONTRACT=session-json-rpc
 CLIENT_FRAMEWORK=typescript-react
 CLIENT_TEMPLATE=typescript
@@ -23,7 +23,7 @@ SOLUTION=${PASCAL}App
 SERVER_CONTRACT=$CONTRACT-server
 
 CLIENT_REPOSITORY=intrepion-$KEBOB-$CLIENT_CONTRACT-$CLIENT_FRAMEWORK-$CLIENT_TEMPLATE
-PROJECT=$SOLUTION.WebApi
+PROJECT=$PROJECT
 SERVER_REPOSITORY=intrepion-$KEBOB-$SERVER_CONTRACT-$SERVER_FRAMEWORK-$SERVER_TEMPLATE
 
 if [ ! -d "$SERVER_REPOSITORY" ]; then
@@ -91,11 +91,11 @@ FILE=$SOLUTION.Tests/UnitTest1.cs
 rm -rf $FILE
 git add $FILE
 
-FOLDER=$SOLUTION.WebApi/Controllers
+FOLDER=$PROJECT/Controllers
 rm -rf $FOLDER
 git add $FOLDER
 
-FILE=$SOLUTION.WebApi/WeatherForecast.cs
+FILE=$PROJECT/WeatherForecast.cs
 rm -rf $FILE
 git add $FILE
 
@@ -132,9 +132,6 @@ mkdir -p .github/workflows
 
 FILE=.github/workflows/dotnet.yml
 cat > $FILE << EOF
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
 name: .NET
 
 on:
@@ -322,7 +319,7 @@ mkdir -p $SOLUTION.Tests/WebApi/HealthCheck
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
-namespace QuizApp.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.HealthCheck;
 
 public class TestHealthCheckController
 {
@@ -337,11 +334,11 @@ EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
 
-mkdir -p $SOLUTION.WebApi/HealthCheck
+mkdir -p $PROJECT/HealthCheck
 
-FILE=$SOLUTION.WebApi/HealthCheck/HealthCheckController.cs
+FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
-namespace QuizApp.WebApi.HealthCheck;
+namespace $PROJECT.HealthCheck;
 
 public class HealthCheckController {}
 EOF
@@ -349,9 +346,9 @@ git add $FILE
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
-using QuizApp.WebApi.HealthCheck;
+using $PROJECT.HealthCheck;
 
-namespace QuizApp.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.HealthCheck;
 
 public class TestHealthCheckController
 {
@@ -368,9 +365,9 @@ dotnet test && git commit --message="green - testing the health check controller
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
-using QuizApp.WebApi.HealthCheck;
+using $PROJECT.HealthCheck;
 
-namespace QuizApp.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.HealthCheck;
 
 public class TestHealthCheckController
 {
@@ -388,9 +385,9 @@ EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - trying to use the get endpoint"
 
-FILE=$SOLUTION.WebApi/HealthCheck/HealthCheckController.cs
+FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
-namespace QuizApp.WebApi.HealthCheck;
+namespace $PROJECT.HealthCheck;
 
 public class HealthCheckController
 {
@@ -405,9 +402,9 @@ dotnet test && git commit --message="green - trying to use the get endpoint" || 
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
-using QuizApp.WebApi.HealthCheck;
+using $PROJECT.HealthCheck;
 
-namespace QuizApp.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.HealthCheck;
 
 public class TestHealthCheckController
 {
@@ -432,9 +429,9 @@ FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using QuizApp.WebApi.HealthCheck;
+using $PROJECT.HealthCheck;
 
-namespace QuizApp.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.HealthCheck;
 
 public class TestHealthCheckController
 {
@@ -454,11 +451,11 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 
-FILE=$SOLUTION.WebApi/HealthCheck/HealthCheckController.cs
+FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
-namespace QuizApp.WebApi.HealthCheck;
+namespace $PROJECT.HealthCheck;
 
 public class HealthCheckController : ControllerBase
 {
@@ -475,9 +472,9 @@ FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using QuizApp.WebApi.HealthCheck;
+using $PROJECT.HealthCheck;
 
-namespace QuizApp.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.HealthCheck;
 
 public class TestHealthCheckController
 {
@@ -502,6 +499,9 @@ git add $FILE
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 
 # git push --force
+
+FILE=$PROJECT/Properties/launchSettings.json
+SERVER_URL=$(jq '.profiles.http.applicationUrl' $FILE)
 
 cd ..
 
@@ -672,7 +672,7 @@ function RegisterForm() {
     }
     setAlert(false);
     window
-      .fetch($SERVER, {
+      .fetch($SERVER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -788,7 +788,7 @@ function LoginForm() {
     }
     setAlert(false);
     window
-      .fetch($SERVER, {
+      .fetch($SERVER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
