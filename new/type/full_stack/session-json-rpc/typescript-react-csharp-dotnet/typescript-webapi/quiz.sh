@@ -98,6 +98,7 @@ git add $FOLDER
 FILE=$SOLUTION.WebApi/WeatherForecast.cs
 rm -rf $FILE
 git add $FILE
+
 git commit --message="Removed boilerplate."
 
 FILE=README.md
@@ -500,7 +501,7 @@ git add $FILE
 
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 
-git push --force
+# git push --force
 
 cd ..
 
@@ -550,12 +551,174 @@ git commit --message "npm install uuid"
 
 npm i --save-dev @types/uuid
 git add --all
-git commit --message "npm i --save-dev @types/uuid"
+git commit --message "npm install --save-dev @types/uuid"
+
+# npm install --save-dev @testing-library/react
+# git add --all
+# git commit --message "npm install --save-dev @testing-library/react"
 
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-git push --force
+FILE=src/App.css
+rm -rf $FILE
+git add $FILE
+
+FILE=src/App.test.tsx
+rm -rf $FILE
+git add $FILE
+
+FILE=src/App.tsx
+cat > $FILE << EOF
+import React from "react";
+
+function App() {
+  return <></>;
+}
+
+export default App;
+EOF
+git add $FILE
+
+FILE=src/index.css
+rm -rf $FILE
+git add $FILE
+
+FILE=src/index.tsx
+cat > $FILE << EOF
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+reportWebVitals();
+EOF
+git add $FILE
+
+FILE=src/logo.svg
+rm -rf $FILE
+git add $FILE
+
+git commit --message="Removed boilerplate."
+
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/__test__/Login.test.tsx
+cat > $FILE << EOF
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import "@testing-library/jest-dom";
+import Login from "../Login";
+
+test("allows the user to login successfully", async () => {
+  // mock out window.fetch for the test
+  const fakeUserResponse = { token: "fake_user_token" };
+  jest.spyOn(window, "fetch").mockImplementationOnce(() => {
+    return Promise.resolve({
+      json: () => Promise.resolve(fakeUserResponse),
+    });
+  });
+
+  render(<Login />);
+
+  // fill out the form
+  userEvent.type(screen.getByLabelText(/username/i), "chuck");
+  userEvent.type(screen.getByLabelText(/password/i), "norris");
+
+  userEvent.click(screen.getByText(/submit/i));
+
+  // just like a manual tester, we'll instruct our test to wait for the alert
+  // to show up before continuing with our assertions.
+  const alert = await screen.findByRole("alert");
+
+  // .toHaveTextContent() comes from jest-dom's assertions
+  // otherwise you could use expect(alert.textContent).toMatch(/congrats/i)
+  // but jest-dom will give you better error messages which is why it's recommended
+  expect(alert).toHaveTextContent(/congrats/i);
+  expect(window.localStorage.getItem("token")).toEqual(fakeUserResponse.token);
+});
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && exit 1 || git commit --message="red - add login"
+
+FILE=src/Login.tsx
+cat > $FILE << EOF
+import * as React from "react";
+
+function Login() {
+  const [state, setState] = React.useReducer((s, a) => ({ ...s, ...a }), {
+    resolved: false,
+    loading: false,
+    error: null,
+  });
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    const { usernameInput, passwordInput } = event.target.elements;
+
+    setState({ loading: true, resolved: false, error: null });
+
+    window
+      .fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: usernameInput.value,
+          password: passwordInput.value,
+        }),
+      })
+      .then((r) => r.json())
+      .then(
+        (user) => {
+          setState({ loading: false, resolved: true, error: null });
+          window.localStorage.setItem("token", user.token);
+        },
+        (error) => {
+          setState({ loading: false, resolved: false, error: error.message });
+        }
+      );
+  }
+
+  return (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="usernameInput">Username</label>
+          <input id="usernameInput" />
+        </div>
+        <div>
+          <label htmlFor="passwordInput">Password</label>
+          <input id="passwordInput" type="password" />
+        </div>
+        <button type="submit">Submit{state.loading ? "..." : null}</button>
+      </form>
+      {state.error ? <div role="alert">{state.error.message}</div> : null}
+      {state.resolved ? (
+        <div role="alert">Congrats! You're signed in!</div>
+      ) : null}
+    </div>
+  );
+}
+
+export default Login;
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && git commit --message="green - add login" || exit 1
+
+# git push --force
 
 cd ..
