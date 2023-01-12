@@ -611,7 +611,7 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p src/__test__
+mkdir -p src/__test__/authentication
 
 FILE=src/__test__/authentication/RegisterForm.test.tsx
 cat > $FILE << EOF
@@ -672,7 +672,7 @@ function RegisterForm() {
     }
     setAlert(false);
     window
-      .fetch("localhost:5249", {
+      .fetch($SERVER, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -788,7 +788,7 @@ function LoginForm() {
     }
     setAlert(false);
     window
-      .fetch("localhost:5249", {
+      .fetch($SERVER, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
