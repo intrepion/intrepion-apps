@@ -17,7 +17,6 @@ cd $REPOSITORY
 pwd
 
 FILE=$PROJECT/Program.cs
-
 cat << EOF >> $FILE
 
 public partial class Program {}

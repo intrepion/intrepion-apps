@@ -495,10 +495,92 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
-
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 
-# git push --force
+mkdir -p $SOLUTION.Tests/Endpoints
+
+FILE=$SOLUTION.Tests/Endpoints/TestHealthCheckEndpoint.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace QuizApp.Tests.WebApi.HealthCheck;
+
+public class TestHealthCheckEndpoint : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public TestHealthCheckEndpoint(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task Get_EndpointsReturnSuccessAndCorrectContentType()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/HealthCheck");
+        var actual = response.Content.Headers.ContentType?.ToString();
+
+        // // Assert
+        Assert.NotNull(response);
+        response.EnsureSuccessStatusCode();
+    }
+}
+EOF
+git add $FILE
+dotnet test && exit 1 || git commit --message="red - testing the health check endpoint"
+
+FILE=$PROJECT/Program.cs
+cat > $FILE << EOF
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+public partial class Program {}
+EOF
+git add $FILE
+
+FILE=$PROJECT/HealthCheck/HealthCheckController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace QuizApp.WebApi.HealthCheck;
+
+[Route("[controller]")]
+public class HealthCheckController : ControllerBase
+{
+    public IActionResult Get()
+    {
+        return Ok("");
+    }
+}
+EOF
+git add $FILE
+dotnet test && git commit --message="green - testing the health check endpoint" || exit 1
+
+git push --force
 
 FILE=$PROJECT/Properties/launchSettings.json
 SERVER_URL=$(jq '.profiles.http.applicationUrl' $FILE)
@@ -838,6 +920,6 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-# git push --force
+git push --force
 
 cd ..
