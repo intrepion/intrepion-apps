@@ -136,27 +136,26 @@ name: .NET
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
 EOF
 git add $FILE
 
@@ -722,6 +721,10 @@ EOF
 git add README.md
 git commit -m "Added commands section to README file.";
 
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
 mkdir -p .github/workflows
 
 FILE=.github/workflows/node.js.yml
@@ -730,13 +733,12 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     strategy:
@@ -744,15 +746,15 @@ jobs:
         node-version: [14.x, 16.x, 18.x]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js \${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: \${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm i
-    - run: npm run build --if-present
-    - run: npm test
+      - uses: actions/checkout@v3
+      - name: Use Node.js \${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: \${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm i
+      - run: npm run build --if-present
+      - run: npm test
 EOF
 git add $FILE
 
@@ -765,6 +767,10 @@ cat << EOF >> $FILE
 EOF
 git add $FILE
 git commit --message="Added GitHub Action files."
+
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
 
 mkdir -p .do
 
@@ -839,6 +845,10 @@ EOF
 chmod +x $FILE
 git add $FILE
 git commit --message="Added Digital Ocean files."
+
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
 
 mkdir -p src/__test__/authentication
 
