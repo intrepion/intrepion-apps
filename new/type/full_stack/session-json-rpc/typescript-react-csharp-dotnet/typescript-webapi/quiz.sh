@@ -165,7 +165,7 @@ cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml)
 EOF
 git add $FILE
 git commit --message="Added GitHub Action files."
@@ -600,9 +600,6 @@ FIRST=`git rev-list --max-parents=0 HEAD`
 git reset --hard $FIRST
 git clean -d --force
 
-cd $CLIENT_REPOSITORY
-pwd
-
 npx create-react-app . --template $CLIENT_TEMPLATE
 git add --all
 git commit --message "npx create-react-app . --template $CLIENT_TEMPLATE"
@@ -724,6 +721,50 @@ REACT_APP_SERVER_URL=$SERVER_URL npm start
 EOF
 git add README.md
 git commit -m "Added commands section to README file.";
+
+mkdir -p .github/workflows
+
+FILE=.github/workflows/node.js.yml
+cat > $FILE << EOF
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm i
+    - run: npm run build --if-present
+    - run: npm test
+EOF
+git add $FILE
+
+FILE=README.md
+cat << EOF >> $FILE
+
+## CI/CD
+
+[![.NET](https://github.com/intrepion/$CLIENT_REPOSITORY/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/intrepion/$CLIENT_REPOSITORY/actions/workflows/node.js.yml)
+EOF
+git add $FILE
+git commit --message="Added GitHub Action files."
 
 mkdir -p .do
 
