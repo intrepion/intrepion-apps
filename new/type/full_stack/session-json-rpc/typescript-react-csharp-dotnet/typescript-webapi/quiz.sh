@@ -745,10 +745,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js \${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: \${{ matrix.node-version }}
         cache: 'npm'
     - run: npm i
     - run: npm run build --if-present
@@ -844,14 +844,14 @@ mkdir -p src/__test__/authentication
 
 FILE=src/__test__/authentication/RegisterForm.test.tsx
 cat > $FILE << EOF
-import { render, screen } from '@testing-library/react';
-import RegisterForm from '../../authentication/RegisterForm';
+import { render, screen } from "@testing-library/react";
+import RegisterForm from "../../authentication/RegisterForm";
 
-describe('Registration', () => {
-  it('has button to register', () => {
+describe("Registration", () => {
+  it("has button to register", () => {
     render(<RegisterForm />);
-    const loadButton = screen.queryByRole('button', {
-      name: 'Register'
+    const loadButton = screen.queryByRole("button", {
+      name: "Register",
     });
     expect(loadButton).toBeInTheDocument();
   });
@@ -869,7 +869,7 @@ mkdir -p src/authentication
 
 FILE=src/authentication/RegisterForm.tsx
 cat > $FILE << EOF
-export default function RegisterForm(){
+export default function RegisterForm() {
   return <button>Register</button>;
 }
 EOF
