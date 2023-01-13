@@ -165,7 +165,7 @@ cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$REPOSITORY/actions/workflows/dotnet.yml)
 EOF
 git add $FILE
 git commit --message="Added GitHub Action files."
@@ -692,6 +692,112 @@ git commit --message="Removed boilerplate."
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
+
+FILE=README.md
+cat << EOF >> $FILE
+
+## Commands
+
+### Install
+
+\`\`\`bash
+npm install
+\`\`\`
+
+### Test
+
+\`\`\`bash
+npm test
+\`\`\`
+
+### Initialize Database
+
+\`\`\`bash
+./scripts/init_postgres.sh
+\`\`\`
+
+### Run
+
+\`\`\`bash
+REACT_APP_SERVER_URL=$SERVER_URL npm start
+\`\`\`
+EOF
+git add README.md
+git commit -m "Added commands section to README file.";
+
+mkdir -p .do
+
+FILE=.do/app.yaml
+cat > $FILE << EOF
+name: $KEBOB-$CLIENT_CONTRACT
+region: sfo
+static_sites:
+  - build_command: npm run build
+    environment_slug: node-js
+    github:
+      branch: main
+      deploy_on_push: true
+      repo: intrepion/$CLIENT_REPOSITORY
+    name: $CLIENT_CONTRACT
+    routes:
+      - path: /
+    source_dir: /
+EOF
+git add $FILE
+
+FILE=.do/deploy.template.yaml
+cat > $FILE << EOF
+spec:
+  name: $KEBOB-$CLIENT_CONTRACT
+  region: sfo
+  static_sites:
+    - build_command: npm run build
+      environment_slug: node-js
+      github:
+        branch: main
+        deploy_on_push: true
+        repo: intrepion/$CLIENT_REPOSITORY
+      name: $CLIENT_CONTRACT
+      routes:
+        - path: /
+      source_dir: /
+EOF
+git add $FILE
+
+FILE=README.md
+
+cat << EOF >> $FILE
+
+## Deploy
+
+### Digital Ocean
+
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$CLIENT_REPOSITORY/tree/main)
+EOF
+git add $FILE
+
+mkdir -p scripts
+
+FILE=scripts/doctl_apps_create.sh
+cat > $FILE << EOF
+#!/usr/bin/env bash
+
+doctl apps create --spec .do/app.yaml
+EOF
+
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/doctl_apps_update.sh
+cat > $FILE << EOF
+#!/usr/bin/env bash
+
+doctl apps update \$1 --spec .do/app.yaml
+EOF
+
+chmod +x $FILE
+git add $FILE
+git commit --message="Added Digital Ocean files."
 
 mkdir -p src/__test__/authentication
 
