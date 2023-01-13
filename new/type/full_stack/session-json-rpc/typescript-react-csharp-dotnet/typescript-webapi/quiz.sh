@@ -803,36 +803,22 @@ mkdir -p src/__test__/authentication
 
 FILE=src/__test__/authentication/RegisterForm.test.tsx
 cat > $FILE << EOF
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import "@testing-library/jest-dom";
-import RegisterForm from "../../authentication/RegisterForm";
+import { render, screen } from '@testing-library/react';
+import RegisterForm from '../../authentication/RegisterForm';
 
-test("allows the user to register successfully", async () => {
-  const fakeUserResponse = { id: "1", jsonrpc: "2.0", result: {} };
-  jest.spyOn(window, "fetch").mockImplementationOnce(() => {
-    return Promise.resolve({
-      json: () => Promise.resolve(fakeUserResponse),
+describe('Registration', () => {
+  it('has button to register', () => {
+    render(<RegisterForm />);
+    const loadButton = screen.queryByRole('button', {
+      name: 'Register'
     });
+    expect(loadButton).toBeInTheDocument();
   });
-
-  render(<RegisterForm />);
-
-  userEvent.type(screen.getByLabelText(/username/i), "some_username");
-  userEvent.type(screen.getByLabelText(/email/i), "some@email.com");
-  userEvent.type(screen.getByLabelText(/password/i), "some_password");
-  userEvent.type(screen.getByLabelText(/confirm/i), "some_password");
-
-  userEvent.click(screen.getByText(/submit/i));
-
-  const alert = await screen.findByRole("alert");
-
-  expect(alert).toHaveTextContent(/congrats/i);
 });
 EOF
 git add $FILE
 
-npm test -- --watchAll=false && exit 1 || git commit --message="red - add register form"
+npm test -- --watchAll=false && exit 1 || git commit --message="red - add register form button"
 
 npx prettier --write .
 git add --all
@@ -842,185 +828,13 @@ mkdir -p src/authentication
 
 FILE=src/authentication/RegisterForm.tsx
 cat > $FILE << EOF
-import React, { useState } from "react";
-import { v4 } from "uuid";
-
-function RegisterForm() {
-  const [alert, setAlert] = useState(false);
-  const [confirm, setConfirm] = useState("");
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (loading) {
-      return;
-    }
-    setAlert(false);
-    window
-      .fetch($SERVER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: v4(),
-          jsonrpc: "2.0",
-          method: "register",
-          params: {
-            confirm,
-            email,
-            password,
-            username,
-          },
-        }),
-      })
-      .then((r) => r.json())
-      .then(
-        (user) => {
-          setAlert(true);
-          setLoading(false);
-          window.localStorage.setItem("token", user.token);
-        },
-        (error) => {
-          setLoading(false);
-        }
-      );
-  };
-
-  return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="usernameInput">Username</label>
-        <input id="usernameInput" type="text" />
-        <label htmlFor="emailInput">Email</label>
-        <input id="emailInput" type="email" />
-        <label htmlFor="passwordInput">Password</label>
-        <input id="passwordInput" type="password" />
-        <label htmlFor="confirmInput">Confirm</label>
-        <input id="confirmInput" type="confirm" />
-        <button type="submit">Submit</button>
-      </form>
-      {alert && <div role="alert">Congrats!</div>}
-    </>
-  );
+export default function RegisterForm(){
+  return <button>Register</button>;
 }
-
-export default RegisterForm;
 EOF
 git add $FILE
 
-npm test -- --watchAll=false && git commit --message="green - add register form" || exit 1
-
-npx prettier --write .
-git add --all
-git commit --message "npx prettier --write ."
-
-FILE=src/__test__/authentication/LoginForm.test.tsx
-cat > $FILE << EOF
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import "@testing-library/jest-dom";
-import LoginForm from "../../authentication/LoginForm";
-
-test("allows the user to login successfully", async () => {
-  const fakeUserResponse = {
-    id: "1",
-    jsonrpc: "2.0",
-    result: { token: "fake_user_token" },
-  };
-  jest.spyOn(window, "fetch").mockImplementationOnce(() => {
-    return Promise.resolve({
-      json: () => Promise.resolve(fakeUserResponse),
-    });
-  });
-
-  render(<LoginForm />);
-
-  userEvent.type(screen.getByLabelText(/username/i), "some_username");
-  userEvent.type(screen.getByLabelText(/password/i), "some_password");
-
-  userEvent.click(screen.getByText(/submit/i));
-
-  const alert = await screen.findByRole("alert");
-
-  expect(alert).toHaveTextContent(/congrats/i);
-  expect(window.localStorage.getItem("token")).toEqual(
-    fakeUserResponse.result.token
-  );
-});
-EOF
-git add $FILE
-
-npm test -- --watchAll=false && exit 1 || git commit --message="red - add login form"
-
-npx prettier --write .
-git add --all
-git commit --message "npx prettier --write ."
-
-FILE=src/authentication/LoginForm.tsx
-cat > $FILE << EOF
-import React, { useState } from "react";
-import { v4 } from "uuid";
-
-function LoginForm() {
-  const [alert, setAlert] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (loading) {
-      return;
-    }
-    setAlert(false);
-    window
-      .fetch($SERVER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: v4(),
-          jsonrpc: "2.0",
-          method: "login",
-          params: {
-            username,
-            password,
-          },
-        }),
-      })
-      .then((r) => r.json())
-      .then(
-        (response) => {
-          setAlert(true);
-          setLoading(false);
-          window.localStorage.setItem("token", response.result.token);
-        },
-        (error) => {
-          setLoading(false);
-        }
-      );
-  };
-
-  return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="usernameInput">Username</label>
-        <input id="usernameInput" />
-        <label htmlFor="passwordInput">Password</label>
-        <input id="passwordInput" type="password" />
-        <button type="submit">Submit</button>
-      </form>
-      {alert && <div role="alert">Congrats!</div>}
-    </>
-  );
-}
-
-export default LoginForm;
-EOF
-git add $FILE
-
-npm test -- --watchAll=false && git commit --message="green - add login form" || exit 1
+npm test -- --watchAll=false && git commit --message="green - add register form button" || exit 1
 
 npx prettier --write .
 git add --all
