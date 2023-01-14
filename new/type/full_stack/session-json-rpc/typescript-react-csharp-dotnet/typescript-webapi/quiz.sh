@@ -9,14 +9,16 @@ pushd .
 cd ..
 pwd
 
+CANONICAL="Quiz"
 CLIENT_URL="http://localhost:3000"
-CONTRACT=session-json-rpc
 CLIENT_FRAMEWORK=typescript-react
 CLIENT_TEMPLATE=typescript
+CONTRACT=session-json-rpc
 KEBOB=quiz
 PASCAL=Quiz
 SERVER_FRAMEWORK=csharp-dotnet
 SERVER_TEMPLATE=webapi
+SNAKE=quiz
 
 CLIENT_CONTRACT=$CONTRACT-client-web
 SOLUTION=${PASCAL}App
@@ -684,7 +686,6 @@ rm -rf $FILE
 git add $FILE
 
 git commit --message="Removed boilerplate."
-
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -719,8 +720,8 @@ REACT_APP_SERVER_URL=$SERVER_URL npm start
 \`\`\`
 EOF
 git add README.md
-git commit -m "Added commands section to README file.";
 
+git commit -m "Added commands section to README file.";
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -767,8 +768,8 @@ cat << EOF >> $FILE
 [![.NET](https://github.com/intrepion/$CLIENT_REPOSITORY/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/intrepion/$CLIENT_REPOSITORY/actions/workflows/node.js.yml)
 EOF
 git add $FILE
-git commit --message="Added GitHub Action files."
 
+git commit --message="Added GitHub Action files."
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -813,7 +814,6 @@ EOF
 git add $FILE
 
 FILE=README.md
-
 cat << EOF >> $FILE
 
 ## Deploy
@@ -832,7 +832,6 @@ cat > $FILE << EOF
 
 doctl apps create --spec .do/app.yaml
 EOF
-
 chmod +x $FILE
 git add $FILE
 
@@ -842,11 +841,10 @@ cat > $FILE << EOF
 
 doctl apps update \$1 --spec .do/app.yaml
 EOF
-
 chmod +x $FILE
 git add $FILE
-git commit --message="Added Digital Ocean files."
 
+git commit --message="Added Digital Ocean files."
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -857,21 +855,8 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
   e2e: {
-    setupNodeEvents(on, config) {
-    },
+    setupNodeEvents(on, config) {},
   },
-});
-EOF
-git add $FILE
-
-mkdir -p cypress/e2e
-
-FILE=cypress/e2e/spec.cy.ts
-cat > $FILE << EOF
-describe("template spec", () => {
-  it("passes", () => {
-    cy.visit("https://example.cypress.io");
-  });
 });
 EOF
 git add $FILE
@@ -883,6 +868,44 @@ touch $FILE
 git add $FILE
 
 git commit --message="Added cypress files."
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+mkdir -p cypress/e2e
+
+FILE=cypress/e2e/$SNAKE.cy.ts
+cat > $FILE << EOF
+describe("$CANONICAL app", () => {
+  it("passes", () => {
+    cy.visit("http://localhost:3000");
+    cy.contains("$CANONICAL");
+  });
+});
+EOF
+git add $FILE
+
+npx cypress run && exit 1 || git commit --message="red - display application name"
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/App.tsx
+cat > $FILE << EOF
+import React from "react";
+
+function App() {
+  return <h1>$CANONICAL</h1>;
+}
+
+export default App;
+EOF
+git add $FILE
+
+npx cypress run && git commit --message="green - display application name" || exit 1
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
 
 mkdir -p src/__test__/authentication
 
@@ -904,7 +927,6 @@ EOF
 git add $FILE
 
 npm test -- --watchAll=false && exit 1 || git commit --message="red - add register form button"
-
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -920,7 +942,6 @@ EOF
 git add $FILE
 
 npm test -- --watchAll=false && git commit --message="green - add register form button" || exit 1
-
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
