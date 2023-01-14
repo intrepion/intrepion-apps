@@ -607,9 +607,21 @@ mv README.old.md README.md
 git add README.old.md README.md
 git commit --message "mv README.old.md README.md"
 
-npm install --save-dev --save-exact prettier
+npm i --save-dev @types/uuid
 git add --all
-git commit --message "npm install --save-dev --save-exact prettier"
+git commit --message "npm install @types/uuid"
+
+npm install cypress --save-dev
+git add --all
+git commit --message "npm install cypress --save-dev"
+
+npm install prettier --save-dev --save-exact
+git add --all
+git commit --message "npm install prettier --save-dev --save-exact"
+
+npm install uuid
+git add --all
+git commit --message "npm install uuid"
 
 echo {}> .prettierrc.json
 git add .prettierrc.json
@@ -618,18 +630,6 @@ git commit --message "echo {}> .prettierrc.json"
 cp .gitignore .prettierignore
 git add .prettierignore
 git commit --message "cp .gitignore .prettierignore"
-
-npx prettier --write .
-git add --all
-git commit --message "npx prettier --write ."
-
-npm install uuid
-git add --all
-git commit --message "npm install uuid"
-
-npm i --save-dev @types/uuid
-git add --all
-git commit --message "npm install --save-dev @types/uuid"
 
 npx prettier --write .
 git add --all
@@ -755,6 +755,7 @@ jobs:
       - run: npm i
       - run: npm run build --if-present
       - run: npm test
+      - run: npx cypress run
 EOF
 git add $FILE
 
@@ -849,6 +850,39 @@ git commit --message="Added Digital Ocean files."
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
+
+FILE=cypress.config.ts
+cat > $FILE << EOF
+import { defineConfig } from "cypress";
+
+export default defineConfig({
+  e2e: {
+    setupNodeEvents(on, config) {
+    },
+  },
+});
+EOF
+git add $FILE
+
+mkdir -p cypress/e2e
+
+FILE=cypress/e2e/spec.cy.ts
+cat > $FILE << EOF
+describe("template spec", () => {
+  it("passes", () => {
+    cy.visit("https://example.cypress.io");
+  });
+});
+EOF
+git add $FILE
+
+mkdir -p cypress/support
+
+FILE=cypress/support/e2e.ts
+touch $FILE
+git add $FILE
+
+git commit --message="Added cypress files."
 
 mkdir -p src/__test__/authentication
 
