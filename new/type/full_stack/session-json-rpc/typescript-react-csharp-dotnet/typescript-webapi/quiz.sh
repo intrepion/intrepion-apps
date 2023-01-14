@@ -753,10 +753,14 @@ jobs:
         with:
           node-version: \${{ matrix.node-version }}
           cache: "npm"
-      - run: npm i
+      - run: npm install
       - run: npm run build --if-present
       - run: npm test
-      - run: npx cypress run
+      - name: Cypress
+        uses: cypress-io/github-action@v5
+        with:
+          build: npm run build
+          start: npm start
 EOF
 git add $FILE
 
