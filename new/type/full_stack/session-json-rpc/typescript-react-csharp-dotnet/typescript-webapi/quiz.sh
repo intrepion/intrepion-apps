@@ -944,11 +944,25 @@ import { render, screen } from "@testing-library/react";
 import RegisterForm from "../../authentication/RegisterForm";
 
 describe("Registration", () => {
-  it("has button to register", () => {
+  let registerButton: HTMLElement;
+
+  beforeEach(() => {
     render(<RegisterForm />);
-    const registerButton = screen.queryByRole("button", {
+    let registerButtonElement = screen.queryByRole("button", {
       name: "Register",
     });
+    if (!registerButtonElement) {
+      throw new Error("Register Button not found");
+    }
+    registerButton = registerButtonElement;
+  });
+
+  it("has button to register", () => {
+    // Arrange
+
+    // Act
+
+    // Assert
     expect(registerButton).toBeInTheDocument();
   });
 });
@@ -983,24 +997,30 @@ import userEvent from "@testing-library/user-event";
 import RegisterForm from "../../authentication/RegisterForm";
 
 describe("Registration", () => {
-  it("has button to register", () => {
+  let registerButton: HTMLElement;
+
+  beforeEach(() => {
     render(<RegisterForm />);
-    const registerButton = screen.queryByRole("button", {
+    let registerButtonElement = screen.queryByRole("button", {
       name: "Register",
     });
+    if (!registerButtonElement) {
+      throw new Error("Register Button not found");
+    }
+    registerButton = registerButtonElement;
+  });
+
+  it("has button to register", () => {
+    // Arrange
+
+    // Act
+
+    // Assert
     expect(registerButton).toBeInTheDocument();
   });
 
   it("displays successful message", async () => {
-    render(<RegisterForm />);
-    const registerButton = screen.queryByRole("button", {
-      name: "Register",
-    });
-
-    if (!registerButton) {
-      throw new Error("Button not found");
-    }
-
+    // Arrange
     const mockApiCall = jest.fn().mockResolvedValue({
       data: {
         id: "1",
@@ -1011,8 +1031,10 @@ describe("Registration", () => {
 
     axios.get = mockApiCall;
 
+    // Act
     userEvent.click(registerButton);
 
+    // Assert
     const message = await screen.findByText("Successful registration!");
     expect(message).toBeInTheDocument();
   });
@@ -1066,24 +1088,62 @@ import { v4 } from "uuid";
 import RegisterForm from "../../authentication/RegisterForm";
 
 describe("Registration", () => {
-  it("has button to register", () => {
+  let confirmInput: HTMLElement;
+  let emailInput: HTMLElement;
+  let registerButton: HTMLElement;
+  let passwordInput: HTMLElement;
+  let usernameInput: HTMLElement;
+
+  beforeEach(() => {
     render(<RegisterForm />);
-    const registerButton = screen.queryByRole("button", {
+    let confirmInputElement = screen.queryByLabelText("Confirm:");
+    if (!confirmInputElement) {
+      throw new Error("Confirm Input not found");
+    }
+    confirmInput = confirmInputElement;
+
+    let emailInputElement = screen.queryByLabelText("Email:");
+    if (!emailInputElement) {
+      throw new Error("Email Input not found");
+    }
+    emailInput = emailInputElement;
+
+    let registerButtonElement = screen.queryByRole("button", {
       name: "Register",
     });
+    if (!registerButtonElement) {
+      throw new Error("Register Button not found");
+    }
+    registerButton = registerButtonElement;
+
+    let passwordInputElement = screen.queryByLabelText("Password:");
+    if (!passwordInputElement) {
+      throw new Error("Password Input not found");
+    }
+    passwordInput = passwordInputElement;
+
+    let usernameInputElement = screen.queryByLabelText("Username:");
+    if (!usernameInputElement) {
+      throw new Error("Username Input not found");
+    }
+    usernameInput = usernameInputElement;
+  });
+
+  it("has form elements to register", () => {
+    // Arrange
+
+    // Act
+
+    // Assert
+    expect(confirmInput).toBeInTheDocument();
+    expect(emailInput).toBeInTheDocument();
     expect(registerButton).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
+    expect(usernameInput).toBeInTheDocument();
   });
 
   it("displays successful message", async () => {
-    render(<RegisterForm />);
-    const registerButton = screen.queryByRole("button", {
-      name: "Register",
-    });
-
-    if (!registerButton) {
-      throw new Error("Button not found");
-    }
-
+    // Arrange
     const username = v4();
     const email = v4() + "@" + v4() + ".com";
     const password = v4();
@@ -1098,10 +1158,11 @@ describe("Registration", () => {
 
     axios.get = mockApiCall;
 
-    userEvent.type(screen.getByLabelText("Username:"), username);
-    userEvent.type(screen.getByLabelText("Email:"), email);
-    userEvent.type(screen.getByLabelText("Password:"), password);
-    userEvent.type(screen.getByLabelText("Confirm:"), password);
+    // Act
+    userEvent.type(usernameInput, username);
+    userEvent.type(emailInput, email);
+    userEvent.type(passwordInput, password);
+    userEvent.type(confirmInput, password);
     userEvent.click(registerButton);
 
     const message = await screen.findByText("Successful registration!");
@@ -1174,24 +1235,62 @@ import { v4 } from "uuid";
 import RegisterForm from "../../authentication/RegisterForm";
 
 describe("Registration", () => {
-  let registerButton: HTMLElement | null;
+  let confirmInput: HTMLElement;
+  let emailInput: HTMLElement;
+  let registerButton: HTMLElement;
+  let passwordInput: HTMLElement;
+  let usernameInput: HTMLElement;
 
   beforeEach(() => {
     render(<RegisterForm />);
-    registerButton = screen.queryByRole("button", {
+    let confirmInputElement = screen.queryByLabelText("Confirm:");
+    if (!confirmInputElement) {
+      throw new Error("Confirm Input not found");
+    }
+    confirmInput = confirmInputElement;
+
+    let emailInputElement = screen.queryByLabelText("Email:");
+    if (!emailInputElement) {
+      throw new Error("Email Input not found");
+    }
+    emailInput = emailInputElement;
+
+    let registerButtonElement = screen.queryByRole("button", {
       name: "Register",
     });
+    if (!registerButtonElement) {
+      throw new Error("Register Button not found");
+    }
+    registerButton = registerButtonElement;
+
+    let passwordInputElement = screen.queryByLabelText("Password:");
+    if (!passwordInputElement) {
+      throw new Error("Password Input not found");
+    }
+    passwordInput = passwordInputElement;
+
+    let usernameInputElement = screen.queryByLabelText("Username:");
+    if (!usernameInputElement) {
+      throw new Error("Username Input not found");
+    }
+    usernameInput = usernameInputElement;
   });
 
-  it("has button to register", () => {
+  it("has form elements to register", () => {
+    // Arrange
+
+    // Act
+
+    // Assert
+    expect(confirmInput).toBeInTheDocument();
+    expect(emailInput).toBeInTheDocument();
     expect(registerButton).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
+    expect(usernameInput).toBeInTheDocument();
   });
 
   it("displays successful message", async () => {
-    if (!registerButton) {
-      throw new Error("Button not found");
-    }
-
+    // Arrange
     const username = v4();
     const email = v4() + "@" + v4() + ".com";
     const password = v4();
@@ -1206,12 +1305,14 @@ describe("Registration", () => {
 
     axios.get = mockApiCall;
 
-    userEvent.type(screen.getByLabelText("Username:"), username);
-    userEvent.type(screen.getByLabelText("Email:"), email);
-    userEvent.type(screen.getByLabelText("Password:"), password);
-    userEvent.type(screen.getByLabelText("Confirm:"), password);
+    // Act
+    userEvent.type(usernameInput, username);
+    userEvent.type(emailInput, email);
+    userEvent.type(passwordInput, password);
+    userEvent.type(confirmInput, password);
     userEvent.click(registerButton);
 
+    // Assert
     const message = await screen.findByText("Successful registration!");
     expect(message).toBeInTheDocument();
   });
@@ -1233,24 +1334,62 @@ import { v4 } from "uuid";
 import RegisterForm from "../../authentication/RegisterForm";
 
 describe("Registration", () => {
-  let registerButton: HTMLElement | null;
+  let confirmInput: HTMLElement;
+  let emailInput: HTMLElement;
+  let registerButton: HTMLElement;
+  let passwordInput: HTMLElement;
+  let usernameInput: HTMLElement;
 
   beforeEach(() => {
     render(<RegisterForm />);
-    registerButton = screen.queryByRole("button", {
+    let confirmInputElement = screen.queryByLabelText("Confirm:");
+    if (!confirmInputElement) {
+      throw new Error("Confirm Input not found");
+    }
+    confirmInput = confirmInputElement;
+
+    let emailInputElement = screen.queryByLabelText("Email:");
+    if (!emailInputElement) {
+      throw new Error("Email Input not found");
+    }
+    emailInput = emailInputElement;
+
+    let registerButtonElement = screen.queryByRole("button", {
       name: "Register",
     });
+    if (!registerButtonElement) {
+      throw new Error("Register Button not found");
+    }
+    registerButton = registerButtonElement;
+
+    let passwordInputElement = screen.queryByLabelText("Password:");
+    if (!passwordInputElement) {
+      throw new Error("Password Input not found");
+    }
+    passwordInput = passwordInputElement;
+
+    let usernameInputElement = screen.queryByLabelText("Username:");
+    if (!usernameInputElement) {
+      throw new Error("Username Input not found");
+    }
+    usernameInput = usernameInputElement;
   });
 
-  it("has button to register", () => {
+  it("has form elements to register", () => {
+    // Arrange
+
+    // Act
+
+    // Assert
+    expect(confirmInput).toBeInTheDocument();
+    expect(emailInput).toBeInTheDocument();
     expect(registerButton).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
+    expect(usernameInput).toBeInTheDocument();
   });
 
   it("displays successful message", async () => {
-    if (!registerButton) {
-      throw new Error("Button not found");
-    }
-
+    // Arrange
     const username = v4();
     const email = v4() + "@" + v4() + ".com";
     const password = v4();
@@ -1265,17 +1404,19 @@ describe("Registration", () => {
 
     axios.get = mockApiCall;
 
-    userEvent.type(screen.getByLabelText("Username:"), username);
-    userEvent.type(screen.getByLabelText("Email:"), email);
-    userEvent.type(screen.getByLabelText("Password:"), password);
-    userEvent.type(screen.getByLabelText("Confirm:"), password);
+    // Act
+    userEvent.type(usernameInput, username);
+    userEvent.type(emailInput, email);
+    userEvent.type(passwordInput, password);
+    userEvent.type(confirmInput, password);
     userEvent.click(registerButton);
 
+    // Assert
     const message = await screen.findByText("Successful registration!");
     expect(message).toBeInTheDocument();
   });
 
-  it("displays missing username message", async () => {
+  it("displays missing username message with no username", async () => {
     if (!registerButton) {
       throw new Error("Button not found");
     }
@@ -1289,42 +1430,123 @@ describe("Registration", () => {
     expect(errors).toBeInTheDocument();
   });
 
-  it("displays missing email message", async () => {
+  it("displays missing username message with spaces", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.type(usernameInput, " ");
+
+    userEvent.click(registerButton);
+
+    const usernameMissing = screen.getByText("Username is missing.");
+    expect(usernameMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing email message with no email", async () => {
     if (!registerButton) {
       throw new Error("Button not found");
     }
 
     userEvent.click(registerButton);
 
-    const emailMissing = screen.getByText("Username is missing.");
+    const emailMissing = screen.getByText("Email is missing.");
     expect(emailMissing).toBeInTheDocument();
 
     const errors = await screen.findByText("There were registration errors.");
     expect(errors).toBeInTheDocument();
   });
 
-  it("displays missing password message", async () => {
+  it("displays missing email message with spaces", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.type(emailInput, " ");
+
+    userEvent.click(registerButton);
+
+    const emailMissing = screen.getByText("Email is missing.");
+    expect(emailMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing password message with no password", async () => {
     if (!registerButton) {
       throw new Error("Button not found");
     }
 
     userEvent.click(registerButton);
 
-    const passwordMissing = screen.getByText("Username is missing.");
+    const passwordMissing = screen.getByText("Password is missing.");
     expect(passwordMissing).toBeInTheDocument();
 
     const errors = await screen.findByText("There were registration errors.");
     expect(errors).toBeInTheDocument();
   });
 
-  it("displays missing confirm message", async () => {
+  it("displays missing password message with spaces", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.type(passwordInput, " ");
+
+    userEvent.click(registerButton);
+
+    const passwordMissing = screen.getByText("Password is missing.");
+    expect(passwordMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing confirm message with no confirm", async () => {
     if (!registerButton) {
       throw new Error("Button not found");
     }
 
     userEvent.click(registerButton);
 
-    const confirmMissing = screen.getByText("Username is missing.");
+    const confirmMissing = screen.getByText("Confirm is missing.");
+    expect(confirmMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing confirm message with spaces", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.type(confirmInput, " ");
+
+    userEvent.click(registerButton);
+
+    const confirmMissing = screen.getByText("Confirm is missing.");
+    expect(confirmMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays not matching confirm message with not matching password", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.type(passwordInput, "abc");
+    userEvent.type(confirmInput, "def");
+
+    userEvent.click(registerButton);
+
+    const confirmMissing = screen.getByText("Confirm does not match password.");
     expect(confirmMissing).toBeInTheDocument();
 
     const errors = await screen.findByText("There were registration errors.");
@@ -1374,8 +1596,31 @@ export default function Register() {
 
   const handleRegister = async (event: React.SyntheticEvent) => {
     event.preventDefault();
-    if (!username) {
+    let registrationError = false;
+    let trimmedUsername = username.trim();
+    if (!trimmedUsername) {
       setUsernameError("Username is missing.");
+      registrationError = true;
+    }
+    let trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setEmailError("Email is missing.");
+      registrationError = true;
+    }
+    let trimmedPassword = password.trim();
+    if (!trimmedPassword) {
+      setPasswordError("Password is missing.");
+      registrationError = true;
+    }
+    let trimmedConfirm = confirm.trim();
+    if (!trimmedConfirm) {
+      setConfirmError("Confirm is missing.");
+      registrationError = true;
+    } else if (trimmedPassword !== trimmedConfirm) {
+      setConfirmError("Confirm does not match password.");
+      registrationError = true;
+    }
+    if (registrationError) {
       setErrorMessage("There were registration errors.");
       return;
     }
