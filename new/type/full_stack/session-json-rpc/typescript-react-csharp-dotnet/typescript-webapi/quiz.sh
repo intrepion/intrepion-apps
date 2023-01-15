@@ -341,6 +341,7 @@ FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
 namespace $PROJECT.HealthCheck;
 
+[ApiController]
 public class HealthCheckController {}
 EOF
 git add $FILE
@@ -390,6 +391,7 @@ FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
 namespace $PROJECT.HealthCheck;
 
+[ApiController]
 public class HealthCheckController
 {
     public string Get()
@@ -458,6 +460,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.HealthCheck;
 
+[ApiController]
 public class HealthCheckController : ControllerBase
 {
     public IActionResult Get()
@@ -569,6 +572,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace QuizApp.WebApi.HealthCheck;
 
+[ApiController]
 [Route("[controller]")]
 public class HealthCheckController : ControllerBase
 {
