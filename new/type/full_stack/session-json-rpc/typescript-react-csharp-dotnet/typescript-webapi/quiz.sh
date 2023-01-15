@@ -1134,21 +1134,21 @@ export default function Register() {
     <form onSubmit={handleRegister}>
       <label htmlFor="username">
         Username:
-        <input type="text" id="username" />
+        <input id="username" type="text" />
       </label>
       <label htmlFor="email">
         Email:
-        <input type="email" id="email" />
+        <input id="email" type="email" />
       </label>
       <label htmlFor="password">
         Password:
-        <input type="password" id="password" />
+        <input id="password" type="password" />
       </label>
       <label htmlFor="confirm">
         Confirm:
-        <input type="password" id="confirm" />
+        <input id="confirm" type="password" />
       </label>
-      <button type="submit">Register</button>
+      <button id="register" type="submit">Register</button>
       {successMessage && <p>{successMessage}</p>}
     </form>
   );
@@ -1157,6 +1157,266 @@ EOF
 git add $FILE
 
 npm test -- --watchAll=false && git commit --message="green - add more register fields" || exit 1
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/__test__/authentication/RegisterForm.test.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { v4 } from "uuid";
+import RegisterForm from "../../authentication/RegisterForm";
+
+describe("Registration", () => {
+  let registerButton: HTMLElement | null;
+
+  beforeEach(() => {
+    render(<RegisterForm />);
+    registerButton = screen.queryByRole("button", {
+      name: "Register",
+    });
+  });
+
+  it("has button to register", () => {
+    expect(registerButton).toBeInTheDocument();
+  });
+
+  it("displays successful message", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    const username = v4();
+    const email = v4() + "@" + v4() + ".com";
+    const password = v4();
+
+    const mockApiCall = jest.fn().mockResolvedValue({
+      data: {
+        id: "1",
+        jsonrpc: "2.0",
+        result: {},
+      },
+    });
+
+    axios.get = mockApiCall;
+
+    userEvent.type(screen.getByLabelText("Username:"), username);
+    userEvent.type(screen.getByLabelText("Email:"), email);
+    userEvent.type(screen.getByLabelText("Password:"), password);
+    userEvent.type(screen.getByLabelText("Confirm:"), password);
+    userEvent.click(registerButton);
+
+    const message = await screen.findByText("Successful registration!");
+    expect(message).toBeInTheDocument();
+  });
+});
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && git commit --message="refactor - add more register fields" || exit 1
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/__test__/authentication/RegisterForm.test.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { v4 } from "uuid";
+import RegisterForm from "../../authentication/RegisterForm";
+
+describe("Registration", () => {
+  let registerButton: HTMLElement | null;
+
+  beforeEach(() => {
+    render(<RegisterForm />);
+    registerButton = screen.queryByRole("button", {
+      name: "Register",
+    });
+  });
+
+  it("has button to register", () => {
+    expect(registerButton).toBeInTheDocument();
+  });
+
+  it("displays successful message", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    const username = v4();
+    const email = v4() + "@" + v4() + ".com";
+    const password = v4();
+
+    const mockApiCall = jest.fn().mockResolvedValue({
+      data: {
+        id: "1",
+        jsonrpc: "2.0",
+        result: {},
+      },
+    });
+
+    axios.get = mockApiCall;
+
+    userEvent.type(screen.getByLabelText("Username:"), username);
+    userEvent.type(screen.getByLabelText("Email:"), email);
+    userEvent.type(screen.getByLabelText("Password:"), password);
+    userEvent.type(screen.getByLabelText("Confirm:"), password);
+    userEvent.click(registerButton);
+
+    const message = await screen.findByText("Successful registration!");
+    expect(message).toBeInTheDocument();
+  });
+
+  it("displays missing username message", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.click(registerButton);
+
+    const usernameMissing = screen.getByText("Username is missing.");
+    expect(usernameMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing email message", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.click(registerButton);
+
+    const emailMissing = screen.getByText("Username is missing.");
+    expect(emailMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing password message", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.click(registerButton);
+
+    const passwordMissing = screen.getByText("Username is missing.");
+    expect(passwordMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+
+  it("displays missing confirm message", async () => {
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    userEvent.click(registerButton);
+
+    const confirmMissing = screen.getByText("Username is missing.");
+    expect(confirmMissing).toBeInTheDocument();
+
+    const errors = await screen.findByText("There were registration errors.");
+    expect(errors).toBeInTheDocument();
+  });
+});
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && exit 1 || git commit --message="red - add more register errors"
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/authentication/RegisterForm.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { useState } from "react";
+
+export default function Register() {
+  const [confirm, setConfirm] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+
+  const handleChangeConfirm = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setConfirm(event.target.value);
+  };
+
+  const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
+  };
+
+  const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
+  const handleChangeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(event.target.value);
+  };
+
+  const handleRegister = async (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    if (!username) {
+      setUsernameError("Username is missing.");
+      setErrorMessage("There were registration errors.");
+      return;
+    }
+    try {
+      const response = await axios.get("http://localhost:5076");
+      if (response.data.result) {
+        setSuccessMessage("Successful registration!");
+      }
+    } catch (error) {}
+  };
+
+  return (
+    <form onSubmit={handleRegister}>
+      <label htmlFor="username">
+        Username:
+        <input id="username" type="text" onChange={handleChangeUsername} />
+      </label>
+      {usernameError && <p>{usernameError}</p>}
+      <label htmlFor="email">
+        Email:
+        <input id="email" type="email" onChange={handleChangeEmail} />
+      </label>
+      {emailError && <p>{emailError}</p>}
+      <label htmlFor="password">
+        Password:
+        <input id="password" type="password" onChange={handleChangePassword} />
+      </label>
+      {passwordError && <p>{passwordError}</p>}
+      <label htmlFor="confirm">
+        Confirm:
+        <input id="confirm" type="password" onChange={handleChangeConfirm} />
+      </label>
+      {confirmError && <p>{confirmError}</p>}
+      <button data-test-id="register" type="submit">
+        Register
+      </button>
+      {errorMessage && <p>{errorMessage}</p>}
+      {successMessage && <p>{successMessage}</p>}
+    </form>
+  );
+}
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && git commit --message="green - add more register errors" || exit 1
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
