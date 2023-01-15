@@ -29,7 +29,7 @@ PROJECT=$SOLUTION.WebApi
 SERVER_REPOSITORY=intrepion-$KEBOB-$SERVER_CONTRACT-$SERVER_FRAMEWORK-$SERVER_TEMPLATE
 
 if [ ! -d "$SERVER_REPOSITORY" ]; then
-  git clone git@github.com:intrepion/$SERVER_REPOSITORY.git
+  git clone git@github.com:intrepion/$SERVER_REPOSITORY.git && echo "Checked out $SERVER_REPOSITORY" || exit 1;
 fi
 
 cd $SERVER_REPOSITORY
@@ -130,7 +130,7 @@ EOF
 git add $FILE
 git commit -m "Added commands section to README file.";
 
-mkdir -p .github/workflows
+mkdir -p .github/workflows && echo "Created .github/workflows folder" || exit 1
 
 FILE=.github/workflows/dotnet.yml
 cat > $FILE << EOF
@@ -171,7 +171,7 @@ EOF
 git add $FILE
 git commit --message="Added GitHub Action files."
 
-mkdir -p .do
+mkdir -p .do && echo "Created .do folder" || exit 1
 
 FILE=.do/app.yaml
 cat > $FILE << EOF
@@ -253,7 +253,7 @@ cat << EOF >> $FILE
 EOF
 git add $FILE
 
-mkdir scripts
+mkdir -p scripts && echo "Created scripts folder" || exit 1
 
 FILE=scripts/docker_build.sh
 cat > $FILE << EOF
@@ -316,7 +316,7 @@ chmod +x $FILE
 git add $FILE
 git commit --message="Added Digital Ocean files."
 
-mkdir -p $SOLUTION.Tests/WebApi/HealthCheck
+mkdir -p $SOLUTION.Tests/WebApi/HealthCheck && echo "Created $SOLUTION.Tests/WebApi/HealthCheck folder" || exit 1
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -335,7 +335,7 @@ EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
 
-mkdir -p $PROJECT/HealthCheck
+mkdir -p $PROJECT/HealthCheck && echo "Created $PROJECT/HealthCheck folder" || exit 1
 
 FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
@@ -498,7 +498,7 @@ EOF
 git add $FILE
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 
-mkdir -p $SOLUTION.Tests/Endpoints
+mkdir -p $SOLUTION.Tests/Endpoints && echo "Created $SOLUTION.Tests/Endpoints folder" || exit 1
 
 FILE=$SOLUTION.Tests/Endpoints/TestHealthCheckEndpoint.cs
 cat > $FILE << EOF
@@ -626,6 +626,16 @@ npm install cypress --save-dev
 git add --all
 git commit --message "npm install cypress --save-dev"
 
+FILE=.gitignore
+cat << EOF >> $FILE
+
+# cypress
+/cypress/screenshots
+/cypress/videos
+EOF
+git add $FILE
+git commit --message "Added cypress to .gitignore."
+
 npm install prettier --save-dev --save-exact
 git add --all
 git commit --message "npm install prettier --save-dev --save-exact"
@@ -645,6 +655,8 @@ git commit --message "cp .gitignore .prettierignore"
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
+
+REACT_APP_SERVER_URL=$SERVER_URL npm start &
 
 FILE=src/App.css
 rm -rf $FILE
@@ -735,7 +747,7 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p .github/workflows
+mkdir -p .github/workflows && echo "Created .github/workflows folder" || exit 1
 
 FILE=.github/workflows/node.js.yml
 cat > $FILE << EOF
@@ -787,7 +799,7 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p .do
+mkdir -p .do && echo "Created .do folder" || exit 1
 
 FILE=.do/app.yaml
 cat > $FILE << EOF
@@ -837,7 +849,7 @@ cat << EOF >> $FILE
 EOF
 git add $FILE
 
-mkdir -p scripts
+mkdir -p scripts && echo "Created scripts folder" || exit 1
 
 FILE=scripts/doctl_apps_create.sh
 cat > $FILE << EOF
@@ -874,7 +886,7 @@ export default defineConfig({
 EOF
 git add $FILE
 
-mkdir -p cypress/support
+mkdir -p cypress/support && echo "Created cypress/support folder" || exit 1
 
 FILE=cypress/support/e2e.ts
 touch $FILE
@@ -885,13 +897,13 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p cypress/e2e
+mkdir -p cypress/e2e && echo "Created cypress/e2e folder" || exit 1
 
 FILE=cypress/e2e/$SNAKE.cy.ts
 cat > $FILE << EOF
 describe("$CANONICAL app", () => {
   it("passes", () => {
-    cy.visit("http://localhost:3000");
+    cy.visit("$CLIENT_URL");
     cy.contains("$CANONICAL");
   });
 });
@@ -920,7 +932,7 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p src/__test__/authentication
+mkdir -p src/__test__/authentication && echo "Created src/__test__/authentication folder" || exit 1
 
 FILE=src/__test__/authentication/RegisterForm.test.tsx
 cat > $FILE << EOF
@@ -944,7 +956,7 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p src/authentication
+mkdir -p src/authentication && echo "Created src/authentication folder" || exit 1
 
 FILE=src/authentication/RegisterForm.tsx
 cat > $FILE << EOF
@@ -1009,8 +1021,6 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-mkdir -p src/authentication
-
 FILE=src/authentication/RegisterForm.tsx
 cat > $FILE << EOF
 import axios from "axios";
@@ -1021,7 +1031,7 @@ export default function Register() {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.get("http://localhost:5046");
+      const response = await axios.get($SERVER_URL);
       if (!response.data.error) {
         setSuccessMessage("Successful registration!");
       }
@@ -1033,6 +1043,114 @@ export default function Register() {
       <button onClick={handleRegister}>Register</button>
       {successMessage && <p>{successMessage}</p>}
     </>
+  );
+}
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && git commit --message="green - add register api call" || exit 1
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/__test__/authentication/RegisterForm.test.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { v4 } from "uuid";
+import RegisterForm from "../../authentication/RegisterForm";
+
+describe("Registration", () => {
+  it("has button to register", () => {
+    render(<RegisterForm />);
+    const registerButton = screen.queryByRole("button", {
+      name: "Register",
+    });
+    expect(registerButton).toBeInTheDocument();
+  });
+
+  it("displays successful message", async () => {
+    render(<RegisterForm />);
+    const registerButton = screen.queryByRole("button", {
+      name: "Register",
+    });
+
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    const username = v4();
+    const email = v4() + "@" + v4() + ".com";
+    const password = v4();
+
+    const mockApiCall = jest.fn().mockResolvedValue({
+      data: {
+        id: "1",
+        jsonrpc: "2.0",
+        result: {},
+      },
+    });
+
+    axios.get = mockApiCall;
+
+    userEvent.type(screen.getByLabelText("Username:"), username);
+    userEvent.type(screen.getByLabelText("Email:"), email);
+    userEvent.type(screen.getByLabelText("Password:"), password);
+    userEvent.type(screen.getByLabelText("Confirm:"), password);
+    userEvent.click(registerButton);
+
+    const message = await screen.findByText("Successful registration!");
+    expect(message).toBeInTheDocument();
+  });
+});
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && exit 1 || git commit --message="red - add register api call"
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/authentication/RegisterForm.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { useState } from "react";
+
+export default function Register() {
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleRegister = async (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    try {
+      const response = await axios.get($SERVER_URL);
+      if (response.data.result) {
+        setSuccessMessage("Successful registration!");
+      }
+    } catch (error) {}
+  };
+
+  return (
+    <form onSubmit={handleRegister}>
+      <label htmlFor="username">
+        Username:
+        <input type="text" id="username" />
+      </label>
+      <label htmlFor="email">
+        Email:
+        <input type="email" id="email" />
+      </label>
+      <label htmlFor="password">
+        Password:
+        <input type="password" id="password" />
+      </label>
+      <label htmlFor="confirm">
+        Confirm:
+        <input type="password" id="confirm" />
+      </label>
+      <button type="submit">Register</button>
+      {successMessage && <p>{successMessage}</p>}
+    </form>
   );
 }
 EOF
