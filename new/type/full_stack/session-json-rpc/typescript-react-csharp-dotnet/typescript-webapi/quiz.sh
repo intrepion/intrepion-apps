@@ -1107,7 +1107,7 @@ describe("Registration", () => {
 EOF
 git add $FILE
 
-npm test -- --watchAll=false && exit 1 || git commit --message="red - add register api call"
+npm test -- --watchAll=false && exit 1 || git commit --message="red - add more register fields"
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -1156,7 +1156,7 @@ export default function Register() {
 EOF
 git add $FILE
 
-npm test -- --watchAll=false && git commit --message="green - add register api call" || exit 1
+npm test -- --watchAll=false && git commit --message="green - add more register fields" || exit 1
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
