@@ -609,9 +609,18 @@ mv README.old.md README.md
 git add README.old.md README.md
 git commit --message "mv README.old.md README.md"
 
-npm i --save-dev @types/uuid
+npm install @types/uuid
 git add --all
 git commit --message "npm install @types/uuid"
+
+npm install axios
+git add --all
+git commit --message "npm install axios"
+
+FILE=package.json
+sed -i 's/"test": "react-scripts test"/"test": "react-scripts test --transformIgnorePatterns \\"node_modules\/(?!axios)\/\\""/g' $FILE
+git add $FILE
+git commit --message '"test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",'
 
 npm install cypress --save-dev
 git add --all
@@ -921,10 +930,10 @@ import RegisterForm from "../../authentication/RegisterForm";
 describe("Registration", () => {
   it("has button to register", () => {
     render(<RegisterForm />);
-    const loadButton = screen.queryByRole("button", {
+    const registerButton = screen.queryByRole("button", {
       name: "Register",
     });
-    expect(loadButton).toBeInTheDocument();
+    expect(registerButton).toBeInTheDocument();
   });
 });
 EOF
@@ -946,6 +955,90 @@ EOF
 git add $FILE
 
 npm test -- --watchAll=false && git commit --message="green - add register form button" || exit 1
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/__test__/authentication/RegisterForm.test.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import RegisterForm from "../../authentication/RegisterForm";
+
+describe("Registration", () => {
+  it("has button to register", () => {
+    render(<RegisterForm />);
+    const registerButton = screen.queryByRole("button", {
+      name: "Register",
+    });
+    expect(registerButton).toBeInTheDocument();
+  });
+
+  it("displays successful message", async () => {
+    render(<RegisterForm />);
+    const registerButton = screen.queryByRole("button", {
+      name: "Register",
+    });
+
+    if (!registerButton) {
+      throw new Error("Button not found");
+    }
+
+    const mockApiCall = jest.fn().mockResolvedValue({
+      data: {
+        id: "1",
+        jsonrpc: "2.0",
+        result: {},
+      },
+    });
+
+    axios.get = mockApiCall;
+
+    userEvent.click(registerButton);
+
+    const message = await screen.findByText("Successful registration!");
+    expect(message).toBeInTheDocument();
+  });
+});
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && exit 1 || git commit --message="red - add register api call"
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+mkdir -p src/authentication
+
+FILE=src/authentication/RegisterForm.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { useState } from "react";
+
+export default function Register() {
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const handleRegister = async () => {
+    try {
+      const response = await axios.get("http://localhost:5046");
+      if (!response.data.error) {
+        setSuccessMessage("Successful registration!");
+      }
+    } catch (error) {}
+  };
+
+  return (
+    <>
+      <button onClick={handleRegister}>Register</button>
+      {successMessage && <p>{successMessage}</p>}
+    </>
+  );
+}
+EOF
+git add $FILE
+
+npm test -- --watchAll=false && git commit --message="green - add register api call" || exit 1
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
