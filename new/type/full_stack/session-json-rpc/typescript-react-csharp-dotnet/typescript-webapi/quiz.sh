@@ -889,7 +889,7 @@ cat > $FILE << EOF
 import { render, screen } from "@testing-library/react";
 import RegisterForm from "../../authentication/RegisterForm";
 
-describe("Registration", () => {
+describe("Registration Form", () => {
   let registerButton: HTMLElement;
 
   beforeEach(() => {
@@ -942,7 +942,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import RegisterForm from "../../authentication/RegisterForm";
 
-describe("Registration", () => {
+describe("Registration Form", () => {
   let registerButton: HTMLElement;
 
   beforeEach(() => {
@@ -1033,7 +1033,7 @@ import userEvent from "@testing-library/user-event";
 import { v4 } from "uuid";
 import RegisterForm from "../../authentication/RegisterForm";
 
-describe("Registration", () => {
+describe("Registration Form", () => {
   let confirmInput: HTMLElement;
   let emailInput: HTMLElement;
   let registerButton: HTMLElement;
@@ -1159,7 +1159,9 @@ export default function Register() {
         Confirm:
         <input id="confirm" type="password" />
       </label>
-      <button id="register" type="submit">Register</button>
+      <button id="register" type="submit">
+        Register
+      </button>
       {successMessage && <p>{successMessage}</p>}
     </form>
   );
@@ -1180,7 +1182,7 @@ import userEvent from "@testing-library/user-event";
 import { v4 } from "uuid";
 import RegisterForm from "../../authentication/RegisterForm";
 
-describe("Registration", () => {
+describe("Registration Form", () => {
   let confirmInput: HTMLElement;
   let emailInput: HTMLElement;
   let registerButton: HTMLElement;
@@ -1279,7 +1281,7 @@ import userEvent from "@testing-library/user-event";
 import { v4 } from "uuid";
 import RegisterForm from "../../authentication/RegisterForm";
 
-describe("Registration", () => {
+describe("Registration Form", () => {
   let confirmInput: HTMLElement;
   let emailInput: HTMLElement;
   let registerButton: HTMLElement;
@@ -1556,7 +1558,7 @@ export default function Register() {
       return;
     }
     try {
-      const response = await axios.get("http://localhost:5076");
+      const response = await axios.get($SERVER_URL);
       if (response.data.result) {
         setSuccessMessage("Successful registration!");
       }
@@ -1607,37 +1609,23 @@ import axios from "axios";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { v4 } from "uuid";
-import RegisterForm from "../../authentication/RegisterForm";
+import LoginForm from "../../authentication/LoginForm";
 
-describe("Registration", () => {
-  let confirmInput: HTMLElement;
-  let emailInput: HTMLElement;
-  let registerButton: HTMLElement;
+describe("Login Form", () => {
+  let loginButton: HTMLElement;
   let passwordInput: HTMLElement;
   let usernameInput: HTMLElement;
 
   beforeEach(() => {
-    render(<RegisterForm />);
+    render(<LoginForm />);
 
-    let confirmInputElement = screen.queryByLabelText("Confirm:");
-    if (!confirmInputElement) {
-      throw new Error("Confirm Input not found");
-    }
-    confirmInput = confirmInputElement;
-
-    let emailInputElement = screen.queryByLabelText("Email:");
-    if (!emailInputElement) {
-      throw new Error("Email Input not found");
-    }
-    emailInput = emailInputElement;
-
-    let registerButtonElement = screen.queryByRole("button", {
-      name: "Register",
+    let loginButtonElement = screen.queryByRole("button", {
+      name: "Login",
     });
-    if (!registerButtonElement) {
-      throw new Error("Register Button not found");
+    if (!loginButtonElement) {
+      throw new Error("Login Button not found");
     }
-    registerButton = registerButtonElement;
+    loginButton = loginButtonElement;
 
     let passwordInputElement = screen.queryByLabelText("Password:");
     if (!passwordInputElement) {
@@ -1658,9 +1646,7 @@ describe("Registration", () => {
     // Act
 
     // Assert
-    expect(confirmInput).toBeInTheDocument();
-    expect(emailInput).toBeInTheDocument();
-    expect(registerButton).toBeInTheDocument();
+    expect(loginButton).toBeInTheDocument();
     expect(passwordInput).toBeInTheDocument();
     expect(usernameInput).toBeInTheDocument();
   });
@@ -1668,7 +1654,6 @@ describe("Registration", () => {
   it("displays successful message", async () => {
     // Arrange
     const username = v4();
-    const email = v4() + "@" + v4() + ".com";
     const password = v4();
     const mockApiCall = jest.fn().mockResolvedValue({
       data: {
@@ -1681,13 +1666,11 @@ describe("Registration", () => {
 
     // Act
     userEvent.type(usernameInput, username);
-    userEvent.type(emailInput, email);
     userEvent.type(passwordInput, password);
-    userEvent.type(confirmInput, password);
-    userEvent.click(registerButton);
+    userEvent.click(loginButton);
 
     // Assert
-    const message = await screen.findByText("Successful registration!");
+    const message = await screen.findByText("Successful login!");
     expect(message).toBeInTheDocument();
   });
 
@@ -1695,12 +1678,12 @@ describe("Registration", () => {
     // Arrange
 
     // Act
-    userEvent.click(registerButton);
+    userEvent.click(loginButton);
 
     // Assert
     const usernameMissing = screen.getByText("Username is missing.");
     expect(usernameMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
+    const errors = await screen.findByText("There were login errors.");
     expect(errors).toBeInTheDocument();
   });
 
@@ -1709,39 +1692,12 @@ describe("Registration", () => {
     userEvent.type(usernameInput, " ");
 
     // Act
-    userEvent.click(registerButton);
+    userEvent.click(loginButton);
 
     // Assert
     const usernameMissing = screen.getByText("Username is missing.");
     expect(usernameMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
-    expect(errors).toBeInTheDocument();
-  });
-
-  it("displays missing email message with no email", async () => {
-    // Arrange
-
-    // Act
-    userEvent.click(registerButton);
-
-    // Assert
-    const emailMissing = screen.getByText("Email is missing.");
-    expect(emailMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
-    expect(errors).toBeInTheDocument();
-  });
-
-  it("displays missing email message with spaces", async () => {
-    // Arrange
-    userEvent.type(emailInput, " ");
-
-    // Act
-    userEvent.click(registerButton);
-
-    // Assert
-    const emailMissing = screen.getByText("Email is missing.");
-    expect(emailMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
+    const errors = await screen.findByText("There were login errors.");
     expect(errors).toBeInTheDocument();
   });
 
@@ -1749,12 +1705,12 @@ describe("Registration", () => {
     // Arrange
 
     // Act
-    userEvent.click(registerButton);
+    userEvent.click(loginButton);
 
     // Assert
     const passwordMissing = screen.getByText("Password is missing.");
     expect(passwordMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
+    const errors = await screen.findByText("There were login errors.");
     expect(errors).toBeInTheDocument();
   });
 
@@ -1763,54 +1719,12 @@ describe("Registration", () => {
     userEvent.type(passwordInput, " ");
 
     // Act
-    userEvent.click(registerButton);
+    userEvent.click(loginButton);
 
     // Assert
     const passwordMissing = screen.getByText("Password is missing.");
     expect(passwordMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
-    expect(errors).toBeInTheDocument();
-  });
-
-  it("displays missing confirm message with no confirm", async () => {
-    // Arrange
-
-    // Act
-    userEvent.click(registerButton);
-
-    // Assert
-    const confirmMissing = screen.getByText("Confirm is missing.");
-    expect(confirmMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
-    expect(errors).toBeInTheDocument();
-  });
-
-  it("displays missing confirm message with spaces", async () => {
-    // Arrange
-    userEvent.type(confirmInput, " ");
-
-    // Act
-    userEvent.click(registerButton);
-
-    // Assert
-    const confirmMissing = screen.getByText("Confirm is missing.");
-    expect(confirmMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
-    expect(errors).toBeInTheDocument();
-  });
-
-  it("displays not matching confirm message with not matching password", async () => {
-    // Arrange
-    userEvent.type(passwordInput, "abc");
-    userEvent.type(confirmInput, "def");
-
-    // Act
-    userEvent.click(registerButton);
-
-    // Assert
-    const confirmMissing = screen.getByText("Confirm does not match password.");
-    expect(confirmMissing).toBeInTheDocument();
-    const errors = await screen.findByText("There were registration errors.");
+    const errors = await screen.findByText("There were login errors.");
     expect(errors).toBeInTheDocument();
   });
 });
@@ -1827,25 +1741,13 @@ cat > $FILE << EOF
 import axios from "axios";
 import { useState } from "react";
 
-export default function Register() {
-  const [confirm, setConfirm] = useState("");
-  const [confirmError, setConfirmError] = useState("");
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
+export default function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
-
-  const handleChangeConfirm = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setConfirm(event.target.value);
-  };
-
-  const handleChangeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(event.target.value);
-  };
 
   const handleChangePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
@@ -1857,38 +1759,25 @@ export default function Register() {
 
   const handleRegister = async (event: React.SyntheticEvent) => {
     event.preventDefault();
-    let registrationError = false;
+    let loginError = false;
     let trimmedUsername = username.trim();
     if (!trimmedUsername) {
       setUsernameError("Username is missing.");
-      registrationError = true;
-    }
-    let trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      setEmailError("Email is missing.");
-      registrationError = true;
+      loginError = true;
     }
     let trimmedPassword = password.trim();
     if (!trimmedPassword) {
       setPasswordError("Password is missing.");
-      registrationError = true;
+      loginError = true;
     }
-    let trimmedConfirm = confirm.trim();
-    if (!trimmedConfirm) {
-      setConfirmError("Confirm is missing.");
-      registrationError = true;
-    } else if (trimmedPassword !== trimmedConfirm) {
-      setConfirmError("Confirm does not match password.");
-      registrationError = true;
-    }
-    if (registrationError) {
-      setErrorMessage("There were registration errors.");
+    if (loginError) {
+      setErrorMessage("There were login errors.");
       return;
     }
     try {
-      const response = await axios.get("http://localhost:5076");
+      const response = await axios.get($SERVER_URL);
       if (response.data.result) {
-        setSuccessMessage("Successful registration!");
+        setSuccessMessage("Successful login!");
       }
     } catch (error) {}
   };
@@ -1900,23 +1789,13 @@ export default function Register() {
         <input id="username" type="text" onChange={handleChangeUsername} />
       </label>
       {usernameError && <p>{usernameError}</p>}
-      <label htmlFor="email">
-        Email:
-        <input id="email" type="email" onChange={handleChangeEmail} />
-      </label>
-      {emailError && <p>{emailError}</p>}
       <label htmlFor="password">
         Password:
         <input id="password" type="password" onChange={handleChangePassword} />
       </label>
       {passwordError && <p>{passwordError}</p>}
-      <label htmlFor="confirm">
-        Confirm:
-        <input id="confirm" type="password" onChange={handleChangeConfirm} />
-      </label>
-      {confirmError && <p>{confirmError}</p>}
-      <button data-test-id="register" type="submit">
-        Register
+      <button data-test-id="login" type="submit">
+        Login
       </button>
       {errorMessage && <p>{errorMessage}</p>}
       {successMessage && <p>{successMessage}</p>}
