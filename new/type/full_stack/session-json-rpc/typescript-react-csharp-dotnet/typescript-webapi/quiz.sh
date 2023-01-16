@@ -91,6 +91,10 @@ dotnet add $SOLUTION.Tests reference $PROJECT
 git add $SOLUTION.Tests
 git commit --message "dotnet add $SOLUTION.Tests reference $PROJECT"
 
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
 FILE=$SOLUTION.Tests/UnitTest1.cs
 rm -rf $FILE
 git add $FILE
@@ -104,6 +108,9 @@ rm -rf $FILE
 git add $FILE
 
 git commit --message="Removed boilerplate."
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=README.md
 cat << EOF >> $FILE
@@ -130,7 +137,11 @@ dotnet run --project $PROJECT
 \`\`\`
 EOF
 git add $FILE
+
 git commit -m "Added commands section to README file.";
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 mkdir -p .github/workflows && echo "Created .github/workflows folder" || exit 1
 
@@ -171,7 +182,11 @@ cat << EOF >> $FILE
 [![.NET](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml)
 EOF
 git add $FILE
+
 git commit --message="Added GitHub Action files."
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 mkdir -p .do && echo "Created .do folder" || exit 1
 
@@ -316,7 +331,11 @@ EOF
 
 chmod +x $FILE
 git add $FILE
+
 git commit --message="Added Digital Ocean files."
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 mkdir -p $SOLUTION.Tests/WebApi/HealthCheck && echo "Created $SOLUTION.Tests/WebApi/HealthCheck folder" || exit 1
 
@@ -336,6 +355,9 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 mkdir -p $PROJECT/HealthCheck && echo "Created $PROJECT/HealthCheck folder" || exit 1
 
@@ -368,6 +390,9 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 dotnet test && git commit --message="green - testing the health check controller for 200 status" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -390,6 +415,9 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - trying to use the get endpoint"
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
@@ -408,6 +436,9 @@ public class HealthCheckController
 EOF
 git add $FILE
 dotnet test && git commit --message="green - trying to use the get endpoint" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -433,6 +464,9 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - using fluent assertions to check the status code"
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -452,7 +486,7 @@ public class TestHealthCheckController
 
         // Act
         var actualResult = controller.Get();
-        
+
         // Assert
         actualResult.Should().BeOfType<OkObjectResult>();
     }
@@ -477,6 +511,9 @@ public class HealthCheckController : ControllerBase
 EOF
 git add $FILE
 dotnet test && git commit --message="green - using fluent assertions to check the status code" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
@@ -506,6 +543,9 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 mkdir -p $SOLUTION.Tests/Endpoints && echo "Created $SOLUTION.Tests/Endpoints folder" || exit 1
 
@@ -542,6 +582,9 @@ public class TestHealthCheckEndpoint : IClassFixture<WebApplicationFactory<Progr
 EOF
 git add $FILE
 dotnet test && exit 1 || git commit --message="red - testing the health check endpoint"
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 FILE=$PROJECT/Program.cs
 cat > $FILE << EOF
@@ -568,7 +611,7 @@ app.MapControllers();
 
 app.Run();
 
-public partial class Program {}
+public partial class Program { }
 EOF
 git add $FILE
 
@@ -590,6 +633,9 @@ public class HealthCheckController : ControllerBase
 EOF
 git add $FILE
 dotnet test && git commit --message="green - testing the health check endpoint" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 git push --force
 
