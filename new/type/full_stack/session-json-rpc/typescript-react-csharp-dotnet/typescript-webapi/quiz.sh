@@ -339,6 +339,8 @@ mkdir -p $PROJECT/HealthCheck && echo "Created $PROJECT/HealthCheck folder" || e
 
 FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
 namespace $PROJECT.HealthCheck;
 
 [ApiController]
@@ -389,6 +391,8 @@ dotnet test && exit 1 || git commit --message="red - trying to use the get endpo
 
 FILE=$PROJECT/HealthCheck/HealthCheckController.cs
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
 namespace $PROJECT.HealthCheck;
 
 [ApiController]
