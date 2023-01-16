@@ -368,7 +368,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace $PROJECT.HealthCheck;
 
 [ApiController]
-public class HealthCheckController {}
+public class HealthCheckController { }
 EOF
 git add $FILE
 
@@ -533,7 +533,7 @@ public class TestHealthCheckController
 
         // Act
         var actualResult = controller.Get();
-        
+
         // Assert
         actualResult.Should().BeOfType<OkObjectResult>();
         var okObjectResult = (OkObjectResult)actualResult;
