@@ -11,16 +11,16 @@ pushd .
 cd ..
 pwd
 
-CANONICAL="Quiz"
+CANONICAL="To Do"
 CLIENT_URL="http://localhost:3000"
 CLIENT_FRAMEWORK=typescript-react
 CLIENT_TEMPLATE=typescript
 CONTRACT=session-json-rpc
-KEBOB=quiz
-PASCAL=Quiz
+KEBOB=to-do
+PASCAL=ToDo
 SERVER_FRAMEWORK=csharp-dotnet
 SERVER_TEMPLATE=webapi
-SNAKE=quiz
+SNAKE=to_do
 
 CLIENT_CONTRACT=$CONTRACT-client-web
 SOLUTION=${PASCAL}App
@@ -599,7 +599,7 @@ SERVER_URL=$(jq '.profiles.http.applicationUrl' $FILE)
 cd ..
 
 if [ ! -d "$CLIENT_REPOSITORY" ]; then
-  git clone git@github.com:intrepion/$CLIENT_REPOSITORY.git || exit 1;
+  git clone git@github.com:intrepion/$CLIENT_REPOSITORY.git || exit 1
 fi
 
 cd $CLIENT_REPOSITORY
