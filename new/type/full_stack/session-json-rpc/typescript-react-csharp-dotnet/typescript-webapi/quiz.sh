@@ -4,6 +4,8 @@ SCRIPT=$0
 
 echo " - Running $SCRIPT"
 
+killall -15 node
+
 pushd .
 
 cd ..
@@ -664,8 +666,6 @@ npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
 
-REACT_APP_SERVER_URL=$SERVER_URL npm start &
-
 FILE=src/App.css
 rm -rf $FILE
 git add $FILE
@@ -878,64 +878,6 @@ chmod +x $FILE
 git add $FILE
 
 git commit --message="Added Digital Ocean files."
-npx prettier --write .
-git add --all
-git commit --message "npx prettier --write ."
-
-FILE=cypress.config.ts
-cat > $FILE << EOF
-import { defineConfig } from "cypress";
-
-export default defineConfig({
-  e2e: {
-    setupNodeEvents(on, config) {},
-  },
-});
-EOF
-git add $FILE
-
-mkdir -p cypress/support && echo "Created cypress/support folder" || exit 1
-
-FILE=cypress/support/e2e.ts
-touch $FILE
-git add $FILE
-
-git commit --message="Added cypress files."
-npx prettier --write .
-git add --all
-git commit --message "npx prettier --write ."
-
-mkdir -p cypress/e2e && echo "Created cypress/e2e folder" || exit 1
-
-FILE=cypress/e2e/$SNAKE.cy.ts
-cat > $FILE << EOF
-describe("$CANONICAL app", () => {
-  it("passes", () => {
-    cy.visit("$CLIENT_URL");
-    cy.contains("$CANONICAL");
-  });
-});
-EOF
-git add $FILE
-
-npx cypress run && exit 1 || git commit --message="red - display application name"
-npx prettier --write .
-git add --all
-git commit --message "npx prettier --write ."
-
-FILE=src/App.tsx
-cat > $FILE << EOF
-import React from "react";
-
-function App() {
-  return <h1>$CANONICAL</h1>;
-}
-
-export default App;
-EOF
-git add $FILE
-
-npx cypress run && git commit --message="green - display application name" || exit 1
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
@@ -1670,6 +1612,66 @@ EOF
 git add $FILE
 
 npm test -- --watchAll=false && git commit --message="green - add more register errors" || exit 1
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+REACT_APP_SERVER_URL=$SERVER_URL npm start &
+
+FILE=cypress.config.ts
+cat > $FILE << EOF
+import { defineConfig } from "cypress";
+
+export default defineConfig({
+  e2e: {
+    setupNodeEvents(on, config) {},
+  },
+});
+EOF
+git add $FILE
+
+mkdir -p cypress/support && echo "Created cypress/support folder" || exit 1
+
+FILE=cypress/support/e2e.ts
+touch $FILE
+git add $FILE
+
+git commit --message="Added cypress files."
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+mkdir -p cypress/e2e && echo "Created cypress/e2e folder" || exit 1
+
+FILE=cypress/e2e/$SNAKE.cy.ts
+cat > $FILE << EOF
+describe("$CANONICAL app", () => {
+  it("passes", () => {
+    cy.visit("$CLIENT_URL");
+    cy.contains("$CANONICAL");
+  });
+});
+EOF
+git add $FILE
+
+npx cypress run && exit 1 || git commit --message="red - display application name"
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=src/App.tsx
+cat > $FILE << EOF
+import React from "react";
+
+function App() {
+  return <h1>$CANONICAL</h1>;
+}
+
+export default App;
+EOF
+git add $FILE
+
+npx cypress run && git commit --message="green - display application name" || exit 1
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
