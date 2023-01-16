@@ -637,6 +637,64 @@ dotnet format
 git add --all
 git commit --message "dotnet format"
 
+mkdir -p $SOLUTION.Tests/WebApi/JsonRpc && echo "Created $SOLUTION.Tests/WebApi/JsonRpc folder" || exit 1
+
+FILE=$SOLUTION.Tests/WebApi/JsonRpc/TestJsonRpcController.cs
+cat > $FILE << EOF
+namespace $SOLUTION.Tests.WebApi.JsonRpc;
+
+public class TestJsonRpcController
+{
+    [Fact]
+    public void Get_Returns200()
+    {
+        // Arrange
+        var controller = new JsonRpcController();
+    }
+}
+EOF
+git add $FILE
+dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
+mkdir -p $PROJECT/JsonRpc && echo "Created $PROJECT/JsonRpc folder" || exit 1
+
+FILE=$PROJECT/JsonRpc/JsonRpcController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.JsonRpc;
+
+[ApiController]
+public class JsonRpcController { }
+EOF
+git add $FILE
+
+FILE=$SOLUTION.Tests/WebApi/JsonRpc/TestJsonRpcController.cs
+cat > $FILE << EOF
+using $PROJECT.JsonRpc;
+
+namespace $SOLUTION.Tests.WebApi.JsonRpc;
+
+public class TestJsonRpcController
+{
+    [Fact]
+    public void Get_Returns200()
+    {
+        // Arrange
+        var controller = new JsonRpcController();
+    }
+}
+EOF
+git add $FILE
+dotnet test && git commit --message="green - testing the health check controller for 200 status" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
+
 git push --force
 
 FILE=$PROJECT/Properties/launchSettings.json
