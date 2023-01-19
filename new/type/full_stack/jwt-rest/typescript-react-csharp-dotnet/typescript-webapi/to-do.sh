@@ -341,186 +341,6 @@ mkdir -p $SOLUTION.Tests/WebApi/HealthCheck && echo "Created $SOLUTION.Tests/Web
 
 FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
 cat > $FILE << EOF
-namespace $SOLUTION.Tests.WebApi.HealthCheck;
-
-public class TestHealthCheckController
-{
-    [Fact]
-    public void Get_Returns200()
-    {
-        // Arrange
-        var controller = new HealthCheckController();
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-mkdir -p $PROJECT/HealthCheck && echo "Created $PROJECT/HealthCheck folder" || exit 1
-
-FILE=$PROJECT/HealthCheck/HealthCheckController.cs
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Mvc;
-
-namespace $PROJECT.HealthCheck;
-
-[ApiController]
-public class HealthCheckController { }
-EOF
-git add $FILE
-
-FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
-cat > $FILE << EOF
-using $PROJECT.HealthCheck;
-
-namespace $SOLUTION.Tests.WebApi.HealthCheck;
-
-public class TestHealthCheckController
-{
-    [Fact]
-    public void Get_Returns200()
-    {
-        // Arrange
-        var controller = new HealthCheckController();
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && git commit --message="green - testing the health check controller for 200 status" || exit 1
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
-cat > $FILE << EOF
-using $PROJECT.HealthCheck;
-
-namespace $SOLUTION.Tests.WebApi.HealthCheck;
-
-public class TestHealthCheckController
-{
-    [Fact]
-    public void Get_Returns200()
-    {
-        // Arrange
-        var controller = new HealthCheckController();
-
-        // Act
-        var actualResult = controller.Get();
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && exit 1 || git commit --message="red - trying to use the get endpoint"
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-FILE=$PROJECT/HealthCheck/HealthCheckController.cs
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Mvc;
-
-namespace $PROJECT.HealthCheck;
-
-public class HealthCheckController
-{
-    public string Get()
-    {
-        return "";
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && git commit --message="green - trying to use the get endpoint" || exit 1
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
-cat > $FILE << EOF
-using $PROJECT.HealthCheck;
-
-namespace $SOLUTION.Tests.WebApi.HealthCheck;
-
-public class TestHealthCheckController
-{
-    [Fact]
-    public void Get_Returns200()
-    {
-        // Arrange
-        var controller = new HealthCheckController();
-
-        // Act
-        var actualResult = controller.All();
-
-        // Assert
-        actualResult.Should().BeOfType<OkObjectResult>();
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && exit 1 || git commit --message="red - using fluent assertions to check the status code"
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
-cat > $FILE << EOF
-using FluentAssertions;
-using Microsoft.AspNetCore.Mvc;
-using $PROJECT.HealthCheck;
-
-namespace $SOLUTION.Tests.WebApi.HealthCheck;
-
-public class TestHealthCheckController
-{
-    [Fact]
-    public void Get_Returns200()
-    {
-        // Arrange
-        var controller = new HealthCheckController();
-
-        // Act
-        var actualResult = controller.Get();
-
-        // Assert
-        actualResult.Should().BeOfType<OkObjectResult>();
-    }
-}
-EOF
-git add $FILE
-
-FILE=$PROJECT/HealthCheck/HealthCheckController.cs
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Mvc;
-
-namespace $PROJECT.HealthCheck;
-
-public class HealthCheckController : ControllerBase
-{
-    public IActionResult Get()
-    {
-        return Ok("");
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && git commit --message="green - using fluent assertions to check the status code" || exit 1
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-FILE=$SOLUTION.Tests/WebApi/HealthCheck/TestHealthCheckController.cs
-cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using $PROJECT.HealthCheck;
@@ -547,7 +367,30 @@ public class TestHealthCheckController
 EOF
 git add $FILE
 
-dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
+dotnet test && exit 1 || git commit --message="red - testing the health check controller"
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
+mkdir -p $PROJECT/HealthCheck && echo "Created $PROJECT/HealthCheck folder" || exit 1
+
+FILE=$PROJECT/HealthCheck/HealthCheckController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.HealthCheck;
+
+public class HealthCheckController : ControllerBase
+{
+    public IActionResult Get()
+    {
+        return Ok("");
+    }
+}
+EOF
+git add $FILE
+
+dotnet test && git commit --message="green - testing the health check controller" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
