@@ -354,6 +354,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
+
 dotnet test && exit 1 || git commit --message="red - testing the health check controller for 200 status"
 dotnet format
 git add --all
@@ -389,6 +390,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
+
 dotnet test && git commit --message="green - testing the health check controller for 200 status" || exit 1
 dotnet format
 git add --all
@@ -414,6 +416,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
+
 dotnet test && exit 1 || git commit --message="red - trying to use the get endpoint"
 dotnet format
 git add --all
@@ -425,7 +428,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.HealthCheck;
 
-[ApiController]
 public class HealthCheckController
 {
     public string Get()
@@ -435,6 +437,7 @@ public class HealthCheckController
 }
 EOF
 git add $FILE
+
 dotnet test && git commit --message="green - trying to use the get endpoint" || exit 1
 dotnet format
 git add --all
@@ -455,7 +458,7 @@ public class TestHealthCheckController
         var controller = new HealthCheckController();
 
         // Act
-        var actualResult = controller.Get();
+        var actualResult = controller.All();
 
         // Assert
         actualResult.Should().BeOfType<OkObjectResult>();
@@ -463,6 +466,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
+
 dotnet test && exit 1 || git commit --message="red - using fluent assertions to check the status code"
 dotnet format
 git add --all
@@ -500,7 +504,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.HealthCheck;
 
-[ApiController]
 public class HealthCheckController : ControllerBase
 {
     public IActionResult Get()
@@ -510,6 +513,7 @@ public class HealthCheckController : ControllerBase
 }
 EOF
 git add $FILE
+
 dotnet test && git commit --message="green - using fluent assertions to check the status code" || exit 1
 dotnet format
 git add --all
@@ -542,6 +546,7 @@ public class TestHealthCheckController
 }
 EOF
 git add $FILE
+
 dotnet test && git commit --message="refactor - using fluent assertions to check the status code" || exit 1
 dotnet format
 git add --all
@@ -553,7 +558,7 @@ FILE=$SOLUTION.Tests/Endpoints/TestHealthCheckEndpoint.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace $SOLUTION.Tests.WebApi.HealthCheck;
+namespace $SOLUTION.Tests.WebApi.Endpoints;
 
 public class TestHealthCheckEndpoint : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -565,7 +570,7 @@ public class TestHealthCheckEndpoint : IClassFixture<WebApplicationFactory<Progr
     }
 
     [Fact]
-    public async Task Get_EndpointsReturnSuccessAndCorrectContentType()
+    public async Task Get_HealthCheck_EndpointReturnSuccessAndCorrectContentType()
     {
         // Arrange
         var client = _factory.CreateClient();
@@ -581,6 +586,7 @@ public class TestHealthCheckEndpoint : IClassFixture<WebApplicationFactory<Progr
 }
 EOF
 git add $FILE
+
 dotnet test && exit 1 || git commit --message="red - testing the health check endpoint"
 dotnet format
 git add --all
@@ -632,6 +638,7 @@ public class HealthCheckController : ControllerBase
 }
 EOF
 git add $FILE
+
 dotnet test && git commit --message="green - testing the health check endpoint" || exit 1
 dotnet format
 git add --all
@@ -652,7 +659,7 @@ public class TestUserController
         var controller = new UserController();
 
         // Act
-        var actualResult = controller.Get();
+        var actualResult = controller.All();
 
         // Assert
         actualResult.Should().BeOfType<OkObjectResult>();
@@ -662,6 +669,7 @@ public class TestUserController
 }
 EOF
 git add $FILE
+
 dotnet test && exit 1 || git commit --message="red - testing the user controller for 200 status"
 dotnet format
 git add --all
@@ -675,11 +683,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.Authentication;
 
-[ApiController]
-[Route("[controller]")]
 public class UserController : ControllerBase
 {
-    public IActionResult Get()
+    public IActionResult All()
     {
         return Ok("");
     }
@@ -698,13 +704,13 @@ namespace $SOLUTION.Tests.WebApi.Authentication;
 public class TestUserController
 {
     [Fact]
-    public void Get_Returns200()
+    public void All_Returns200()
     {
         // Arrange
         var controller = new UserController();
 
         // Act
-        var actualResult = controller.Get();
+        var actualResult = controller.All();
 
         // Assert
         actualResult.Should().BeOfType<OkObjectResult>();
@@ -714,11 +720,72 @@ public class TestUserController
 }
 EOF
 git add $FILE
+
 dotnet test && git commit --message="green - testing the user controller for 200 status" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
 
+FILE=$SOLUTION.Tests/Endpoints/TestUserEndpoints.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace $SOLUTION.Tests.WebApi.Endpoints;
+
+public class TestUserEndpoints : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public TestUserEndpoints(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task Get_User_EndpointReturnSuccessAndCorrectContentType()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+
+        // Act
+        var response = await client.GetAsync("/User/Users");
+        var actual = response.Content.Headers.ContentType?.ToString();
+
+        // // Assert
+        Assert.NotNull(response);
+        response.EnsureSuccessStatusCode();
+    }
+}
+EOF
+git add $FILE
+
+dotnet test && exit 1 || git commit --message="red - testing user endpoints"
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
+FILE=$PROJECT/Authentication/UserController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication;
+
+[ApiController]
+[Route("[controller]")]
+public class UserController : ControllerBase
+{
+    public IActionResult All()
+    {
+        return Ok("");
+    }
+}
+EOF
+git add $FILE
+
+dotnet test && git commit --message="green - testing user endpoints" || exit 1
+dotnet format
+git add --all
+git commit --message "dotnet format"
 
 git push --force
 
