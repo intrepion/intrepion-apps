@@ -646,54 +646,7 @@ git commit --message "dotnet format"
 
 mkdir -p $SOLUTION.Tests/WebApi/Authentication && echo "Created $SOLUTION.Tests/WebApi/Authentication folder" || exit 1
 
-FILE=$SOLUTION.Tests/WebApi/Authentication/TestUserController.cs
-cat > $FILE << EOF
-namespace $SOLUTION.Tests.WebApi.Authentication;
-
-public class TestUserController
-{
-    [Fact]
-    public void Get_Returns200()
-    {
-        // Arrange
-        var controller = new UserController();
-
-        // Act
-        var actualResult = controller.All();
-
-        // Assert
-        actualResult.Should().BeOfType<OkObjectResult>();
-        var okObjectResult = (OkObjectResult)actualResult;
-        okObjectResult.StatusCode.Should().Be(200);
-    }
-}
-EOF
-git add $FILE
-
-dotnet test && exit 1 || git commit --message="red - testing the user controller for 200 status"
-dotnet format
-git add --all
-git commit --message "dotnet format"
-
-mkdir -p $PROJECT/Authentication && echo "Created $PROJECT/Authentication folder" || exit 1
-
-FILE=$PROJECT/Authentication/UserController.cs
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Mvc;
-
-namespace $PROJECT.Authentication;
-
-public class UserController : ControllerBase
-{
-    public IActionResult All()
-    {
-        return Ok("");
-    }
-}
-EOF
-git add $FILE
-
-FILE=$SOLUTION.Tests/WebApi/Authentication/TestUserController.cs
+FILE=$SOLUTION.Tests/WebApi/Authentication/TestUsersController.cs
 cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -701,34 +654,184 @@ using $PROJECT.Authentication;
 
 namespace $SOLUTION.Tests.WebApi.Authentication;
 
-public class TestUserController
+public class TestUsersController
 {
     [Fact]
-    public void All_Returns200()
+    public void HappyPath()
     {
         // Arrange
-        var controller = new UserController();
+        var controller = new UsersController();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Email = "some@email.com",
+            UserName = "someUserName",
+            Password = "somePassword",
+        };
+        var userEditRequest = new UserEditRequest
+        {
+            Email = "edited@email.com",
+            UserName = "editedUserName",
+            Password = "editedPassword",
+        };
 
-        // Act
-        var actualResult = controller.All();
+        // Act 1
+        var actualResult1 = controller.All();
 
-        // Assert
-        actualResult.Should().BeOfType<OkObjectResult>();
-        var okObjectResult = (OkObjectResult)actualResult;
-        okObjectResult.StatusCode.Should().Be(200);
+        // Assert 1
+        actualResult1.Should().BeOfType<OkObjectResult>();
+        var okObjectResult1 = (OkObjectResult)actualResult1;
+        okObjectResult1.StatusCode.Should().Be(200);
+
+        // Act 2
+        var actualResult2 = controller.Make(userMakeRequest);
+
+        // Assert 2
+        actualResult2.Should().BeOfType<OkObjectResult>();
+        var okObjectResult2 = (OkObjectResult)actualResult2;
+        okObjectResult2.StatusCode.Should().Be(200);
+
+        // Act 3
+        var actualResult3 = controller.All();
+
+        // Assert 3
+        actualResult3.Should().BeOfType<OkObjectResult>();
+        var okObjectResult3 = (OkObjectResult)actualResult3;
+        okObjectResult3.StatusCode.Should().Be(200);
+
+        // Act 4
+        var actualResult4 = controller.Load("someid");
+
+        // Assert 4
+        actualResult4.Should().BeOfType<OkObjectResult>();
+        var okObjectResult4 = (OkObjectResult)actualResult4;
+        okObjectResult4.StatusCode.Should().Be(200);
+
+        // Act 5
+        var actualResult5 = controller.Edit("someid", userEditRequest);
+
+        // Assert 5
+        actualResult5.Should().BeOfType<OkObjectResult>();
+        var okObjectResult5 = (OkObjectResult)actualResult5;
+        okObjectResult5.StatusCode.Should().Be(200);
+
+        // Act 6
+        var actualResult6 = controller.All();
+
+        // Assert 6
+        actualResult6.Should().BeOfType<OkObjectResult>();
+        var okObjectResult6 = (OkObjectResult)actualResult6;
+        okObjectResult6.StatusCode.Should().Be(200);
+
+        // Act 7
+        var actualResult7 = controller.Load("someid");
+
+        // Assert 7
+        actualResult7.Should().BeOfType<OkObjectResult>();
+        var okObjectResult7 = (OkObjectResult)actualResult7;
+        okObjectResult7.StatusCode.Should().Be(200);
+
+        // Act 8
+        var actualResult8 = controller.Remove("someid");
+
+        // Assert 8
+        actualResult8.Should().BeOfType<OkObjectResult>();
+        var okObjectResult8 = (OkObjectResult)actualResult8;
+        okObjectResult8.StatusCode.Should().Be(200);
+
+        // Act 9
+        var actualResult9 = controller.All();
+
+        // Assert 9
+        actualResult9.Should().BeOfType<OkObjectResult>();
+        var okObjectResult9 = (OkObjectResult)actualResult9;
+        okObjectResult9.StatusCode.Should().Be(200);
     }
 }
 EOF
 git add $FILE
 
-dotnet test && git commit --message="green - testing the user controller for 200 status" || exit 1
+dotnet test && exit 1 || git commit --message="red - testing the user controller"
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
+mkdir -p $PROJECT/Authentication && echo "Created $PROJECT/Authentication folder" || exit 1
+
+FILE=$PROJECT/Authentication/UserEditRequest.cs
+cat > $FILE << EOF
+namespace $PROJECT.Authentication
+{
+    public class UserEditRequest
+    {
+        public string? Email { get; set; }
+        public string? Password { get; set; }
+        public string? UserName { get; set; }
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/UserMakeRequest.cs
+cat > $FILE << EOF
+namespace $PROJECT.Authentication
+{
+    public class UserMakeRequest
+    {
+        public string? Email { get; set; }
+        public string? Password { get; set; }
+        public string? UserName { get; set; }
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/UsersController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $SOLUTION.WebApi.Authentication;
+
+public class UsersController : ControllerBase
+{
+    public IActionResult All()
+    {
+        return Ok("");
+    }
+
+    public IActionResult Edit(string id, [FromBody]UserEditRequest userEditRequest)
+    {
+        return Ok("");
+    }
+
+    public IActionResult Load(string id)
+    {
+        return Ok("");
+    }
+
+    public IActionResult Make([FromBody]UserMakeRequest userMakeRequest)
+    {
+        return Ok("");
+    }
+
+    public IActionResult Remove(string id)
+    {
+        return Ok("");
+    }
+}
+EOF
+git add $FILE
+
+dotnet test && git commit --message="green - testing the user controller" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
 
 FILE=$SOLUTION.Tests/Endpoints/TestUserEndpoints.cs
 cat > $FILE << EOF
+using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
+using $PROJECT.Authentication;
 
 namespace $SOLUTION.Tests.WebApi.Endpoints;
 
@@ -742,18 +845,96 @@ public class TestUserEndpoints : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Get_User_EndpointReturnSuccessAndCorrectContentType()
+    public async Task Get_Users_EndpointReturnSuccessAndCorrectContentType()
     {
         // Arrange
         var client = _factory.CreateClient();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Email = "some@email.com",
+            UserName = "someUserName",
+            Password = "somePassword",
+        };
+        var userEditRequest = new UserEditRequest
+        {
+            Email = "edited@email.com",
+            UserName = "editedUserName",
+            Password = "editedPassword",
+        };
 
-        // Act
-        var response = await client.GetAsync("/User/Users");
-        var actual = response.Content.Headers.ContentType?.ToString();
+        // Act 1
+        var response1 = await client.GetAsync("/Users");
+        var actual1 = response1.Content.Headers.ContentType?.ToString();
 
-        // // Assert
-        Assert.NotNull(response);
-        response.EnsureSuccessStatusCode();
+        // Assert 1
+        Assert.NotNull(response1);
+        response1.EnsureSuccessStatusCode();
+
+        // Act 2
+        var content2 = new StringContent(JsonSerializer.Serialize(userMakeRequest), Encoding.UTF8, "application/json");
+        var response2 = await client.PostAsync("/Users", content2);
+        var actual2 = response2.Content.Headers.ContentType?.ToString();
+
+        // Assert 2
+        Assert.NotNull(response2);
+        response2.EnsureSuccessStatusCode();
+
+        // Act 3
+        var response3 = await client.GetAsync("/Users");
+        var actual3 = response3.Content.Headers.ContentType?.ToString();
+
+        // Assert 3
+        Assert.NotNull(response3);
+        response3.EnsureSuccessStatusCode();
+
+        // Act 4
+        var response4 = await client.GetAsync("/Users/SomeId");
+        var actual4 = response4.Content.Headers.ContentType?.ToString();
+
+        // Assert 4
+        Assert.NotNull(response4);
+        response4.EnsureSuccessStatusCode();
+
+        // Act 5
+        var content5 = new StringContent(JsonSerializer.Serialize(userEditRequest), Encoding.UTF8, "application/json");
+        var response5 = await client.PutAsync("/Users/SomeId", content5);
+        var actual5 = response5.Content.Headers.ContentType?.ToString();
+
+        // Assert 5
+        Assert.NotNull(response5);
+        response5.EnsureSuccessStatusCode();
+
+        // Act 6
+        var response6 = await client.GetAsync("/Users");
+        var actual6 = response6.Content.Headers.ContentType?.ToString();
+
+        // Assert 6
+        Assert.NotNull(response6);
+        response6.EnsureSuccessStatusCode();
+
+        // Act 7
+        var response7 = await client.GetAsync("/Users/SomeId");
+        var actual7 = response7.Content.Headers.ContentType?.ToString();
+
+        // Assert 7
+        Assert.NotNull(response7);
+        response7.EnsureSuccessStatusCode();
+
+        // Act 8
+        var response8 = await client.DeleteAsync("/Users/SomeId");
+        var actual8 = response8.Content.Headers.ContentType?.ToString();
+
+        // Assert 8
+        Assert.NotNull(response8);
+        response8.EnsureSuccessStatusCode();
+
+        // Act 9
+        var response9 = await client.GetAsync("/Users");
+        var actual9 = response9.Content.Headers.ContentType?.ToString();
+
+        // Assert 9
+        Assert.NotNull(response9);
+        response9.EnsureSuccessStatusCode();
     }
 }
 EOF
@@ -764,7 +945,7 @@ dotnet format
 git add --all
 git commit --message "dotnet format"
 
-FILE=$PROJECT/Authentication/UserController.cs
+FILE=$PROJECT/Authentication/UsersController.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
@@ -772,11 +953,39 @@ namespace $PROJECT.Authentication;
 
 [ApiController]
 [Route("[controller]")]
-public class UserController : ControllerBase
+public class UsersController : ControllerBase
 {
     [HttpGet]
-    [Route("Users")]
+    [Route("")]
     public IActionResult All()
+    {
+        return Ok("");
+    }
+
+    [HttpPut]
+    [Route("{id}")]
+    public IActionResult Edit(string id, [FromBody]UserEditRequest userEditRequest)
+    {
+        return Ok("");
+    }
+
+    [HttpGet]
+    [Route("{id}")]
+    public IActionResult Load(string id)
+    {
+        return Ok("");
+    }
+
+    [HttpPost]
+    [Route("")]
+    public IActionResult Make([FromBody]UserMakeRequest userMakeRequest)
+    {
+        return Ok("");
+    }
+
+    [HttpDelete]
+    [Route("{id}")]
+    public IActionResult Remove(string id)
     {
         return Ok("");
     }
