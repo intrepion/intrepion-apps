@@ -489,7 +489,7 @@ git commit --message "dotnet format"
 
 mkdir -p $SOLUTION.Tests/WebApi/Authentication && echo "Created $SOLUTION.Tests/WebApi/Authentication folder" || exit 1
 
-FILE=$SOLUTION.Tests/WebApi/Authentication/TestUsersController.cs
+FILE=$SOLUTION.Tests/WebApi/Authentication/TestUsersControllerHappyPath.cs
 cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
@@ -497,7 +497,7 @@ using $PROJECT.Authentication;
 
 namespace $SOLUTION.Tests.WebApi.Authentication;
 
-public class TestUsersController
+public class TestUsersControllerHappyPath
 {
     [Fact]
     public void HappyPath()
@@ -506,12 +506,14 @@ public class TestUsersController
         var controller = new UsersController();
         var userMakeRequest = new UserMakeRequest
         {
+            Confirm = "somePassword",
             Email = "some@email.com",
             UserName = "someUserName",
             Password = "somePassword",
         };
         var userEditRequest = new UserEditRequest
         {
+            Confirm = "editedPassword",
             Email = "edited@email.com",
             UserName = "editedUserName",
             Password = "editedPassword",
@@ -593,6 +595,139 @@ public class TestUsersController
 EOF
 git add $FILE
 
+FILE=$SOLUTION.Tests/WebApi/Authentication/TestUsersControllerMakeErrors.cs
+cat > $FILE << EOF
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using ToDoApp.WebApi.Authentication;
+
+namespace ToDoApp.Tests.WebApi.Authentication;
+
+public class TestUsersControllerMakeErrors
+{
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void MakeError_ConfirmIsMissing(string confirm)
+    {
+        // Arrange
+        var controller = new UsersController();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = confirm,
+            Email = "some@email.com",
+            UserName = "someUserName",
+            Password = "somePassword",
+        };
+
+        // Act
+        var actualResult = controller.Make(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public void MakeError_ConfirmDoesNotMatchPassword()
+    {
+        // Arrange
+        var controller = new UsersController();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someConfirm",
+            Email = "some@email.com",
+            UserName = "someUserName",
+            Password = "somePassword",
+        };
+
+        // Act
+        var actualResult = controller.Make(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void MakeError_EmailIsMissing(string email)
+    {
+        // Arrange
+        var controller = new UsersController();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "somePassword",
+            Email = email,
+            UserName = "someUserName",
+            Password = "somePassword",
+        };
+
+        // Act
+        var actualResult = controller.Make(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void MakeError_UserNameIsMissing(string userName)
+    {
+        // Arrange
+        var controller = new UsersController();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "somePassword",
+            Email = "some@email.com",
+            UserName = userName,
+            Password = "somePassword",
+        };
+
+        // Act
+        var actualResult = controller.Make(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void MakeError_PasswordIsMissing(string password)
+    {
+        // Arrange
+        var controller = new UsersController();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "somePassword",
+            Email = "some@email.com",
+            UserName = "someUserName",
+            Password = password,
+        };
+
+        // Act
+        var actualResult = controller.Make(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+}
+EOF
+git add $FILE
+
 dotnet test && exit 1 || git commit --message="red - testing the user controller"
 dotnet format
 git add --all
@@ -606,6 +741,7 @@ namespace $PROJECT.Authentication
 {
     public class UserEditRequest
     {
+        public string? Confirm { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
         public string? UserName { get; set; }
@@ -620,6 +756,7 @@ namespace $PROJECT.Authentication
 {
     public class UserMakeRequest
     {
+        public string? Confirm { get; set; }
         public string? Email { get; set; }
         public string? Password { get; set; }
         public string? UserName { get; set; }
@@ -632,7 +769,7 @@ FILE=$PROJECT/Authentication/UsersController.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Mvc;
 
-namespace $SOLUTION.WebApi.Authentication;
+namespace $PROJECT.Authentication;
 
 public class UsersController : ControllerBase
 {
@@ -641,7 +778,7 @@ public class UsersController : ControllerBase
         return Ok("");
     }
 
-    public IActionResult Edit(string id, [FromBody]UserEditRequest userEditRequest)
+    public IActionResult Edit(string id, [FromBody] UserEditRequest userEditRequest)
     {
         return Ok("");
     }
@@ -651,8 +788,61 @@ public class UsersController : ControllerBase
         return Ok("");
     }
 
-    public IActionResult Make([FromBody]UserMakeRequest userMakeRequest)
+    public IActionResult Make([FromBody] UserMakeRequest userMakeRequest)
     {
+        if (userMakeRequest.UserName == null)
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        var userName = userMakeRequest.UserName.Trim();
+
+        if (String.IsNullOrEmpty(userName))
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        if (userMakeRequest.Email == null)
+        {
+            return BadRequest("Email is missing.");
+        }
+
+        var email = userMakeRequest.Email.Trim();
+
+        if (String.IsNullOrEmpty(email))
+        {
+            return BadRequest("Email is missing.");
+        }
+
+        if (userMakeRequest.Password == null)
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        var password = userMakeRequest.Password;
+
+        if (String.IsNullOrEmpty(password))
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        if (userMakeRequest.Confirm == null)
+        {
+            return BadRequest("Confirm is missing.");
+        }
+
+        var confirm = userMakeRequest.Confirm;
+
+        if (String.IsNullOrEmpty(confirm))
+        {
+            return BadRequest("Confirm is missing.");
+        }
+
+        if (password != confirm)
+        {
+            return BadRequest("Confirm does not match Password.");
+        }
+
         return Ok("");
     }
 
@@ -694,12 +884,14 @@ public class TestUserEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var client = _factory.CreateClient();
         var userMakeRequest = new UserMakeRequest
         {
+            Confirm = "somePassword",
             Email = "some@email.com",
             UserName = "someUserName",
             Password = "somePassword",
         };
         var userEditRequest = new UserEditRequest
         {
+            Confirm = "editedPassword",
             Email = "edited@email.com",
             UserName = "editedUserName",
             Password = "editedPassword",
@@ -807,7 +999,7 @@ public class UsersController : ControllerBase
 
     [HttpPut]
     [Route("{id}")]
-    public IActionResult Edit(string id, [FromBody]UserEditRequest userEditRequest)
+    public IActionResult Edit(string id, [FromBody] UserEditRequest userEditRequest)
     {
         return Ok("");
     }
@@ -821,8 +1013,61 @@ public class UsersController : ControllerBase
 
     [HttpPost]
     [Route("")]
-    public IActionResult Make([FromBody]UserMakeRequest userMakeRequest)
+    public IActionResult Make([FromBody] UserMakeRequest userMakeRequest)
     {
+        if (userMakeRequest.UserName == null)
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        var userName = userMakeRequest.UserName.Trim();
+
+        if (String.IsNullOrEmpty(userName))
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        if (userMakeRequest.Email == null)
+        {
+            return BadRequest("Email is missing.");
+        }
+
+        var email = userMakeRequest.Email.Trim();
+
+        if (String.IsNullOrEmpty(email))
+        {
+            return BadRequest("Email is missing.");
+        }
+
+        if (userMakeRequest.Password == null)
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        var password = userMakeRequest.Password;
+
+        if (String.IsNullOrEmpty(password))
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        if (userMakeRequest.Confirm == null)
+        {
+            return BadRequest("Confirm is missing.");
+        }
+
+        var confirm = userMakeRequest.Confirm;
+
+        if (String.IsNullOrEmpty(confirm))
+        {
+            return BadRequest("Confirm is missing.");
+        }
+
+        if (password != confirm)
+        {
+            return BadRequest("Confirm does not match Password.");
+        }
+
         return Ok("");
     }
 
