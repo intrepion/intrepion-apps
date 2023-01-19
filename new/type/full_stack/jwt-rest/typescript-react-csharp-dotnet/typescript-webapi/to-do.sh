@@ -774,6 +774,8 @@ namespace $PROJECT.Authentication;
 [Route("[controller]")]
 public class UserController : ControllerBase
 {
+    [HttpGet]
+    [Route("Users")]
     public IActionResult All()
     {
         return Ok("");
