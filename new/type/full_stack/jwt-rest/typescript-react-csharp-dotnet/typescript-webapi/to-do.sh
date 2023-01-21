@@ -1385,7 +1385,7 @@ FILE=$PROJECT/Database/DatabaseInitializer.cs
 cat > $FILE << EOF
 namespace $PROJECT.Database;
 
-public static class DBInitializer
+public static class DatabaseInitializer
 {
     public static void Initialize(ApplicationDatabaseContext context)
     {
