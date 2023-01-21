@@ -59,9 +59,17 @@ dotnet add $PROJECT package Microsoft.AspNetCore.Cors
 git add $PROJECT
 git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Cors"
 
+dotnet add $PROJECT package Microsoft.AspNetCore.Authentication.JwtBearer
+git add $PROJECT
+git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Authentication.JwtBearer"
+
 dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore
 git add $PROJECT
 git commit --message "dotnet add $PROJECT package Microsoft.AspNetCore.Identity.EntityFrameworkCore"
+
+dotnet add $PROJECT package Npgsql.EntityFrameworkCore.PostgreSQL
+git add $PROJECT
+git commit --message "dotnet add $PROJECT package Npgsql.EntityFrameworkCore.PostgreSQL"
 
 dotnet sln $SOLUTION.sln add $PROJECT
 git add $SOLUTION.sln
@@ -158,7 +166,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: intrepion
+        ports:
+          - 5432:5432
     steps:
       - uses: actions/checkout@v3
       - name: Setup .NET
@@ -278,7 +294,15 @@ cat > $FILE << EOF
 
 sudo docker build --tag $SERVER_REPOSITORY --file Dockerfile .
 EOF
+chmod +x $FILE
+git add $FILE
 
+FILE=scripts/docker_container_prune.sh
+cat > $FILE << EOF
+#!/usr/bin/env bash
+
+sudo docker container prune
+EOF
 chmod +x $FILE
 git add $FILE
 
@@ -288,7 +312,6 @@ cat > $FILE << EOF
 
 sudo docker run -p 80:80 $SERVER_REPOSITORY
 EOF
-
 chmod +x $FILE
 git add $FILE
 
@@ -298,7 +321,6 @@ cat > $FILE << EOF
 
 sudo docker system prune --all --force
 EOF
-
 chmod +x $FILE
 git add $FILE
 
@@ -308,7 +330,6 @@ cat > $FILE << EOF
 
 doctl apps create --spec .do/app.yaml
 EOF
-
 chmod +x $FILE
 git add $FILE
 
@@ -318,7 +339,6 @@ cat > $FILE << EOF
 
 doctl apps update \$1 --spec .do/app.yaml
 EOF
-
 chmod +x $FILE
 git add $FILE
 
@@ -328,7 +348,48 @@ cat > $FILE << EOF
 
 dotnet watch test --project $SOLUTION.Tests
 EOF
+chmod +x $FILE
+git add $FILE
 
+FILE=scripts/init_postgres.sh
+cat > $FILE << EOF
+#!/usr/bin/env bash
+
+set -x
+set -eo pipefail
+
+if ! [ -x "/usr/bin/psql" ]; then
+    echo >&2 "Error: psql is not installed."
+    exit 1
+fi
+
+DB_USER=\${POSTGRES_USER:=postgres}
+DB_PASSWORD="\${POSTGRES_PASSWORD:=password}"
+DB_NAME="\${POSTGRES_DB:=intrepion}"
+DB_PORT="\${POSTGRES_PORT:=5432}"
+
+if [[ -z "\${SKIP_DOCKER}" ]]
+then
+    sudo docker run\
+        -e POSTGRES_USER=\${DB_USER}\
+        -e POSTGRES_PASSWORD=\${DB_PASSWORD}\
+        -e POSTGRES_DB=\${DB_NAME}\
+        -p "\${DB_PORT}":5432\
+        -d postgres\
+        postgres -N 1000
+fi
+
+export PGPASSWORD="\${DB_PASSWORD}"
+until psql -h "localhost" -U "\${DB_USER}" -p "\${DB_PORT}" -d "postgres" -c '\q'; do
+    >&2 echo "Postgres is still unavailable - sleeping"
+    sleep 1
+done
+
+>&2 echo "Postgres is up and running on port \${DB_PORT} - running migrations now!"
+
+DATABASE_URL=postgres://\${DB_USER}:\${DB_PASSWORD}@localhost:\${DB_PORT}/\${DB_NAME}
+export DATABASE_URL
+EOF
 chmod +x $FILE
 git add $FILE
 
@@ -489,38 +550,194 @@ git commit --message "dotnet format"
 
 mkdir -p $SOLUTION.Tests/WebApi/Authentication && echo "Created $SOLUTION.Tests/WebApi/Authentication folder" || exit 1
 
+FILE=$SOLUTION.Tests/WebApi/Authentication/TestTokensControllerHappyPath.cs
+cat > $FILE << EOF
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using $SOLUTION.Tests.Helpers;
+using $PROJECT.Authentication;
+
+namespace $SOLUTION.Tests.WebApi.Authentication;
+
+public class TestTokensControllerHappyPath
+{
+    private ITokensController _tokensController;
+    private IUsersController _usersController;
+
+    public TestTokensControllerHappyPath()
+    {
+        _tokensController = new TokensController(new FakeSignInManagerSuccess());
+        _usersController = new UsersController(new FakeUserManager());
+    }
+
+    [Fact]
+    public async Task HappyPathAsync()
+    {
+        // Arrange
+        var userName = (Guid.NewGuid()).ToString();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someP4\$\$w0rd",
+            Email = "some@email.com",
+            UserName = userName,
+            Password = "someP4\$\$w0rd",
+        };
+        var tokenMakeRequest = new TokenMakeRequest
+        {
+            UserName = userName,
+            Password = "somePassword",
+        };
+        var result = _usersController.MakeAsync(userMakeRequest);
+
+        // Act
+        var actualResult = await _tokensController.MakeAsync(tokenMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<OkObjectResult>();
+        var okObjectResult = (OkObjectResult)actualResult;
+        okObjectResult.StatusCode.Should().Be(200);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$SOLUTION.Tests/WebApi/Authentication/TestTokensControllerMakeErrors.cs
+cat > $FILE << EOF
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using $SOLUTION.Tests.Helpers;
+using $PROJECT.Authentication;
+
+namespace $SOLUTION.Tests.WebApi.Authentication;
+
+public class TestTokensControllerMakeErrors
+{
+    private ITokensController _tokensController;
+    private IUsersController _usersController;
+
+    public TestTokensControllerMakeErrors()
+    {
+        // Arrange
+        _tokensController = new TokensController(new FakeSignInManagerFailed());
+        _usersController = new UsersController(new FakeUserManager());
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task MakeError_UserNameIsMissing_BadRequestAsync(string userName)
+    {
+        // Arrange
+
+        var tokenMakeRequest = new TokenMakeRequest
+        {
+            UserName = userName,
+            Password = "somePassword",
+        };
+
+        // Act
+        var actualResult = await _tokensController.MakeAsync(tokenMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task MakeError_PasswordIsMissing_BadRequestAsync(string password)
+    {
+        // Arrange
+        var userName = (Guid.NewGuid()).ToString();
+        var tokenMakeRequest = new TokenMakeRequest
+        {
+            UserName = userName,
+            Password = password,
+        };
+
+        // Act
+        var actualResult = await _tokensController.MakeAsync(tokenMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Fact]
+    public async Task MakeError_WrongUserName_UnauthorizedAsync()
+    {
+        // Arrange
+        var userName = (Guid.NewGuid()).ToString();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someP4\$\$w0rd",
+            Email = "some@email.com",
+            UserName = userName,
+            Password = "someP4\$\$w0rd",
+        };
+        var result = _usersController.MakeAsync(userMakeRequest);
+        var tokenMakeRequest = new TokenMakeRequest
+        {
+            UserName = "wrongUserName",
+            Password = "someP4\$\$w0rd",
+        };
+
+        // Act
+        var actualResult = await _tokensController.MakeAsync(tokenMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<UnauthorizedObjectResult>();
+        var unauthorizedObjectResult = (UnauthorizedObjectResult)actualResult;
+        unauthorizedObjectResult.StatusCode.Should().Be(401);
+    }
+}
+EOF
+git add $FILE
+
 FILE=$SOLUTION.Tests/WebApi/Authentication/TestUsersControllerHappyPath.cs
 cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using $SOLUTION.Tests.Helpers;
 using $PROJECT.Authentication;
 
 namespace $SOLUTION.Tests.WebApi.Authentication;
 
 public class TestUsersControllerHappyPath
 {
+    private UsersController _usersController;
+
+    public TestUsersControllerHappyPath()
+    {
+        _usersController = new UsersController(new FakeUserManager());
+    }
+
     [Fact]
-    public void HappyPath()
+    public async Task HappyPathAsync()
     {
         // Arrange
-        var controller = new UsersController();
-        var userMakeRequest = new UserMakeRequest
-        {
-            Confirm = "somePassword",
-            Email = "some@email.com",
-            UserName = "someUserName",
-            Password = "somePassword",
-        };
         var userEditRequest = new UserEditRequest
         {
-            Confirm = "editedPassword",
+            Confirm = "editedP4\$\$w0rd",
             Email = "edited@email.com",
             UserName = "editedUserName",
-            Password = "editedPassword",
+            Password = "editedP4\$\$w0rd",
+        };
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someP4\$\$w0rd",
+            Email = "some@email.com",
+            UserName = "someUserName",
+            Password = "someP4\$\$w0rd",
         };
 
         // Act 1
-        var actualResult1 = controller.All();
+        var actualResult1 = await _usersController.AllAsync();
 
         // Assert 1
         actualResult1.Should().BeOfType<OkObjectResult>();
@@ -528,7 +745,7 @@ public class TestUsersControllerHappyPath
         okObjectResult1.StatusCode.Should().Be(200);
 
         // Act 2
-        var actualResult2 = controller.Make(userMakeRequest);
+        var actualResult2 = await _usersController.MakeAsync(userMakeRequest);
 
         // Assert 2
         actualResult2.Should().BeOfType<OkObjectResult>();
@@ -536,7 +753,7 @@ public class TestUsersControllerHappyPath
         okObjectResult2.StatusCode.Should().Be(200);
 
         // Act 3
-        var actualResult3 = controller.All();
+        var actualResult3 = await _usersController.AllAsync();
 
         // Assert 3
         actualResult3.Should().BeOfType<OkObjectResult>();
@@ -544,7 +761,7 @@ public class TestUsersControllerHappyPath
         okObjectResult3.StatusCode.Should().Be(200);
 
         // Act 4
-        var actualResult4 = controller.Load("someid");
+        var actualResult4 = await _usersController.LoadAsync("someid");
 
         // Assert 4
         actualResult4.Should().BeOfType<OkObjectResult>();
@@ -552,7 +769,7 @@ public class TestUsersControllerHappyPath
         okObjectResult4.StatusCode.Should().Be(200);
 
         // Act 5
-        var actualResult5 = controller.Edit("someid", userEditRequest);
+        var actualResult5 = await _usersController.EditAsync("someid", userEditRequest);
 
         // Assert 5
         actualResult5.Should().BeOfType<OkObjectResult>();
@@ -560,7 +777,7 @@ public class TestUsersControllerHappyPath
         okObjectResult5.StatusCode.Should().Be(200);
 
         // Act 6
-        var actualResult6 = controller.All();
+        var actualResult6 = await _usersController.AllAsync();
 
         // Assert 6
         actualResult6.Should().BeOfType<OkObjectResult>();
@@ -568,7 +785,7 @@ public class TestUsersControllerHappyPath
         okObjectResult6.StatusCode.Should().Be(200);
 
         // Act 7
-        var actualResult7 = controller.Load("someid");
+        var actualResult7 = await _usersController.LoadAsync("someid");
 
         // Assert 7
         actualResult7.Should().BeOfType<OkObjectResult>();
@@ -576,7 +793,7 @@ public class TestUsersControllerHappyPath
         okObjectResult7.StatusCode.Should().Be(200);
 
         // Act 8
-        var actualResult8 = controller.Remove("someid");
+        var actualResult8 = await _usersController.RemoveAsync("someid");
 
         // Assert 8
         actualResult8.Should().BeOfType<OkObjectResult>();
@@ -584,7 +801,7 @@ public class TestUsersControllerHappyPath
         okObjectResult8.StatusCode.Should().Be(200);
 
         // Act 9
-        var actualResult9 = controller.All();
+        var actualResult9 = await _usersController.AllAsync();
 
         // Assert 9
         actualResult9.Should().BeOfType<OkObjectResult>();
@@ -599,29 +816,38 @@ FILE=$SOLUTION.Tests/WebApi/Authentication/TestUsersControllerMakeErrors.cs
 cat > $FILE << EOF
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
-using ToDoApp.WebApi.Authentication;
+using $SOLUTION.Tests.Helpers;
+using $PROJECT.Authentication;
 
-namespace ToDoApp.Tests.WebApi.Authentication;
+namespace $SOLUTION.Tests.WebApi.Authentication;
 
 public class TestUsersControllerMakeErrors
 {
+    private UsersController _usersController;
+
+    public TestUsersControllerMakeErrors()
+    {
+        // Arrange
+        _usersController = new UsersController(new FakeUserManager());
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void MakeError_ConfirmIsMissing(string confirm)
+    public async Task MakeError_ConfirmIsMissingAsync(string confirm)
     {
         // Arrange
-        var controller = new UsersController();
+        var userName = (Guid.NewGuid()).ToString();
         var userMakeRequest = new UserMakeRequest
         {
             Confirm = confirm,
             Email = "some@email.com",
-            UserName = "someUserName",
-            Password = "somePassword",
+            UserName = userName,
+            Password = "someP4\$\$w0rd",
         };
 
         // Act
-        var actualResult = controller.Make(userMakeRequest);
+        var actualResult = await _usersController.MakeAsync(userMakeRequest);
 
         // Assert
         actualResult.Should().BeOfType<BadRequestObjectResult>();
@@ -630,70 +856,20 @@ public class TestUsersControllerMakeErrors
     }
 
     [Fact]
-    public void MakeError_ConfirmDoesNotMatchPassword()
+    public async Task MakeError_ConfirmDoesNotMatchPasswordAsync()
     {
         // Arrange
-        var controller = new UsersController();
+        var userName = (Guid.NewGuid()).ToString();
         var userMakeRequest = new UserMakeRequest
         {
-            Confirm = "someConfirm",
-            Email = "some@email.com",
-            UserName = "someUserName",
-            Password = "somePassword",
-        };
-
-        // Act
-        var actualResult = controller.Make(userMakeRequest);
-
-        // Assert
-        actualResult.Should().BeOfType<BadRequestObjectResult>();
-        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
-        badRequestObjectResult.StatusCode.Should().Be(400);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void MakeError_EmailIsMissing(string email)
-    {
-        // Arrange
-        var controller = new UsersController();
-        var userMakeRequest = new UserMakeRequest
-        {
-            Confirm = "somePassword",
-            Email = email,
-            UserName = "someUserName",
-            Password = "somePassword",
-        };
-
-        // Act
-        var actualResult = controller.Make(userMakeRequest);
-
-        // Assert
-        actualResult.Should().BeOfType<BadRequestObjectResult>();
-        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
-        badRequestObjectResult.StatusCode.Should().Be(400);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
-    public void MakeError_UserNameIsMissing(string userName)
-    {
-        // Arrange
-        var controller = new UsersController();
-        var userMakeRequest = new UserMakeRequest
-        {
-            Confirm = "somePassword",
+            Confirm = "some(0nf!rm",
             Email = "some@email.com",
             UserName = userName,
-            Password = "somePassword",
+            Password = "someP4\$\$w0rd",
         };
 
         // Act
-        var actualResult = controller.Make(userMakeRequest);
+        var actualResult = await _usersController.MakeAsync(userMakeRequest);
 
         // Assert
         actualResult.Should().BeOfType<BadRequestObjectResult>();
@@ -704,20 +880,69 @@ public class TestUsersControllerMakeErrors
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void MakeError_PasswordIsMissing(string password)
+    [InlineData(" ")]
+    public async Task MakeError_EmailIsMissingAsync(string email)
     {
         // Arrange
-        var controller = new UsersController();
+        var userName = (Guid.NewGuid()).ToString();
         var userMakeRequest = new UserMakeRequest
         {
-            Confirm = "somePassword",
+            Confirm = "someP4\$\$w0rd",
+            Email = email,
+            UserName = userName,
+            Password = "someP4\$\$w0rd",
+        };
+
+        // Act
+        var actualResult = await _usersController.MakeAsync(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task MakeError_UserNameIsMissingAsync(string userName)
+    {
+        // Arrange
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someP4\$\$w0rd",
             Email = "some@email.com",
-            UserName = "someUserName",
+            UserName = userName,
+            Password = "someP4\$\$w0rd",
+        };
+
+        // Act
+        var actualResult = await _usersController.MakeAsync(userMakeRequest);
+
+        // Assert
+        actualResult.Should().BeOfType<BadRequestObjectResult>();
+        var badRequestObjectResult = (BadRequestObjectResult)actualResult;
+        badRequestObjectResult.StatusCode.Should().Be(400);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task MakeError_PasswordIsMissingAsync(string password)
+    {
+        // Arrange
+        var userName = (Guid.NewGuid()).ToString();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someP4\$\$w0rd",
+            Email = "some@email.com",
+            UserName = userName,
             Password = password,
         };
 
         // Act
-        var actualResult = controller.Make(userMakeRequest);
+        var actualResult = await _usersController.MakeAsync(userMakeRequest);
 
         // Assert
         actualResult.Should().BeOfType<BadRequestObjectResult>();
@@ -728,12 +953,243 @@ public class TestUsersControllerMakeErrors
 EOF
 git add $FILE
 
-dotnet test && exit 1 || git commit --message="red - testing the user controller"
+dotnet test && exit 1 || git commit --message="red - testing the authentication controllers"
 dotnet format
 git add --all
 git commit --message "dotnet format"
 
+mkdir -p $SOLUTION.Tests/Helpers && echo "Created $SOLUTION.Tests/Helpers folder" || exit 1
+
+FILE=$SOLUTION.Tests/Helpers/FakeSignInManagerFailed.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using $PROJECT.Authentication;
+
+namespace $SOLUTION.Tests.Helpers;
+
+public class FakeSignInManagerFailed : SignInManager<UserEntity>
+{
+    public FakeSignInManagerFailed()
+            : base(new FakeUserManager(),
+                 new Mock<IHttpContextAccessor>().Object,
+                 new Mock<IUserClaimsPrincipalFactory<UserEntity>>().Object,
+                 new Mock<IOptions<IdentityOptions>>().Object,
+                 new Mock<ILogger<SignInManager<UserEntity>>>().Object,
+                 new Mock<IAuthenticationSchemeProvider>().Object,
+                 new Mock<IUserConfirmation<UserEntity>>().Object)
+    { }
+
+    public override Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+    {
+        return Task.FromResult(SignInResult.Failed);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$SOLUTION.Tests/Helpers/FakeSignInManagerSuccess.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using $PROJECT.Authentication;
+
+namespace $SOLUTION.Tests.Helpers;
+
+public class FakeSignInManagerSuccess : SignInManager<UserEntity>
+{
+    public FakeSignInManagerSuccess()
+            : base(new FakeUserManager(),
+                 new Mock<IHttpContextAccessor>().Object,
+                 new Mock<IUserClaimsPrincipalFactory<UserEntity>>().Object,
+                 new Mock<IOptions<IdentityOptions>>().Object,
+                 new Mock<ILogger<SignInManager<UserEntity>>>().Object,
+                 new Mock<IAuthenticationSchemeProvider>().Object,
+                 new Mock<IUserConfirmation<UserEntity>>().Object)
+    { }
+
+    public override Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+    {
+        return Task.FromResult(SignInResult.Success);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$SOLUTION.Tests/Helpers/FakeUserManager.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
+using $PROJECT.Authentication;
+
+namespace $SOLUTION.Tests.Helpers;
+
+public class FakeUserManager : UserManager<UserEntity>
+{
+    public FakeUserManager()
+        : base(new Mock<IUserStore<UserEntity>>().Object,
+          new Mock<IOptions<IdentityOptions>>().Object,
+          new Mock<IPasswordHasher<UserEntity>>().Object,
+          new IUserValidator<UserEntity>[0],
+          new IPasswordValidator<UserEntity>[0],
+          new Mock<ILookupNormalizer>().Object,
+          new Mock<IdentityErrorDescriber>().Object,
+          new Mock<IServiceProvider>().Object,
+          new Mock<ILogger<UserManager<UserEntity>>>().Object)
+    { }
+
+    public override Task<IdentityResult> CreateAsync(UserEntity user, string password)
+    {
+        return Task.FromResult(IdentityResult.Success);
+    }
+
+    public override Task<IdentityResult> AddToRoleAsync(UserEntity user, string role)
+    {
+        return Task.FromResult(IdentityResult.Success);
+    }
+
+    public override Task<string> GenerateEmailConfirmationTokenAsync(UserEntity user)
+    {
+        return Task.FromResult(Guid.NewGuid().ToString());
+    }
+}
+EOF
+git add $FILE
+
 mkdir -p $PROJECT/Authentication && echo "Created $PROJECT/Authentication folder" || exit 1
+
+FILE=$PROJECT/Authentication/ITokensController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication;
+
+public interface ITokensController
+{
+    Task<IActionResult> MakeAsync(TokenMakeRequest tokenMakeRequest);
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/IUsersController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication;
+
+public interface IUsersController
+{
+    Task<IActionResult> AllAsync();
+    Task<IActionResult> EditAsync(string id, UserEditRequest userEditRequest);
+    Task<IActionResult> LoadAsync(string id);
+    Task<IActionResult> MakeAsync(UserMakeRequest userMakeRequest);
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/RoleEntity.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+
+namespace $PROJECT.Authentication;
+
+public class RoleEntity : IdentityRole<Guid>
+{
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/TokenMakeRequest.cs
+cat > $FILE << EOF
+namespace $PROJECT.Authentication;
+
+public class TokenMakeRequest
+{
+    public string? Password { get; set; }
+    public string? UserName { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/TokensController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication;
+
+public class TokensController : ControllerBase, ITokensController
+{
+    private readonly SignInManager<UserEntity> _signInManager;
+
+    public TokensController(SignInManager<UserEntity> signInManager)
+    {
+        _signInManager = signInManager;
+    }
+
+    public async Task<IActionResult> AllAsync()
+    {
+        return Ok("");
+    }
+
+    public async Task<IActionResult> LoadAsync(string id)
+    {
+        return Ok("");
+    }
+
+    public async Task<IActionResult> MakeAsync([FromBody] TokenMakeRequest tokenMakeRequest)
+    {
+        if (tokenMakeRequest.UserName == null)
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        var userName = tokenMakeRequest.UserName.Trim();
+
+        if (String.IsNullOrEmpty(userName))
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        if (tokenMakeRequest.Password == null)
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        var password = tokenMakeRequest.Password;
+
+        if (String.IsNullOrEmpty(password))
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        var result = await _signInManager.PasswordSignInAsync(userName, password, false, false);
+
+        if (!result.Succeeded)
+        {
+            return Unauthorized("Invalid UserName or Password.");
+        }
+
+        return Ok("");
+    }
+
+    public async Task<IActionResult> RemoveAsync(string id)
+    {
+        return Ok("");
+    }
+}
+EOF
+git add $FILE
 
 FILE=$PROJECT/Authentication/UserEditRequest.cs
 cat > $FILE << EOF
@@ -746,6 +1202,18 @@ namespace $PROJECT.Authentication
         public string? Password { get; set; }
         public string? UserName { get; set; }
     }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/UserEntity.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+
+namespace $PROJECT.Authentication;
+
+public class UserEntity : IdentityUser<Guid>
+{
 }
 EOF
 git add $FILE
@@ -767,28 +1235,46 @@ git add $FILE
 
 FILE=$PROJECT/Authentication/UsersController.cs
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.Authentication;
 
-public class UsersController : ControllerBase
+[ApiController]
+[Route("[controller]")]
+public class UsersController : ControllerBase, IUsersController
 {
-    public IActionResult All()
+    private readonly UserManager<UserEntity> _userManager;
+
+    public UsersController(UserManager<UserEntity> userManager)
+    {
+        _userManager = userManager;
+    }
+
+    [HttpGet]
+    [Route("")]
+    public async Task<IActionResult> AllAsync()
     {
         return Ok("");
     }
 
-    public IActionResult Edit(string id, [FromBody] UserEditRequest userEditRequest)
+    [HttpPut]
+    [Route("{id}")]
+    public async Task<IActionResult> EditAsync(string id, [FromBody] UserEditRequest userEditRequest)
     {
         return Ok("");
     }
 
-    public IActionResult Load(string id)
+    [HttpGet]
+    [Route("{id}")]
+    public async Task<IActionResult> LoadAsync(string id)
     {
         return Ok("");
     }
 
-    public IActionResult Make([FromBody] UserMakeRequest userMakeRequest)
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> MakeAsync([FromBody] UserMakeRequest userMakeRequest)
     {
         if (userMakeRequest.UserName == null)
         {
@@ -843,10 +1329,25 @@ public class UsersController : ControllerBase
             return BadRequest("Confirm does not match Password.");
         }
 
-        return Ok("");
+        var user = new UserEntity
+        {
+            Email = email,
+            UserName = userName,
+        };
+
+        var result = await _userManager.CreateAsync(user, password);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return Ok("{}");
     }
 
-    public IActionResult Remove(string id)
+    [HttpDelete]
+    [Route("{id}")]
+    public async Task<IActionResult> RemoveAsync(string id)
     {
         return Ok("");
     }
@@ -854,12 +1355,89 @@ public class UsersController : ControllerBase
 EOF
 git add $FILE
 
-dotnet test && git commit --message="green - testing the user controller" || exit 1
+FILE=$PROJECT/Program.cs
+cat > $FILE << EOF
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using $PROJECT.Authentication;
+using $PROJECT.Database;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+var jwtIssuer = builder.Configuration["JwtIssuer"] ??
+    throw new InvalidOperationException("JwtIssuer not found.");
+
+var jwtKey = builder.Configuration["JwtKey"] ??
+    throw new InvalidOperationException("JwtKey not found.");
+
+builder.Services.AddDbContext<ApplicationDatabaseContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddIdentity<UserEntity, RoleEntity>()
+    .AddEntityFrameworkStores<ApplicationDatabaseContext>()
+    .AddDefaultTokenProviders();
+
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+    })
+    .AddJwtBearer(cfg =>
+    {
+        cfg.RequireHttpsMetadata = false;
+        cfg.SaveToken = true;
+        cfg.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtIssuer,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+public partial class Program { }
+EOF
+git add $FILE
+
+dotnet test && git commit --message="green - testing the authentication controllers" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
 
-FILE=$SOLUTION.Tests/Endpoints/TestUserEndpoints.cs
+FILE=$SOLUTION.Tests/Endpoints/TestTokensEndpoints.cs
 cat > $FILE << EOF
 using System.Text;
 using System.Text.Json;
@@ -868,11 +1446,78 @@ using $PROJECT.Authentication;
 
 namespace $SOLUTION.Tests.WebApi.Endpoints;
 
-public class TestUserEndpoints : IClassFixture<WebApplicationFactory<Program>>
+public class TestTokensEndpoints : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
 
-    public TestUserEndpoints(WebApplicationFactory<Program> factory)
+    public TestTokensEndpoints(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task Get_Users_EndpointReturnSuccessAndCorrectContentType()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var userName = (Guid.NewGuid()).ToString();
+        var userMakeRequest = new UserMakeRequest
+        {
+            Confirm = "someP4\$\$w0rd",
+            Email = "some@email.com",
+            UserName = userName,
+            Password = "someP4\$\$w0rd",
+        };
+        var tokenMakeRequest = new TokenMakeRequest
+        {
+            UserName = userName,
+            Password = "editedP4\$\$w0rd",
+        };
+
+        // Act 1
+        var content1 = new StringContent(JsonSerializer.Serialize(userMakeRequest), Encoding.UTF8, "application/json");
+        var response1 = await client.PostAsync("/Users", content1);
+        var actual1 = response1.Content.Headers.ContentType?.ToString();
+
+        // Assert 1
+        Assert.NotNull(response1);
+        response1.EnsureSuccessStatusCode();
+
+        // Act 2
+        var content2 = new StringContent(JsonSerializer.Serialize(userMakeRequest), Encoding.UTF8, "application/json");
+        var response2 = await client.PostAsync("/Tokens", content2);
+        var actual2 = response2.Content.Headers.ContentType?.ToString();
+
+        // Assert 2
+        Assert.NotNull(response2);
+        response2.EnsureSuccessStatusCode();
+
+        // Act 3
+        var response3 = await client.DeleteAsync("/Tokens/SomeId");
+        var actual3 = response3.Content.Headers.ContentType?.ToString();
+
+        // Assert 3
+        Assert.NotNull(response3);
+        response3.EnsureSuccessStatusCode();
+    }
+}
+EOF
+git add $FILE
+
+FILE=$SOLUTION.Tests/Endpoints/TestUsersEndpoints.cs
+cat > $FILE << EOF
+using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
+using $PROJECT.Authentication;
+
+namespace $SOLUTION.Tests.WebApi.Endpoints;
+
+public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public TestUsersEndpoints(WebApplicationFactory<Program> factory)
     {
         _factory = factory;
     }
@@ -884,17 +1529,17 @@ public class TestUserEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var client = _factory.CreateClient();
         var userMakeRequest = new UserMakeRequest
         {
-            Confirm = "somePassword",
+            Confirm = "someP4\$\$w0rd",
             Email = "some@email.com",
-            UserName = "someUserName",
-            Password = "somePassword",
+            UserName = (Guid.NewGuid()).ToString(),
+            Password = "someP4\$\$w0rd",
         };
         var userEditRequest = new UserEditRequest
         {
-            Confirm = "editedPassword",
+            Confirm = "editedP4\$\$w0rd",
             Email = "edited@email.com",
-            UserName = "editedUserName",
-            Password = "editedPassword",
+            UserName = (Guid.NewGuid()).ToString(),
+            Password = "editedP4\$\$w0rd",
         };
 
         // Act 1
@@ -975,45 +1620,119 @@ public class TestUserEndpoints : IClassFixture<WebApplicationFactory<Program>>
 EOF
 git add $FILE
 
-dotnet test && exit 1 || git commit --message="red - testing user endpoints"
+dotnet test && exit 1 || git commit --message="red - testing authentication endpoints"
 dotnet format
 git add --all
 git commit --message "dotnet format"
 
-FILE=$PROJECT/Authentication/UsersController.cs
+FILE=$PROJECT/Authentication/TokensController.cs
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace $PROJECT.Authentication;
 
 [ApiController]
 [Route("[controller]")]
-public class UsersController : ControllerBase
+public class TokensController : ControllerBase, ITokensController
 {
+    private readonly SignInManager<UserEntity> _signInManager;
+
+    public TokensController(SignInManager<UserEntity> signInManager)
+    {
+        _signInManager = signInManager;
+    }
+
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> MakeAsync([FromBody] TokenMakeRequest tokenMakeRequest)
+    {
+        if (tokenMakeRequest.UserName == null)
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        var userName = tokenMakeRequest.UserName.Trim();
+
+        if (String.IsNullOrEmpty(userName))
+        {
+            return BadRequest("UserName is missing.");
+        }
+
+        if (tokenMakeRequest.Password == null)
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        var password = tokenMakeRequest.Password;
+
+        if (String.IsNullOrEmpty(password))
+        {
+            return BadRequest("Password is missing.");
+        }
+
+        var result = await _signInManager.PasswordSignInAsync(userName, password, false, false);
+
+        if (!result.Succeeded)
+        {
+            return Unauthorized("Invalid UserName or Password.");
+        }
+
+        return Ok("");
+    }
+
+    [HttpDelete]
+    [Route("{id}")]
+    public async Task<IActionResult> RemoveAsync(string id)
+    {
+        return Ok("");
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/UsersController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication;
+
+[ApiController]
+[Route("[controller]")]
+public class UsersController : ControllerBase, IUsersController
+{
+    private readonly UserManager<UserEntity> _userManager;
+
+    public UsersController(UserManager<UserEntity> userManager)
+    {
+        _userManager = userManager;
+    }
+
     [HttpGet]
     [Route("")]
-    public IActionResult All()
+    public async Task<IActionResult> AllAsync()
     {
         return Ok("");
     }
 
     [HttpPut]
     [Route("{id}")]
-    public IActionResult Edit(string id, [FromBody] UserEditRequest userEditRequest)
+    public async Task<IActionResult> EditAsync(string id, [FromBody] UserEditRequest userEditRequest)
     {
         return Ok("");
     }
 
     [HttpGet]
     [Route("{id}")]
-    public IActionResult Load(string id)
+    public async Task<IActionResult> LoadAsync(string id)
     {
         return Ok("");
     }
 
     [HttpPost]
     [Route("")]
-    public IActionResult Make([FromBody] UserMakeRequest userMakeRequest)
+    public async Task<IActionResult> MakeAsync([FromBody] UserMakeRequest userMakeRequest)
     {
         if (userMakeRequest.UserName == null)
         {
@@ -1068,12 +1787,25 @@ public class UsersController : ControllerBase
             return BadRequest("Confirm does not match Password.");
         }
 
-        return Ok("");
+        var user = new UserEntity
+        {
+            Email = email,
+            UserName = userName,
+        };
+
+        var result = await _userManager.CreateAsync(user, password);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return Ok("{}");
     }
 
     [HttpDelete]
     [Route("{id}")]
-    public IActionResult Remove(string id)
+    public async Task<IActionResult> RemoveAsync(string id)
     {
         return Ok("");
     }
@@ -1081,7 +1813,7 @@ public class UsersController : ControllerBase
 EOF
 git add $FILE
 
-dotnet test && git commit --message="green - testing user endpoints" || exit 1
+dotnet test && git commit --message="green - testing authentication endpoints" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
