@@ -1355,6 +1355,45 @@ public class UsersController : ControllerBase, IUsersController
 EOF
 git add $FILE
 
+mkdir -p $PROJECT/Database && echo "Created $PROJECT/Database folder" || exit 1
+
+FILE=$PROJECT/Database/ApplicationDatabaseContext.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using $PROJECT.Authentication;
+
+namespace $PROJECT.Database;
+
+public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
+{
+    public ApplicationDatabaseContext(DbContextOptions<ApplicationDatabaseContext> options) : base(options)
+    {
+        Database.EnsureCreated();
+        DatabaseInitializer.Initialize(this);
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Database/DatabaseInitializer.cs
+cat > $FILE << EOF
+namespace $PROJECT.Database;
+
+public static class DBInitializer
+{
+    public static void Initialize(ApplicationDbContext context)
+    {
+    }
+}
+EOF
+git add $FILE
+
 FILE=$PROJECT/Program.cs
 cat > $FILE << EOF
 using System.IdentityModel.Tokens.Jwt;
