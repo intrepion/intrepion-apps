@@ -1387,7 +1387,7 @@ namespace $PROJECT.Database;
 
 public static class DBInitializer
 {
-    public static void Initialize(ApplicationDbContext context)
+    public static void Initialize(ApplicationDatabaseContext context)
     {
     }
 }
