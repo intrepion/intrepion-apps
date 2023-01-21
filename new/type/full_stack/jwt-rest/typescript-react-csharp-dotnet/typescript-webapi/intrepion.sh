@@ -1066,6 +1066,24 @@ public class FakeUserManager : UserManager<UserEntity>
 EOF
 git add $FILE
 
+FILE=$PROJECT/appsettings.Development.json
+cat > $FILE << EOF
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
+  },
+  "JwtKey": "SOME_RANDOM_KEY_DO_NOT_SHARE",
+  "JwtIssuer": "http://yourdomain.com",
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+EOF
+git add $FILE
+
 mkdir -p $PROJECT/Authentication && echo "Created $PROJECT/Authentication folder" || exit 1
 
 FILE=$PROJECT/Authentication/ITokensController.cs
