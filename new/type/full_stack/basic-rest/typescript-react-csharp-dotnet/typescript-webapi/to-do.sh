@@ -95,6 +95,9 @@ dotnet add $SOLUTION.Tests reference $PROJECT
 git add $SOLUTION.Tests
 git commit --message "dotnet add $SOLUTION.Tests reference $PROJECT"
 
+FILE=$PROJECT/Properties/launchSettings.json
+SERVER_URL=$(jq '.profiles.http.applicationUrl' $FILE)
+
 dotnet format
 git add --all
 git commit --message "dotnet format"
@@ -1972,9 +1975,6 @@ git commit --message "dotnet format"
 
 git push --force
 
-FILE=$PROJECT/Properties/launchSettings.json
-SERVER_URL=$(jq '.profiles.http.applicationUrl' $FILE)
-
 cd ..
 
 if [ ! -d "$CLIENT_REPOSITORY" ]; then
@@ -3442,7 +3442,7 @@ const Users = (props: { users: any }) => {
                 | undefined;
             }) => (
               <li key={user.id}>
-                <Link to={`/users/${user.id}`}>{user.fullName}</Link>
+                <Link to={`/users/\${user.id}`}>{user.fullName}</Link>
               </li>
             )
           )}
