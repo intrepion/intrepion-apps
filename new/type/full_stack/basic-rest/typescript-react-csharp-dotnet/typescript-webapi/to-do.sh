@@ -574,7 +574,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var adminMakeLoginRequest = new MakeLoginRequest
         {
-            Password = "adminP4$$w0rd",
+            Password = "adminP4\$\$w0rd",
             RememberMe = true,
             UserName = "admin",
         };
