@@ -3458,6 +3458,9 @@ EOF
 git add $FILE
 
 git commit -m "Added routes."
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
 
 git push --force
 
