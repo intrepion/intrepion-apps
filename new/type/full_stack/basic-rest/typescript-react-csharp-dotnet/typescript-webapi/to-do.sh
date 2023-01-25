@@ -338,6 +338,15 @@ EOF
 chmod +x $FILE
 git add $FILE
 
+FILE=scripts/dotnet_run.sh
+cat > $FILE << EOF
+#!/usr/bin/env bash
+
+CLIENT_URL="\$1" dotnet run --project $PROJECT
+EOF
+chmod +x $FILE
+git add $FILE
+
 FILE=scripts/dotnet_watch.sh
 cat > $FILE << EOF
 #!/usr/bin/env bash
@@ -1920,6 +1929,21 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var ClientUrl = Environment.GetEnvironmentVariable("CLIENT_URL") ?? $SERVER_URL;
+
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins(ClientUrl)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -2004,6 +2028,10 @@ git commit --message "Added cypress to .gitignore."
 npm install prettier --save-dev --save-exact
 git add --all
 git commit --message "npm install prettier --save-dev --save-exact"
+
+npm install react-router-dom --save
+git add --all
+git commit --message "npm install react-router-dom --save"
 
 npm install uuid
 git add --all
@@ -2228,6 +2256,15 @@ cat > $FILE << EOF
 #!/usr/bin/env bash
 
 doctl apps update \$1 --spec .do/app.yaml
+EOF
+chmod +x $FILE
+git add $FILE
+
+FILE=scripts/npm_start.sh
+cat > $FILE << EOF
+#!/usr/bin/env bash
+
+REACT_APP_SERVER_URL=$SERVER_URL npm start
 EOF
 chmod +x $FILE
 git add $FILE
@@ -3224,6 +3261,203 @@ npx cypress run && git commit --message="green - display application name" || ex
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
+
+mkdir -p src/components && echo "Created src/components folder" || exit 1
+
+FILE=src/components/App.tsx
+cat > $FILE << EOF
+import React from "react";
+import { Route, Routes, useNavigate } from "react-router-dom";
+import Home from "./Home";
+import Layout from "./Layout";
+import NoMatch from "./NoMatch";
+import User from "./User";
+import Users from "./Users";
+
+const App = () => {
+  const navigate = useNavigate();
+
+  const [users, setUsers] = React.useState([
+    { id: "1", fullName: "Robin Wieruch" },
+    { id: "2", fullName: "Sarah Finnley" },
+  ]);
+
+  const handleRemoveUser = (userId: string) => {
+    setUsers((state) => state.filter((user) => user.id !== userId));
+
+    navigate("/users");
+  };
+
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="home" element={<Home />} />
+        <Route path="users" element={<Users users={users} />}>
+          <Route
+            path=":userId"
+            element={<User onRemoveUser={handleRemoveUser} />}
+          />
+        </Route>
+        <Route path="*" element={<NoMatch />} />
+      </Route>
+    </Routes>
+  );
+};
+
+export default App;
+EOF
+git add $FILE
+
+FILE=src/components/Home.tsx
+cat > $FILE << EOF
+const Home = () => {
+  return (
+    <>
+      <h2>Home</h2>
+    </>
+  );
+};
+
+export default Home;
+EOF
+git add $FILE
+
+FILE=src/components/Layout.tsx
+cat > $FILE << EOF
+import { NavLink, Outlet } from "react-router-dom";
+
+const Layout = () => {
+  return (
+    <>
+      <h1>React Router</h1>
+
+      <nav
+        style={{
+          borderBottom: "solid 1px",
+          paddingBottom: "1rem",
+        }}
+      >
+        <NavLink to="/home">Home</NavLink>
+        <NavLink to="/users">Users</NavLink>
+      </nav>
+
+      <main style={{ padding: "1rem 0" }}>
+        <Outlet />
+      </main>
+    </>
+  );
+};
+
+export default Layout;
+EOF
+git add $FILE
+
+FILE=src/components/NoMatch.tsx
+cat > $FILE << EOF
+const NoMatch = () => {
+  return <p>There's nothing here: 404!</p>;
+};
+
+export default NoMatch;
+EOF
+git add $FILE
+
+FILE=src/components/User.tsx
+cat > $FILE << EOF
+import { Link, useParams } from "react-router-dom";
+
+const User = (props: { onRemoveUser: any }) => {
+  const { onRemoveUser } = props;
+
+  const { userId } = useParams();
+
+  return (
+    <>
+      <h2>User: {userId}</h2>
+
+      <button type="button" onClick={() => onRemoveUser(userId)}>
+        Remove
+      </button>
+
+      <Link to="/users">Back to Users</Link>
+    </>
+  );
+};
+
+export default User;
+EOF
+git add $FILE
+
+FILE=src/components/Users.tsx
+cat > $FILE << EOF
+import {
+  Key,
+  ReactElement,
+  JSXElementConstructor,
+  ReactFragment,
+  ReactPortal,
+} from "react";
+import { Link, Outlet, useSearchParams } from "react-router-dom";
+
+const Users = (props: { users: any }) => {
+  const { users } = props;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const searchTerm = searchParams.get("name") || "";
+
+  const handleSearch = (event: { target: { value: any } }) => {
+    const name = event.target.value;
+
+    if (name) {
+      setSearchParams({ name: event.target.value });
+    } else {
+      setSearchParams({});
+    }
+  };
+
+  return (
+    <>
+      <h2>Users</h2>
+
+      <input type="text" value={searchTerm} onChange={handleSearch} />
+
+      <ul>
+        {users
+          .filter((user: { fullName: string }) =>
+            user.fullName.toLowerCase().includes(searchTerm.toLocaleLowerCase())
+          )
+          .map(
+            (user: {
+              id: Key | null | undefined;
+              fullName:
+                | string
+                | number
+                | boolean
+                | ReactElement<any, string | JSXElementConstructor<any>>
+                | ReactFragment
+                | ReactPortal
+                | null
+                | undefined;
+            }) => (
+              <li key={user.id}>
+                <Link to={`/users/${user.id}`}>{user.fullName}</Link>
+              </li>
+            )
+          )}
+      </ul>
+
+      <Outlet />
+    </>
+  );
+};
+
+export default Users;
+EOF
+git add $FILE
+
+git commit -m "Added routes."
 
 git push --force
 
