@@ -3442,7 +3442,7 @@ const Users = (props: { users: any }) => {
                 | undefined;
             }) => (
               <li key={user.id}>
-                <Link to={`/users/\${user.id}`}>{user.fullName}</Link>
+                <Link to={\`/users/\${user.id}\`}>{user.fullName}</Link>
               </li>
             )
           )}
