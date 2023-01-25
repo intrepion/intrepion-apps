@@ -544,6 +544,476 @@ dotnet format
 git add --all
 git commit --message "dotnet format"
 
+FILE=$SOLUTION.Tests/Endpoints/TestUsersEndpoints.cs
+cat > $FILE << EOF
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
+using $PROJECT.Authentication.Login;
+using $PROJECT.Authentication.User;
+
+namespace $SOLUTION.Tests.Endpoints;
+
+public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public TestUsersEndpoints(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task Users_Endpoints()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
+
+        var adminMakeLoginRequest = new MakeLoginRequest
+        {
+            Password = "adminP4$$w0rd",
+            RememberMe = true,
+            UserName = "admin",
+        };
+        var adminMakeLoginRequestString = JsonSerializer.Serialize(adminMakeLoginRequest);
+        var adminMakeLoginRequestContent = new StringContent(adminMakeLoginRequestString, Encoding.UTF8, "application/json");
+
+        var editUserName = Guid.NewGuid().ToString();
+        var editUserRequest = new EditUserRequest
+        {
+            EditUserName = editUserName,
+        };
+        var editUserRequestString = JsonSerializer.Serialize(editUserRequest);
+        var editUserRequestContent = new StringContent(editUserRequestString, Encoding.UTF8, "application/json");
+
+        var makePassword = "makeP4\$\$w0rd";
+        var makeUserName = "makeUserName" + String.Join("", Guid.NewGuid().ToString().Split("-"));
+        var makeEmail = $"makeEmail@makeEmail.com";
+        var makeUserRequest = new MakeUserRequest
+        {
+            Confirm = makePassword,
+            Email = makeEmail,
+            Password = makePassword,
+            UserName = makeUserName,
+        };
+        var makeUserRequestString = JsonSerializer.Serialize(makeUserRequest);
+        var makeUserRequestContent = new StringContent(makeUserRequestString, Encoding.UTF8, "application/json");
+
+        var userMakeLoginRequest = new MakeLoginRequest
+        {
+            Password = "userP4\$\$w0rd",
+            RememberMe = true,
+            UserName = "user",
+        };
+        var userMakeLoginRequestString = JsonSerializer.Serialize(userMakeLoginRequest);
+        var userMakeLoginRequestContent = new StringContent(userMakeLoginRequestString, Encoding.UTF8, "application/json");
+
+        var makeMakeLoginRequest = new MakeLoginRequest
+        {
+            Password = makePassword,
+            RememberMe = true,
+            UserName = makeUserName,
+        };
+        var makeMakeLoginRequestString = JsonSerializer.Serialize(makeMakeLoginRequest);
+        var makeMakeLoginRequestContent = new StringContent(makeMakeLoginRequestString, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PostAsync("/Logouts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync("/Users");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        var allUsersResponse = JsonSerializer.Deserialize<AllUsersResponse>(responseContent);
+        Assert.NotNull(allUsersResponse);
+        Assert.NotNull(allUsersResponse.Users);
+        var previousUsersCount = allUsersResponse.Users.Count;
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Act
+        response = await client.PostAsync("/Users", makeUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Users", makeUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync("/Users");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        allUsersResponse = JsonSerializer.Deserialize<AllUsersResponse>(responseContent);
+        Assert.NotNull(allUsersResponse);
+        Assert.NotNull(allUsersResponse.Users);
+        var nextUsersCount = allUsersResponse.Users.Count;
+        Assert.Equal(previousUsersCount + 1, nextUsersCount);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Act
+        response = await client.PostAsync("/Logins", adminMakeLoginRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Logouts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Logins", userMakeLoginRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync("/Users");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        allUsersResponse = JsonSerializer.Deserialize<AllUsersResponse>(responseContent);
+        Assert.NotNull(allUsersResponse);
+        Assert.NotNull(allUsersResponse.Users);
+        previousUsersCount = allUsersResponse.Users.Count;
+        Assert.Equal(previousUsersCount, nextUsersCount - 1);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PostAsync("/Users", makeUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Users", makeUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync($"/Users/{editUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PostAsync("/Logouts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Logins", makeMakeLoginRequestContent);
+        responseContent = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync("/Users");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        allUsersResponse = JsonSerializer.Deserialize<AllUsersResponse>(responseContent);
+        Assert.NotNull(allUsersResponse);
+        Assert.NotNull(allUsersResponse.Users);
+        nextUsersCount = allUsersResponse.Users.Count;
+        Assert.Equal(previousUsersCount + 1, nextUsersCount);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync($"/Users/{editUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        // Act
+        response = await client.PostAsync("/Logouts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Logins", adminMakeLoginRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{editUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync("/Users");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        allUsersResponse = JsonSerializer.Deserialize<AllUsersResponse>(responseContent);
+        Assert.NotNull(allUsersResponse);
+        Assert.NotNull(allUsersResponse.Users);
+        previousUsersCount = allUsersResponse.Users.Count;
+        Assert.Equal(previousUsersCount, nextUsersCount - 1);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PostAsync("/Users", makeUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PostAsync("/Users", makeUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync("/Users");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        allUsersResponse = JsonSerializer.Deserialize<AllUsersResponse>(responseContent);
+        Assert.NotNull(allUsersResponse);
+        Assert.NotNull(allUsersResponse.Users);
+        nextUsersCount = allUsersResponse.Users.Count;
+        Assert.Equal(previousUsersCount + 1, nextUsersCount);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.PutAsync($"/Users/{makeUserName}", editUserRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.GetAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.GetAsync($"/Users/{editUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{makeUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{editUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        response = await client.DeleteAsync($"/Users/{editUserName}");
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        // Act
+        response = await client.PostAsync("/Logouts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+}
+EOF
+git add $FILE
+
+dotnet test && exit 1 || git commit --message="red - testing the users endpoints"
+dotnet format
+git add --all
+git commit --message "dotnet format"
+
 FILE=$PROJECT/appsettings.Development.json
 cat > $FILE << EOF
 {
@@ -556,6 +1026,228 @@ cat > $FILE << EOF
       "Microsoft.AspNetCore": "Warning"
     }
   }
+}
+EOF
+git add $FILE
+
+mkdir -p $PROJECT/Authentication/Login && echo "Created $PROJECT/Authentication/Login folder" || exit 1
+
+FILE=$PROJECT/Authentication/Login/LoginsController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication.Login;
+
+public interface ILoginsController
+{
+    public Task<IActionResult> MakeLoginAsync([FromBody] MakeLoginRequest makeLoginRequest);
+}
+
+[ApiController]
+[Route("{controller}")]
+public class LoginsController : ControllerBase, ILoginsController
+{
+    private readonly ILoginsRepository _loginsRepository;
+
+    public LoginsController(ILoginsRepository loginsRepository)
+    {
+        _loginsRepository = loginsRepository;
+    }
+
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> MakeLoginAsync([FromBody] MakeLoginRequest makeLoginRequest)
+    {
+        var makeLoginResponse = await _loginsRepository.MakeLoginAsync(makeLoginRequest);
+
+        if (makeLoginResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(makeLoginResponse);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/Login/LoginsRepository.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using $PROJECT.Authentication.User;
+
+namespace $PROJECT.Authentication.Login;
+
+public interface ILoginsRepository
+{
+    public Task<MakeLoginResponse?> MakeLoginAsync(MakeLoginRequest makeLoginRequest);
+}
+
+public class LoginsRepository : ILoginsRepository
+{
+    private readonly SignInManager<UserEntity> _signInManager;
+
+    public LoginsRepository(SignInManager<UserEntity> signInManager)
+    {
+        _signInManager = signInManager;
+    }
+
+    public async Task<MakeLoginResponse?> MakeLoginAsync(MakeLoginRequest makeLoginRequest)
+    {
+        if (makeLoginRequest is null)
+        {
+            return null;
+        }
+
+        if (String.IsNullOrWhiteSpace(makeLoginRequest.Password))
+        {
+            return null;
+        }
+
+        if (String.IsNullOrWhiteSpace(makeLoginRequest.UserName))
+        {
+            return null;
+        }
+
+        var result = await _signInManager.PasswordSignInAsync(makeLoginRequest.UserName, makeLoginRequest.Password, makeLoginRequest.RememberMe, false);
+
+        if (!result.Succeeded)
+        {
+            return null;
+        }
+
+        return new MakeLoginResponse
+        {
+            UserName = makeLoginRequest.UserName,
+        };
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/Login/MakeLoginRequest.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.Login;
+
+public class MakeLoginRequest
+{
+    [JsonPropertyName("password")]
+    public string? Password { get; set; }
+
+    [JsonPropertyName("rememberMe")]
+    public bool RememberMe { get; set; }
+
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/Login/MakeLoginResponse.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.Login;
+
+public class MakeLoginResponse
+{
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+}
+EOF
+git add $FILE
+
+mkdir -p $PROJECT/Authentication/Logout && echo "Created $PROJECT/Authentication/Logout folder" || exit 1
+
+FILE=$PROJECT/Authentication/Logout/LogoutsController.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using $PROJECT.Authentication.User;
+
+namespace $PROJECT.Authentication.Logout;
+
+public interface ILogoutsController
+{
+    public Task<IActionResult> MakeLogoutAsync();
+}
+
+[ApiController]
+[Route("{controller}")]
+public class LogoutsController : ControllerBase, ILogoutsController
+{
+    private readonly ILogoutsRepository _LogoutsRepository;
+    private readonly UserManager<UserEntity> _userManager;
+
+    public LogoutsController(ILogoutsRepository LogoutsRepository, UserManager<UserEntity> userManager)
+    {
+        _LogoutsRepository = LogoutsRepository;
+        _userManager = userManager;
+    }
+
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> MakeLogoutAsync()
+    {
+        var currentUser = await _userManager.GetUserAsync(HttpContext.User);
+
+        var makeLogoutResponse = await _LogoutsRepository.MakeLogoutAsync(currentUser);
+
+        if (makeLogoutResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(makeLogoutResponse);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/Logout/LogoutsRepository.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using $PROJECT.Authentication.User;
+
+namespace $PROJECT.Authentication.Logout;
+
+public interface ILogoutsRepository
+{
+    public Task<MakeLogoutResponse?> MakeLogoutAsync(UserEntity? currentUser);
+}
+
+public class LogoutsRepository : ILogoutsRepository
+{
+    private readonly SignInManager<UserEntity> _signInManager;
+
+    public LogoutsRepository(SignInManager<UserEntity> signInManager)
+    {
+        _signInManager = signInManager;
+    }
+
+    public async Task<MakeLogoutResponse?> MakeLogoutAsync(UserEntity? currentUser)
+    {
+        if (currentUser is null)
+        {
+            return null;
+        }
+
+        await _signInManager.SignOutAsync();
+
+        return new MakeLogoutResponse();
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/Logout/MakeLogoutResponse.cs
+cat > $FILE << EOF
+namespace $PROJECT.Authentication.Logout;
+
+public class MakeLogoutResponse
+{
 }
 EOF
 git add $FILE
@@ -576,6 +1268,113 @@ git add $FILE
 
 mkdir -p $PROJECT/Authentication/User && echo "Created $PROJECT/Authentication/User folder" || exit 1
 
+FILE=$PROJECT/Authentication/User/AllUsersResponse.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.User;
+
+public class AllUsersResponseUser
+{
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+}
+
+public class AllUsersResponse
+{
+    [JsonPropertyName("users")]
+    public List<AllUsersResponseUser>? Users { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/EditUserRequest.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.User;
+
+public class EditUserRequest
+{
+    [JsonPropertyName("currentPassword")]
+    public string? CurrentPassword { get; set; }
+
+    [JsonPropertyName("editConfirm")]
+    public string? EditConfirm { get; set; }
+
+    [JsonPropertyName("editEmail")]
+    public string? EditEmail { get; set; }
+
+    [JsonPropertyName("editPassword")]
+    public string? EditPassword { get; set; }
+
+    [JsonPropertyName("editUserName")]
+    public string? EditUserName { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/EditUserResponse.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.User;
+
+public class EditUserResponse
+{
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/MakeUserRequest.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.User;
+
+public class MakeUserRequest
+{
+    [JsonPropertyName("confirm")]
+    public string? Confirm { get; set; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
+    [JsonPropertyName("password")]
+    public string? Password { get; set; }
+
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/MakeUserResponse.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.User;
+
+public class MakeUserResponse
+{
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/RemoveUserResponse.cs
+cat > $FILE << EOF
+namespace $PROJECT.Authentication.User;
+
+public class RemoveUserResponse
+{
+}
+EOF
+git add $FILE
+
 FILE=$PROJECT/Authentication/User/UserEntity.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
@@ -588,17 +1387,374 @@ public class UserEntity : IdentityUser<Guid>
 EOF
 git add $FILE
 
-FILE=$PROJECT/Authentication/User/MakeUserRequest.cs
+FILE=$PROJECT/Authentication/User/UsersController.cs
 cat > $FILE << EOF
-namespace $PROJECT.Authentication.User
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace $PROJECT.Authentication.User;
+
+public interface IUsersController
 {
-    public class MakeUserRequest
+    public Task<IActionResult> AllUsersAsync();
+    public Task<IActionResult> EditUserAsync(string userName, [FromBody] EditUserRequest editUserRequest);
+    public Task<IActionResult> MakeUserAsync([FromBody] MakeUserRequest makeUserRequest);
+    public Task<IActionResult> RemoveUserAsync(string userName);
+    public Task<IActionResult> ViewUserAsync(string userName);
+}
+
+[ApiController]
+[Route("{controller}")]
+public class UsersController : ControllerBase, IUsersController
+{
+    private readonly UserManager<UserEntity> _userManager;
+    private readonly IUsersRepository _usersRepository;
+
+    public UsersController(UserManager<UserEntity> userManager, IUsersRepository usersRepository)
     {
-        public string? Confirm { get; set; }
-        public string? Email { get; set; }
-        public string? Password { get; set; }
-        public string? UserName { get; set; }
+        _userManager = userManager;
+        _usersRepository = usersRepository;
     }
+
+    [HttpGet]
+    [Route("")]
+    public async Task<IActionResult> AllUsersAsync()
+    {
+        var allUsersResponse = await _usersRepository.AllUsersAsync();
+
+        if (allUsersResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(allUsersResponse);
+    }
+
+    [Authorize]
+    [HttpPut]
+    [Route("{userName}")]
+    public async Task<IActionResult> EditUserAsync(string userName, [FromBody] EditUserRequest editUserRequest)
+    {
+        var currentUser = await _userManager.GetUserAsync(HttpContext.User);
+
+        var editUserResponse = await _usersRepository.EditUserAsync(currentUser, userName, editUserRequest);
+
+        if (editUserResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(editUserResponse);
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    [Route("")]
+    public async Task<IActionResult> MakeUserAsync([FromBody] MakeUserRequest makeUserRequest)
+    {
+        var makeUserResponse = await _usersRepository.MakeUserAsync(makeUserRequest);
+
+        if (makeUserResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(makeUserResponse);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete]
+    [Route("{userName}")]
+    public async Task<IActionResult> RemoveUserAsync(string userName)
+    {
+        var removeUserResponse = await _usersRepository.RemoveUserAsync(userName);
+
+        if (removeUserResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(removeUserResponse);
+    }
+
+    [HttpGet]
+    [Route("{userName}")]
+    public async Task<IActionResult> ViewUserAsync(string userName)
+    {
+        var viewUserResponse = await _usersRepository.ViewUserAsync(userName);
+
+        if (viewUserResponse is null)
+        {
+            return BadRequest();
+        }
+
+        return Ok(viewUserResponse);
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/UsersRepository.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using $PROJECT.Authentication.Role;
+using $PROJECT.Database;
+
+namespace $PROJECT.Authentication.User;
+
+public interface IUsersRepository
+{
+    public Task<AllUsersResponse?> AllUsersAsync();
+    public Task<EditUserResponse?> EditUserAsync(UserEntity? currentUser, string userName, EditUserRequest editUserRequest);
+    public Task<MakeUserResponse?> MakeUserAsync(MakeUserRequest makeUserRequest);
+    public Task<RemoveUserResponse?> RemoveUserAsync(string userName);
+    public Task<ViewUserResponse?> ViewUserAsync(string userName);
+}
+
+public class UsersRepository : IUsersRepository
+{
+    private readonly ApplicationDatabaseContext _applicationDatabaseContext;
+    private readonly RoleManager<RoleEntity> _roleManager;
+    private readonly UserManager<UserEntity> _userManager;
+
+    public UsersRepository(
+        ApplicationDatabaseContext applicationDatabaseContext,
+        RoleManager<RoleEntity> roleManager,
+        UserManager<UserEntity> userManager)
+    {
+        _applicationDatabaseContext = applicationDatabaseContext;
+        _roleManager = roleManager;
+        _userManager = userManager;
+    }
+
+    public async Task<AllUsersResponse?> AllUsersAsync()
+    {
+        var data = await _applicationDatabaseContext.Users.Select(user => new AllUsersResponseUser()
+        {
+            UserName = user.UserName,
+        }).ToListAsync();
+
+        if (data is null)
+        {
+            return null;
+        }
+
+        return new AllUsersResponse()
+        {
+            Users = data,
+        };
+    }
+
+    public async Task<EditUserResponse?> EditUserAsync(UserEntity? currentUser, string userName, EditUserRequest editUserRequest)
+    {
+        if (userName is null)
+        {
+            return null;
+        }
+
+        if (editUserRequest is null)
+        {
+            return null;
+        }
+
+        userName = userName.Trim();
+
+        var userEntity = await _userManager.FindByNameAsync(userName);
+
+        if (userEntity is null)
+        {
+            return null;
+        }
+
+        if (currentUser is null)
+        {
+            return null;
+        }
+
+        if (currentUser.UserName is null)
+        {
+            return null;
+        }
+
+        if (!currentUser.UserName.Equals(userName))
+        {
+            if (!_userManager.IsInRoleAsync(currentUser, "Admin").Result)
+            {
+                return null;
+            }
+        }
+
+        if (!(String.IsNullOrWhiteSpace(editUserRequest.CurrentPassword)
+            || String.IsNullOrWhiteSpace(editUserRequest.EditConfirm)
+            || String.IsNullOrWhiteSpace(editUserRequest.EditPassword)))
+        {
+            if (!editUserRequest.EditConfirm.Equals(editUserRequest.EditPassword))
+            {
+                return null;
+            }
+
+            await _userManager.ChangePasswordAsync(userEntity, editUserRequest.CurrentPassword, editUserRequest.EditPassword);
+        }
+
+        if (!String.IsNullOrWhiteSpace(editUserRequest.EditEmail))
+        {
+            editUserRequest.EditEmail = editUserRequest.EditEmail.Trim();
+            userEntity.Email = editUserRequest.EditEmail;
+        }
+
+        if (!String.IsNullOrWhiteSpace(editUserRequest.EditUserName))
+        {
+            editUserRequest.EditUserName = editUserRequest.EditUserName.Trim();
+            userEntity.UserName = editUserRequest.EditUserName;
+        }
+
+        var result = await _userManager.UpdateAsync(userEntity);
+
+        if (!result.Succeeded)
+        {
+            return null;
+        }
+
+        return new EditUserResponse
+        {
+            UserName = userEntity.UserName,
+        };
+    }
+
+    public async Task<MakeUserResponse?> MakeUserAsync(MakeUserRequest makeUserRequest)
+    {
+        if (makeUserRequest is null)
+        {
+            return null;
+        }
+
+        if (String.IsNullOrWhiteSpace(makeUserRequest.Confirm))
+        {
+            return null;
+        }
+
+        makeUserRequest.Confirm = makeUserRequest.Confirm.Trim();
+
+        if (String.IsNullOrWhiteSpace(makeUserRequest.Email))
+        {
+            return null;
+        }
+
+        makeUserRequest.Email = makeUserRequest.Email.Trim();
+
+        if (String.IsNullOrWhiteSpace(makeUserRequest.Password))
+        {
+            return null;
+        }
+
+        makeUserRequest.Password = makeUserRequest.Password.Trim();
+
+        if (String.IsNullOrWhiteSpace(makeUserRequest.UserName))
+        {
+            return null;
+        }
+
+        makeUserRequest.UserName = makeUserRequest.UserName.Trim();
+
+        if (!makeUserRequest.Confirm.Equals(makeUserRequest.Password))
+        {
+            return null;
+        }
+
+        var user = new UserEntity
+        {
+            Email = makeUserRequest.Email,
+            UserName = makeUserRequest.UserName,
+        };
+
+        var result = await _userManager.CreateAsync(user, makeUserRequest.Password);
+
+        if (!result.Succeeded)
+        {
+            return null;
+        }
+
+        var regularRole = await _roleManager.FindByNameAsync("Regular");
+
+        if (regularRole is null)
+        {
+            return null;
+        }
+
+        if (regularRole.Name is null)
+        {
+            return null;
+        }
+
+        await _userManager.AddToRolesAsync(user, new List<string> { regularRole.Name });
+
+        return new MakeUserResponse
+        {
+            UserName = user.UserName,
+        };
+    }
+
+    public async Task<RemoveUserResponse?> RemoveUserAsync(string userName)
+    {
+        if (String.IsNullOrWhiteSpace(userName))
+        {
+            return null;
+        }
+
+        var userEntity = await _userManager.FindByNameAsync(userName);
+
+        if (userEntity is null)
+        {
+            return null;
+        }
+
+        var result = await _userManager.DeleteAsync(userEntity);
+
+        if (!result.Succeeded)
+        {
+            return null;
+        }
+
+        return new RemoveUserResponse
+        {
+        };
+    }
+
+    public async Task<ViewUserResponse?> ViewUserAsync(string userName)
+    {
+        if (String.IsNullOrWhiteSpace(userName))
+        {
+            return null;
+        }
+
+        var userEntity = await _applicationDatabaseContext.Users.SingleOrDefaultAsync(user => user.UserName == userName);
+
+        if (userEntity is null)
+        {
+            return null;
+        }
+
+        return new ViewUserResponse
+        {
+            UserName = userEntity.UserName,
+        };
+    }
+}
+EOF
+git add $FILE
+
+FILE=$PROJECT/Authentication/User/ViewUserResponse.cs
+cat > $FILE << EOF
+using System.Text.Json.Serialization;
+
+namespace $PROJECT.Authentication.User;
+
+public class ViewUserResponse
+{
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
 }
 EOF
 git add $FILE
@@ -645,12 +1801,13 @@ public static class DatabaseInitializer
         var email = "intrepion@gmail.com";
         var adminRoleName = "Admin";
         var adminRole = context.Roles.SingleOrDefault(role => role.Name == adminRoleName);
-        if (adminRole == null)
+        if (adminRole is null)
         {
             adminRole = new RoleEntity
             {
                 Id = Guid.NewGuid(),
                 Name = adminRoleName,
+                NormalizedName = adminRoleName.ToUpper(),
             };
 
             context.Roles.Add(adminRole);
@@ -658,7 +1815,7 @@ public static class DatabaseInitializer
 
         var adminUserName = "admin";
         var adminUser = context.Users.SingleOrDefault(user => user.UserName == adminUserName);
-        if (adminUser == null)
+        if (adminUser is null)
         {
             adminUser = new UserEntity
             {
@@ -676,7 +1833,7 @@ public static class DatabaseInitializer
         }
 
         var adminUserRole = context.UserRoles.SingleOrDefault(userRole => userRole.UserId == adminUser.Id && userRole.RoleId == adminRole.Id);
-        if (adminUserRole == null)
+        if (adminUserRole is null)
         {
             context.UserRoles.Add(new IdentityUserRole<Guid>
             {
@@ -687,12 +1844,13 @@ public static class DatabaseInitializer
 
         var regularRoleName = "Regular";
         var regularRole = context.Roles.SingleOrDefault(role => role.Name == regularRoleName);
-        if (regularRole == null)
+        if (regularRole is null)
         {
             regularRole = new RoleEntity
             {
                 Id = Guid.NewGuid(),
                 Name = regularRoleName,
+                NormalizedName = regularRoleName.ToUpper(),
             };
 
             context.Roles.Add(regularRole);
@@ -700,7 +1858,7 @@ public static class DatabaseInitializer
 
         var regularUserName = "user";
         var regularUser = context.Users.SingleOrDefault(user => user.UserName == regularUserName);
-        if (regularUser == null)
+        if (regularUser is null)
         {
             regularUser = new UserEntity
             {
@@ -718,7 +1876,7 @@ public static class DatabaseInitializer
         }
 
         var regularUserRole = context.UserRoles.SingleOrDefault(userRole => userRole.UserId == regularUser.Id && userRole.RoleId == regularRole.Id);
-        if (regularUserRole == null)
+        if (regularUserRole is null)
         {
             context.UserRoles.Add(new IdentityUserRole<Guid>
             {
@@ -733,7 +1891,57 @@ public static class DatabaseInitializer
 EOF
 git add $FILE
 
-dotnet test && git commit --message="green - testing the authentication controllers" || exit 1
+FILE=$PROJECT/Program.cs
+cat > $FILE << EOF
+using Microsoft.EntityFrameworkCore;
+using $PROJECT.Authentication.Login;
+using $PROJECT.Authentication.Logout;
+using $PROJECT.Authentication.Role;
+using $PROJECT.Authentication.User;
+using $PROJECT.Database;
+
+var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddDbContext<ApplicationDatabaseContext>(options =>
+    options.UseNpgsql(connectionString));
+
+builder.Services.AddIdentity<UserEntity, RoleEntity>()
+    .AddEntityFrameworkStores<ApplicationDatabaseContext>();
+
+builder.Services.AddControllers();
+
+builder.Services.AddScoped<ILoginsRepository, LoginsRepository>();
+builder.Services.AddScoped<ILogoutsRepository, LogoutsRepository>();
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+public partial class Program { }
+EOF
+git add $FILE
+
+dotnet test && git commit --message="green - testing the users endpoints" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
