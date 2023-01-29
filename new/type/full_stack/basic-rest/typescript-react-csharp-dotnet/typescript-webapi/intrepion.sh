@@ -5136,32 +5136,6 @@ export default Home;
 EOF
 git add $FILE
 
-FILE=src/analytics.ts
-cat > $FILE << EOF
-import ReactGA from "react-ga";
-
-const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
-
-function init() {
-  const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
-  ReactGA.initialize(GOOGLE_ANALYTICS_ID, { debug: isDev });
-}
-
-function sendEvent(payload: ReactGA.EventArgs) {
-  ReactGA.event(payload);
-}
-
-function sendPageview(path: string) {
-  ReactGA.set({ page: path });
-  ReactGA.pageview(path);
-}
-
-const analytics = { init, sendEvent, sendPageview };
-
-export default analytics;
-EOF
-git add $FILE
-
 FILE=src/App.tsx
 cat > $FILE << EOF
 import { BrowserRouter } from "react-router-dom";
@@ -5279,35 +5253,37 @@ const Navigation = () => {
       <main>
         <Outlet />
       </main>
-      <footer className="py-5">
-        <div className="row"></div>
-        <div className="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
-          <p>© 2023 Oliver Forral All rights reserved.</p>
-          <ul className="list-unstyled d-flex">
-            <li className="ms-3">
-              <a className="link-dark" href="https://twitter.com/$USER">
-                <i className="fa-brands fa-twitter"></i>
-              </a>
-            </li>
-            <li className="ms-3">
-              <a
-                className="link-dark"
-                href="https://www.instagram.com/$USER/"
-              >
-                <i className="fa-brands fa-instagram"></i>
-              </a>
-            </li>
-            <li className="ms-3">
-              <a
-                className="link-dark"
-                href="https://www.facebook.com/$USER"
-              >
-                <i className="fa-brands fa-facebook"></i>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </footer>
+      <div className="container">
+        <footer className="py-5">
+          <div className="row"></div>
+          <div className="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
+            <p>© 2023 Oliver Forral All rights reserved.</p>
+            <ul className="list-unstyled d-flex">
+              <li className="ms-3">
+                <a className="link-dark" href="https://twitter.com/$USER">
+                  <i className="fa-brands fa-twitter"></i>
+                </a>
+              </li>
+              <li className="ms-3">
+                <a
+                  className="link-dark"
+                  href="https://www.instagram.com/$USER/"
+                >
+                  <i className="fa-brands fa-instagram"></i>
+                </a>
+              </li>
+              <li className="ms-3">
+                <a
+                  className="link-dark"
+                  href="https://www.facebook.com/$USER"
+                >
+                  <i className="fa-brands fa-facebook"></i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </footer>
+      </div>
     </>
   );
 };
@@ -5333,10 +5309,10 @@ import Learn from "./Learn/Learn";
 import PrinciplesAndBestPractices from "./Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices";
 import SolidPrinciples from "./Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples";
 import Navigating from "./Navigating";
-import useGoogleAnalytics from "./useGoogleAnalytics";
+import useOnLocationChange from "./useOnLocationChange";
 
 function Routing() {
-  useGoogleAnalytics();
+  useOnLocationChange();
 
   return (
     <Routes>
@@ -5376,25 +5352,40 @@ export default Routing;
 EOF
 git add $FILE
 
-FILE=src/useGoogleAnalytics.ts
+FILE=src/useOnLocationChange.ts
 cat > $FILE << EOF
-import React from "react";
-import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation } from "react-router";
 
-import analytics from "./analytics";
+declare global {
+  interface Window {
+    gtag?: (
+      key: string,
+      trackingId: string,
+      config: { page_path: string }
+    ) => void;
+  }
+}
 
-export default function useGoogleAnalytics() {
+const useOnLocationChange = (
+  trackingId: string | undefined = process.env.REACT_APP_GOOGLE_ANALYTICS_ID
+) => {
   const location = useLocation();
 
-  React.useEffect(() => {
-    analytics.init();
-  }, []);
+  useEffect(() => {
+    if (!window.gtag) return;
+    if (!trackingId) {
+      console.log(
+        "Tracking not enabled, as `trackingId` was not given and there is no `GOOGLE_ANALYTICS_ID`."
+      );
+      return;
+    }
 
-  React.useEffect(() => {
-    const currentPath = location.pathname + location.search;
-    analytics.sendPageview(currentPath);
-  }, [location]);
-}
+    window.gtag("config", trackingId, { page_path: location.pathname });
+  }, [location, trackingId]);
+};
+
+export default useOnLocationChange;
 EOF
 git add $FILE
 
