@@ -11,7 +11,8 @@ pushd .
 cd ..
 pwd
 
-CANONICAL="Intrepion"
+CANONICAL="intrepion"
+CAPITALIZED="Intrepion"
 CLIENT_URL="http://localhost:3000"
 CLIENT_FRAMEWORK=typescript-react
 CLIENT_TEMPLATE=typescript
@@ -21,17 +22,18 @@ PASCAL=Intrepion
 SERVER_FRAMEWORK=csharp-dotnet
 SERVER_TEMPLATE=webapi
 SNAKE=intrepion
+USER=intrepion
 
 CLIENT_CONTRACT=$CONTRACT-client-web
 SOLUTION=${PASCAL}App
 SERVER_CONTRACT=$CONTRACT-server
 
-CLIENT_REPOSITORY=intrepion-$KEBOB-$CLIENT_CONTRACT-$CLIENT_FRAMEWORK-$CLIENT_TEMPLATE
+CLIENT_REPOSITORY=$USER-$KEBOB-$CLIENT_CONTRACT-$CLIENT_FRAMEWORK-$CLIENT_TEMPLATE
 PROJECT=$SOLUTION.WebApi
-SERVER_REPOSITORY=intrepion-$KEBOB-$SERVER_CONTRACT-$SERVER_FRAMEWORK-$SERVER_TEMPLATE
+SERVER_REPOSITORY=$USER-$KEBOB-$SERVER_CONTRACT-$SERVER_FRAMEWORK-$SERVER_TEMPLATE
 
 if [ ! -d "$SERVER_REPOSITORY" ]; then
-  git clone git@github.com:intrepion/$SERVER_REPOSITORY.git && echo "Checked out $SERVER_REPOSITORY" || exit 1
+  git clone git@github.com:$USER/$SERVER_REPOSITORY.git && echo "Checked out $SERVER_REPOSITORY" || exit 1
 fi
 
 cd $SERVER_REPOSITORY
@@ -171,7 +173,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
-          POSTGRES_DB: intrepion
+          POSTGRES_DB: $USER
         ports:
           - 5432:5432
     steps:
@@ -194,7 +196,7 @@ cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/intrepion/$SERVER_REPOSITORY/actions/workflows/dotnet.yml)
+[![.NET](https://github.com/$USER/$SERVER_REPOSITORY/actions/workflows/dotnet.yml/badge.svg?branch=main)](https://github.com/$USER/$SERVER_REPOSITORY/actions/workflows/dotnet.yml)
 EOF
 git add $FILE
 
@@ -214,7 +216,7 @@ services:
     github:
       branch: main
       deploy_on_push: true
-      repo: intrepion/$SERVER_REPOSITORY
+      repo: $USER/$SERVER_REPOSITORY
     health_check:
       http_path: /HealthCheck
     http_port: 80
@@ -237,7 +239,7 @@ spec:
       github:
         branch: main
         deploy_on_push: true
-        repo: intrepion/$SERVER_REPOSITORY
+        repo: $USER/$SERVER_REPOSITORY
       health_check:
         http_path: /health_check
       http_port: 80
@@ -281,7 +283,7 @@ cat << EOF >> $FILE
 
 ### Digital Ocean
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$SERVER_REPOSITORY/tree/main)
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/$USER/$SERVER_REPOSITORY/tree/main)
 EOF
 git add $FILE
 
@@ -373,7 +375,7 @@ fi
 
 DB_USER=\${POSTGRES_USER:=postgres}
 DB_PASSWORD="\${POSTGRES_PASSWORD:=password}"
-DB_NAME="\${POSTGRES_DB:=intrepion}"
+DB_NAME="\${POSTGRES_DB:=$USER}"
 DB_PORT="\${POSTGRES_PORT:=5432}"
 
 if [[ -z "\${SKIP_DOCKER}" ]]
@@ -1030,7 +1032,7 @@ FILE=$PROJECT/appsettings.Development.json
 cat > $FILE << EOF
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=intrepion;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=$USER;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
   },
   "Logging": {
     "LogLevel": {
@@ -1810,7 +1812,7 @@ public static class DatabaseInitializer
 {
     public static void Initialize(ApplicationDatabaseContext context)
     {
-        var email = "intrepion@gmail.com";
+        var email = "$USER@gmail.com";
         var adminRoleName = "Admin";
         var adminRole = context.Roles.SingleOrDefault(role => role.Name == adminRoleName);
         if (adminRole is null)
@@ -1978,7 +1980,7 @@ git push --force
 cd ..
 
 if [ ! -d "$CLIENT_REPOSITORY" ]; then
-  git clone git@github.com:intrepion/$CLIENT_REPOSITORY.git || exit 1;
+  git clone git@github.com:$USER/$CLIENT_REPOSITORY.git || exit 1;
 fi
 
 cd $CLIENT_REPOSITORY
@@ -2189,7 +2191,7 @@ cat << EOF >> $FILE
 
 ## CI/CD
 
-[![.NET](https://github.com/intrepion/$CLIENT_REPOSITORY/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/intrepion/$CLIENT_REPOSITORY/actions/workflows/node.js.yml)
+[![.NET](https://github.com/$USER/$CLIENT_REPOSITORY/actions/workflows/node.js.yml/badge.svg?branch=main)](https://github.com/$USER/$CLIENT_REPOSITORY/actions/workflows/node.js.yml)
 EOF
 git add $FILE
 
@@ -2210,7 +2212,7 @@ static_sites:
     github:
       branch: main
       deploy_on_push: true
-      repo: intrepion/$CLIENT_REPOSITORY
+      repo: $USER/$CLIENT_REPOSITORY
     name: $CLIENT_CONTRACT
     routes:
       - path: /
@@ -2229,7 +2231,7 @@ spec:
       github:
         branch: main
         deploy_on_push: true
-        repo: intrepion/$CLIENT_REPOSITORY
+        repo: $USER/$CLIENT_REPOSITORY
       name: $CLIENT_CONTRACT
       routes:
         - path: /
@@ -2244,7 +2246,7 @@ cat << EOF >> $FILE
 
 ### Digital Ocean
 
-[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/intrepion/$CLIENT_REPOSITORY/tree/main)
+[![Deploy to DO](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/$USER/$CLIENT_REPOSITORY/tree/main)
 EOF
 git add $FILE
 
@@ -3239,10 +3241,10 @@ mkdir -p cypress/e2e && echo "Created cypress/e2e folder" || exit 1
 
 FILE=cypress/e2e/$SNAKE.cy.ts
 cat > $FILE << EOF
-describe("$CANONICAL app", () => {
+describe("$CAPITALIZED app", () => {
   it("passes", () => {
     cy.visit("$CLIENT_URL");
-    cy.contains("intrepion");
+    cy.contains("$CANONICAL");
   });
 });
 EOF
@@ -3503,7 +3505,7 @@ cat > $FILE << EOF
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
       rel="stylesheet"
     />
-    <title>intrepion</title>
+    <title>$CANONICAL</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -4796,41 +4798,41 @@ const Home = () => {
               <li className="list-group-item d-flex gap-2">
                 <a
                   className="nav-link"
-                  href="https://www.linkedin.com/in/intrepion/"
+                  href="https://www.linkedin.com/in/$USER/"
                 >
                   <i className="fa-brands fa-linkedin"></i> -
-                  linkedin.com/in/intrepion
+                  linkedin.com/in/$USER
                 </a>
               </li>
               <li className="list-group-item d-flex gap-2">
-                <a className="nav-link" href="https://github.com/intrepion">
-                  <i className="fa-brands fa-github"></i> - github.com/intrepion
+                <a className="nav-link" href="https://github.com/$USER">
+                  <i className="fa-brands fa-github"></i> - github.com/$USER
                 </a>
               </li>
               <li className="list-group-item d-flex gap-2">
-                <a className="nav-link" href="https://twitter.com/intrepion">
+                <a className="nav-link" href="https://twitter.com/$USER">
                   <i className="fa-brands fa-twitter"></i> -
-                  twitter.com/intrepion
+                  twitter.com/$USER
                 </a>
               </li>
               <li className="list-group-item d-flex gap-2">
                 <a
                   className="nav-link"
-                  href="https://www.facebook.com/intrepion"
+                  href="https://www.facebook.com/$USER"
                 >
                   <i className="fa-brands fa-facebook"></i> -
-                  facebook.com/intrepion
+                  facebook.com/$USER
                 </a>
               </li>
               <li className="list-group-item d-flex gap-2">
-                <a className="nav-link" href="mailto:intrepion@gmail.com">
-                  <i className="fa-solid fa-envelope"></i> - intrepion@gmail.com
+                <a className="nav-link" href="mailto:$USER@gmail.com">
+                  <i className="fa-solid fa-envelope"></i> - $USER@gmail.com
                 </a>
               </li>
               <li className="list-group-item d-flex gap-2">
                 <a
                   className="nav-link"
-                  href="https://www.facebook.com/intrepion"
+                  href="https://www.facebook.com/$USER"
                 >
                   <i className="fa-solid fa-phone"></i> - (503) 750-4562
                 </a>
@@ -5187,7 +5189,7 @@ const Home = () => {
     <>
       <div className="p-5 mb-4 bg-light rounded-3">
         <div className="container-fluid py-5">
-          <h1 className="display-5 fw-bold">intrepion</h1>
+          <h1 className="display-5 fw-bold">$CANONICAL</h1>
           <p className="col-md-8 fs-4">
             Your resource for learning how to create software
           </p>
@@ -5256,7 +5258,7 @@ const Navigation = () => {
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
         <Container>
           <Navbar.Brand as={Link} to="/">
-            intrepion
+            $CANONICAL
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
@@ -5283,14 +5285,14 @@ const Navigation = () => {
           <p>© 2023 Oliver Forral All rights reserved.</p>
           <ul className="list-unstyled d-flex">
             <li className="ms-3">
-              <a className="link-dark" href="https://twitter.com/intrepion">
+              <a className="link-dark" href="https://twitter.com/$USER">
                 <i className="fa-brands fa-twitter"></i>
               </a>
             </li>
             <li className="ms-3">
               <a
                 className="link-dark"
-                href="https://www.instagram.com/intrepion/"
+                href="https://www.instagram.com/$USER/"
               >
                 <i className="fa-brands fa-instagram"></i>
               </a>
@@ -5298,7 +5300,7 @@ const Navigation = () => {
             <li className="ms-3">
               <a
                 className="link-dark"
-                href="https://www.facebook.com/intrepion"
+                href="https://www.facebook.com/$USER"
               >
                 <i className="fa-brands fa-facebook"></i>
               </a>
