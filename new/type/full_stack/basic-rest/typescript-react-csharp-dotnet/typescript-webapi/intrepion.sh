@@ -2208,6 +2208,7 @@ name: $KEBOB-$CLIENT_CONTRACT
 region: sfo
 static_sites:
   - build_command: npm run build
+    catchall_document: index.html
     environment_slug: node-js
     github:
       branch: main
@@ -2227,6 +2228,7 @@ spec:
   region: sfo
   static_sites:
     - build_command: npm run build
+      catchall_document: index.html
       environment_slug: node-js
       github:
         branch: main
@@ -3555,7 +3557,7 @@ const Algorithms = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item active>Algorithms</Breadcrumb.Item>
@@ -3675,7 +3677,7 @@ const DataStructures = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item active>Data Structures</Breadcrumb.Item>
@@ -3780,12 +3782,12 @@ const ArchitecturalPatterns = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item
                 linkAs={Link}
-                linkProps={{ to: "/Learn/DesignPatterns" }}
+                linkProps={{ to: "/learn/design-patterns" }}
               >
                 Design Patterns
               </Breadcrumb.Item>
@@ -3911,12 +3913,12 @@ const BehavioralPatterns = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item
                 linkAs={Link}
-                linkProps={{ to: "/Learn/DesignPatterns" }}
+                linkProps={{ to: "/learn/design-patterns" }}
               >
                 Design Patterns
               </Breadcrumb.Item>
@@ -4063,12 +4065,12 @@ const ConcurrencyPatterns = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item
                 linkAs={Link}
-                linkProps={{ to: "/Learn/DesignPatterns" }}
+                linkProps={{ to: "/learn/design-patterns" }}
               >
                 Design Patterns
               </Breadcrumb.Item>
@@ -4189,12 +4191,12 @@ const CreationalPatterns = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item
                 linkAs={Link}
-                linkProps={{ to: "/Learn/DesignPatterns" }}
+                linkProps={{ to: "/learn/design-patterns" }}
               >
                 Design Patterns
               </Breadcrumb.Item>
@@ -4290,12 +4292,12 @@ const StructuralPatterns = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item
                 linkAs={Link}
-                linkProps={{ to: "/Learn/DesignPatterns" }}
+                linkProps={{ to: "/learn/design-patterns" }}
               >
                 Design Patterns
               </Breadcrumb.Item>
@@ -4405,7 +4407,7 @@ const DesignPatterns = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item active>Design Patterns</Breadcrumb.Item>
@@ -4425,7 +4427,7 @@ const DesignPatterns = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DesignPatterns/CreationalPatterns"
+                to="/learn/design-patterns/creational-patterns"
                 type="button"
               >
                 Learn
@@ -4442,7 +4444,7 @@ const DesignPatterns = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DesignPatterns/StructuralPatterns"
+                to="/learn/design-patterns/structural-patterns"
                 type="button"
               >
                 Learn
@@ -4459,7 +4461,7 @@ const DesignPatterns = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DesignPatterns/BehavioralPatterns"
+                to="/learn/design-patterns/behavioral-patterns"
                 type="button"
               >
                 Learn
@@ -4477,7 +4479,7 @@ const DesignPatterns = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DesignPatterns/ConcurrencyPatterns"
+                to="/learn/design-patterns/concurrency-patterns"
                 type="button"
               >
                 Learn
@@ -4494,7 +4496,7 @@ const DesignPatterns = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DesignPatterns/ArchitecturalPatterns"
+                to="/learn/design-patterns/architectural-patterns"
                 type="button"
               >
                 Learn
@@ -4539,12 +4541,12 @@ const SolidPrinciples = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item
                 linkAs={Link}
-                linkProps={{ to: "/Learn/PrinciplesAndBestPractices" }}
+                linkProps={{ to: "/learn/principles-and-best-practices" }}
               >
                 Principles and Best Practices
               </Breadcrumb.Item>
@@ -4631,7 +4633,7 @@ const PrinciplesAndBestPractices = () => {
               <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
                 Home
               </Breadcrumb.Item>
-              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/learn" }}>
                 Learn
               </Breadcrumb.Item>
               <Breadcrumb.Item active>
@@ -4653,7 +4655,7 @@ const PrinciplesAndBestPractices = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/PrinciplesAndBestPractices/SolidPrinciples"
+                to="/learn/principles-and-best-practices/solid-principles"
                 type="button"
               >
                 Learn
@@ -4723,7 +4725,7 @@ const Learn = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DataStructures"
+                to="/learn/DataStructures"
                 type="button"
               >
                 Learn
@@ -4737,7 +4739,7 @@ const Learn = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/Algorithms"
+                to="/learn/Algorithms"
                 type="button"
               >
                 Learn
@@ -4755,7 +4757,7 @@ const Learn = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/DesignPatterns"
+                to="/learn/design-patterns"
                 type="button"
               >
                 Learn
@@ -4772,7 +4774,7 @@ const Learn = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn/PrinciplesAndBestPractices"
+                to="/learn/principles-and-best-practices"
                 type="button"
               >
                 Learn
@@ -5197,7 +5199,7 @@ const Home = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/Learn"
+                to="/learn"
                 type="button"
               >
                 Learn
@@ -5253,10 +5255,10 @@ const Navigation = () => {
               <Nav.Link as={Link} to="/">
                 Home
               </Nav.Link>
-              <Nav.Link as={Link} to="/Learn">
+              <Nav.Link as={Link} to="/learn">
                 Learn
               </Nav.Link>
-              <Nav.Link as={Link} to="/About">
+              <Nav.Link as={Link} to="/about">
                 About
               </Nav.Link>
             </Nav>
@@ -5331,29 +5333,29 @@ function Routing() {
     <Routes>
       <Route element={<Navigating />}>
         <Route index element={<Home />} />
-        <Route path="About" element={<About />} />
-        <Route path="Home" element={<Home />} />
-        <Route path="Learn">
+        <Route path="about" element={<About />} />
+        <Route path="home" element={<Home />} />
+        <Route path="learn">
           <Route index element={<Learn />} />
-          <Route path="Algorithms" element={<Algorithms />} />
-          <Route path="DataStructures" element={<DataStructures />} />
-          <Route path="DesignPatterns">
+          <Route path="algorithms" element={<Algorithms />} />
+          <Route path="data-structures" element={<DataStructures />} />
+          <Route path="design-patterns">
             <Route index element={<DesignPatterns />} />
             <Route
-              path="ArchitecturalPatterns"
+              path="architectural-patterns"
               element={<ArchitecturalPatterns />}
             />
-            <Route path="BehavioralPatterns" element={<BehavioralPatterns />} />
+            <Route path="behavioral-patterns" element={<BehavioralPatterns />} />
             <Route
-              path="ConcurrencyPatterns"
+              path="concurrency-patterns"
               element={<ConcurrencyPatterns />}
             />
-            <Route path="CreationalPatterns" element={<CreationalPatterns />} />
-            <Route path="StructuralPatterns" element={<StructuralPatterns />} />
+            <Route path="creational-patterns" element={<CreationalPatterns />} />
+            <Route path="structural-patterns" element={<StructuralPatterns />} />
           </Route>
-          <Route path="PrinciplesAndBestPractices">
+          <Route path="principles-and-best-practices">
             <Route index element={<PrinciplesAndBestPractices />} />
-            <Route path="SolidPrinciples" element={<SolidPrinciples />} />
+            <Route path="solid-principles" element={<SolidPrinciples />} />
           </Route>
         </Route>
       </Route>
