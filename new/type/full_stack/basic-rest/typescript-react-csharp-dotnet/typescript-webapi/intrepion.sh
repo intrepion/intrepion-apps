@@ -3242,7 +3242,7 @@ cat > $FILE << EOF
 describe("$CANONICAL app", () => {
   it("passes", () => {
     cy.visit("$CLIENT_URL");
-    cy.contains("$CANONICAL");
+    cy.contains("intrepion");
   });
 });
 EOF
