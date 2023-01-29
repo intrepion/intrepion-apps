@@ -2029,6 +2029,10 @@ npm install prettier --save-dev --save-exact
 git add --all
 git commit --message "npm install prettier --save-dev --save-exact"
 
+npm install react-bootstrap --save
+git add --all
+git commit --message "npm install react-bootstrap --save"
+
 npm install react-router-dom --save
 git add --all
 git commit --message "npm install react-router-dom --save"
@@ -3458,6 +3462,1937 @@ EOF
 git add $FILE
 
 git commit -m "Added routes."
+npx prettier --write .
+git add --all
+git commit --message "npx prettier --write ."
+
+FILE=public/index.html
+cat > $FILE << EOF
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Muli:400,400i,800,800i"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <title>intrepion</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+EOF
+git add $FILE
+
+mkdir -p src/Learn && echo "Created src/Learn folder" || exit 1
+
+mkdir -p src/Learn/Algorithms && echo "Created src/Learn/Algorithms folder" || exit 1
+
+FILE=src/Learn/Algorithms/Algorithms.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const Algorithms = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Algorithms</h1>
+          <p className="col-md-8 fs-4">
+            Learn about algorithms involving sorting and searching.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Algorithms</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Bubble Sort</h2>
+              <p>
+                Bubble Sort involves repeatedly swapping adjacent elements if
+                they are in the wrong order.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Selection Sort</h2>
+              <p>
+                Selection Sort involves finding the smallest element and moving
+                it to the front.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Merge Sort</h2>
+              <p>
+                Merge Sort involves splitting the array into two halves, sorting
+                each half, and then merging the two halves.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Quick Sort</h2>
+              <p>
+                Quick Sort involves randomly choosing a pivot and moving all
+                elements either less than or greater than the pivot.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Radix Sort</h2>
+              <p>
+                Radix Sort involves sorting positive integers by the most
+                significant digit first.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Binary Search</h2>
+              <p>
+                Binary Search involves checking the midpoint of a sorted
+                collection before checking the next midpoint.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Breadth-First Search</h2>
+              <p>
+                Breadth-First Search involves organizing the data into a tree
+                and starting with the root's children before the root's
+                grandchildren.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Breadth-First Search</h2>
+              <p>
+                Depth-First Search involves organizing the data into a tree and
+                starting with a root's child's decendants before moving on to
+                the next child.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Algorithms;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/DataStructures && echo "Created src/Learn/DataStructures folder" || exit 1
+
+FILE=src/Learn/DataStructures/DataStructures.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const DataStructures = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Data Structures</h1>
+          <p className="col-md-8 fs-4">
+            Learn about data structures such as arrays, strings, linked lists,
+            stacks, queues, trees, and graphs.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Data Structures</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Arrays</h2>
+              <p>Arrays are a sequence of things.</p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Strings</h2>
+              <p>Strings are a sequence of characters.</p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Linked Lists</h2>
+              <p>
+                Linked lists are a sequence of things where a thing can be added
+                to or removed from any location.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Stacks</h2>
+              <p>
+                Stacks are a sequence of things that can be added to the top or
+                removed from the top, similar to a stack of pancakes.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Queues</h2>
+              <p>
+                Queues are a sequence of things that can be added to the back or
+                removed from the front, similar to people waiting in line.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Trees</h2>
+              <p>
+                Trees are a way of organize objects with an object as the root.
+                If it has children, each child is another tree.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Graphs</h2>
+              <p>
+                Graphs are a way to organize objects with an emphasis on
+                connections to other objects.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default DataStructures;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/DesignPatterns && echo "Created src/Learn/DesignPatterns folder" || exit 1
+
+mkdir -p src/Learn/DesignPatterns/ArchitecturalPatterns && echo "Created src/Learn/DesignPatterns/ArchitecturalPatterns folder" || exit 1
+
+FILE=src/Learn/DesignPatterns/ArchitecturalPatterns/ArchitecturalPatterns.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const ArchitecturalPatterns = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Architectural Patterns</h1>
+          <p className="col-md-8 fs-4">
+            These patterns are focused on overall software architecture, and
+            high-level structural organization of code.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item
+                linkAs={Link}
+                linkProps={{ to: "/Learn/DesignPatterns" }}
+              >
+                Design Patterns
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Architectural Patterns</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Model-View-Controller (MVC)</h2>
+              <p>
+                This pattern separates the representation of information from
+                the user's interaction with it
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Model-View-ViewModel (MVVM)</h2>
+              <p>
+                This pattern is similar to MVC, but it specifically targets
+                UI-based applications and it is used to separate the business
+                and presentation logic of an application from its user
+                interface.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Client-Server</h2>
+              <p>
+                This pattern separates the user interface concerns from the data
+                storage concerns, by using a client to interact with a remote
+                server.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Microservices</h2>
+              <p>
+                This pattern structures an application as a collection of small,
+                loosely coupled services, each of which can be developed,
+                deployed, and scaled independently.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Event-Driven</h2>
+              <p>
+                This pattern allows different parts of an application to
+                communicate asynchronously, by sending and receiving events.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Layered</h2>
+              <p>
+                This pattern organizes an application into layers, each of which
+                has a specific responsibility, such as presentation, business
+                logic, and data access.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Space-Based</h2>
+              <p>
+                This pattern organizes the components of an application around a
+                shared space, such as a database, message queue, or shared
+                memory.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Hexagonal</h2>
+              <p>
+                This pattern allows an application to be built around the
+                business logic, independent of the user interface and
+                infrastructure concerns.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ArchitecturalPatterns;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/DesignPatterns/BehavioralPatterns && echo "Created src/Learn/DesignPatterns/BehavioralPatterns folder" || exit 1
+
+FILE=src/Learn/DesignPatterns/BehavioralPatterns/BehavioralPatterns.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const BehavioralPatterns = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Behavioral Patterns</h1>
+          <p className="col-md-8 fs-4">
+            These patterns are focused on communication between objects, what
+            goes on between objects and how they operate together.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item
+                linkAs={Link}
+                linkProps={{ to: "/Learn/DesignPatterns" }}
+              >
+                Design Patterns
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Behavioral Patterns</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Chain of Responsibility</h2>
+              <p>
+                This pattern allows multiple objects to handle a request, by
+                linking them together in a chain.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Command</h2>
+              <p>
+                This pattern encapsulates a request as an object, separating the
+                command execution from the command initiator.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Interpreter</h2>
+              <p>
+                This pattern defines a language and provides an interpreter for
+                it.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Iterator</h2>
+              <p>
+                This pattern allows sequentially accessing the elements of a
+                collection, without exposing its underlying representation.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Mediator</h2>
+              <p>
+                This pattern allows objects to communicate without knowing each
+                other's identities, by providing a mediator object to handle
+                communication between them.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Memento</h2>
+              <p>
+                This pattern allows an object to capture its internal state and
+                store it, so that it can be restored to that state later.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Observer</h2>
+              <p>
+                This pattern allows objects to be notified of changes to other
+                objects, without being tightly coupled to them.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>State</h2>
+              <p>
+                This pattern allows an object to alter its behavior when its
+                internal state changes.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Strategy</h2>
+              <p>
+                This pattern allows an object to change its behavior, by
+                changing the strategy or algorithm it uses.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Template Method</h2>
+              <p>
+                This pattern defines the skeleton of an algorithm, allowing
+                subclasses to fill in the details.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Visitor</h2>
+              <p>
+                This pattern separates an algorithm from an object structure, by
+                moving the algorithm into a separate class called a visitor.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default BehavioralPatterns;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/DesignPatterns/ConcurrencyPatterns && echo "Created src/Learn/DesignPatterns/ConcurrencyPatterns folder" || exit 1
+
+FILE=src/Learn/DesignPatterns/ConcurrencyPatterns/ConcurrencyPatterns.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const ConcurrencyPatterns = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Concurrency Patterns</h1>
+          <p className="col-md-8 fs-4">
+            These patterns are focused on managing concurrent access to shared
+            resources and addressing issues that arise in concurrent computing.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item
+                linkAs={Link}
+                linkProps={{ to: "/Learn/DesignPatterns" }}
+              >
+                Design Patterns
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Concurrency Patterns</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Active Object</h2>
+              <p>
+                This pattern decouples method execution from method invocation,
+                allowing for the methods to be executed asynchronously.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Double-Checked Locking</h2>
+              <p>
+                This pattern improves the performance of lazy initialization, by
+                checking the lock only once, before entering the critical
+                section.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Monitor Object</h2>
+              <p>
+                This pattern uses an object to synchronize access to a shared
+                resource, by using its methods as the critical section.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Producer-Consumer</h2>
+              <p>
+                This pattern divides an object into two, the producer that
+                creates the data, and the consumer that acts on the data.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Thread-Pool</h2>
+              <p>
+                This pattern reuses a fixed number of threads to execute
+                multiple tasks, rather than creating a new thread for each task.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Read-Write Lock</h2>
+              <p>
+                This pattern allows multiple readers to access a shared resource
+                simultaneously, but only one writer at a time.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Barrier</h2>
+              <p>
+                This pattern is used to synchronize the execution of multiple
+                threads, so that they can wait for each other to reach a
+                specific point.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Future</h2>
+              <p>
+                This pattern allows an asynchronous computation to be executed
+                and the result to be retrieved later.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ConcurrencyPatterns;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/DesignPatterns/CreationalPatterns && echo "Created src/Learn/DesignPatterns/CreationalPatterns folder" || exit 1
+
+FILE=src/Learn/DesignPatterns/CreationalPatterns/CreationalPatterns.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const CreationalPatterns = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Creational Patterns</h1>
+          <p className="col-md-8 fs-4">
+            These patterns are focused on object creation mechanisms, trying to
+            create objects in a manner suitable to the situation.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item
+                linkAs={Link}
+                linkProps={{ to: "/Learn/DesignPatterns" }}
+              >
+                Design Patterns
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Creational Patterns</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Factory Method</h2>
+              <p>
+                This pattern defines an interface for creating an object, but
+                allows subclasses to alter the type of objects that will be
+                created.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Abstract Factory</h2>
+              <p>
+                This pattern provides an interface for creating families of
+                related or dependent objects without specifying their concrete
+                classes.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Builder</h2>
+              <p>
+                This pattern separates the construction of a complex object from
+                its representation, allowing the same construction process to
+                create various representations.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Prototype</h2>
+              <p>
+                This pattern specifies the kind of objects to create using a
+                prototypical instance, and creates new objects by copying this
+                prototype.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Singleton</h2>
+              <p>
+                This pattern ensures that a class has only one instance, while
+                providing a global access point to this instance.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default CreationalPatterns;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/DesignPatterns/StructuralPatterns && echo "Created src/Learn/DesignPatterns/StructuralPatterns folder" || exit 1
+
+FILE=src/Learn/DesignPatterns/StructuralPatterns/StructuralPatterns.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const StructuralPatterns = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Structural Patterns</h1>
+          <p className="col-md-8 fs-4">
+            These patterns deal with object composition, creating relationships
+            between objects to form larger structures.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item
+                linkAs={Link}
+                linkProps={{ to: "/Learn/DesignPatterns" }}
+              >
+                Design Patterns
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Structural Patterns</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Adapter</h2>
+              <p>
+                This pattern allows classes with incompatible interfaces to work
+                together by wrapping its own interface around that of an already
+                existing class.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Bridge</h2>
+              <p>
+                This pattern separates an object's interface from its
+                implementation, allowing the two to vary independently.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Composite</h2>
+              <p>
+                This pattern allows you to compose objects into tree structures
+                to represent part-whole hierarchies.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Decorator</h2>
+              <p>
+                This pattern allows behavior to be added to an individual
+                object, either statically or dynamically, without affecting the
+                behavior of other objects from the same class.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Facade</h2>
+              <p>
+                This pattern provides a simplified interface to a complex system
+                of classes.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Flyweight</h2>
+              <p>
+                This pattern is used to minimize the number of objects created,
+                to decrease memory usage and increase performance.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Proxy</h2>
+              <p>
+                This pattern provides a surrogate or placeholder object, which
+                references an underlying object.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default StructuralPatterns;
+EOF
+git add $FILE
+
+FILE=src/Learn/DesignPatterns/DesignPatterns.tsx
+cat > $FILE << EOF
+import { Breadcrumb, Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const DesignPatterns = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Design Patterns</h1>
+          <p className="col-md-8 fs-4">
+            Design patterns in computer science are reusable solutions to common
+            problems that arise in software development.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>Design Patterns</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Creational Patterns</h2>
+              <p>
+                These patterns are focused on object creation mechanisms, trying
+                to create objects in a manner suitable to the situation.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DesignPatterns/CreationalPatterns"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Structural Patterns</h2>
+              <p>
+                These patterns deal with object composition, creating
+                relationships between objects to form larger structures.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DesignPatterns/StructuralPatterns"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Behavioral Patterns</h2>
+              <p>
+                These patterns are focused on communication between objects,
+                what goes on between objects and how they operate together.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DesignPatterns/BehavioralPatterns"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Concurrency Patterns</h2>
+              <p>
+                These patterns are focused on managing concurrent access to
+                shared resources and addressing issues that arise in concurrent
+                computing.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DesignPatterns/ConcurrencyPatterns"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Architectural Patterns</h2>
+              <p>
+                These patterns are focused on overall software architecture, and
+                high-level structural organization of code.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DesignPatterns/ArchitecturalPatterns"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default DesignPatterns;
+EOF
+git add $FILE
+
+mkdir -p src/Learn/PrinciplesAndBestPractices && echo "Created src/Learn/PrinciplesAndBestPractices folder" || exit 1
+
+mkdir -p src/Learn/PrinciplesAndBestPractices/SolidPrinciples && echo "Created src/Learn/PrinciplesAndBestPractices/SolidPrinciples folder" || exit 1
+
+FILE=src/Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples.tsx
+cat > $FILE << EOF
+import { Breadcrumb } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const SolidPrinciples = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">SOLID Principles</h1>
+          <p className="col-md-8 fs-4">
+            Five design principles intended to make object-oriented designs more
+            understandable, flexible, and maintainable.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item
+                linkAs={Link}
+                linkProps={{ to: "/Learn/PrinciplesAndBestPractices" }}
+              >
+                Principles and Best Practices
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>SOLID Principles</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Single-Responsibility Principle</h2>
+              <p>
+                There should never be more than one reason for a class to
+                change.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Open-Closed Principle</h2>
+              <p>
+                Software entities should be open for extension, but closed for
+                modification.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Liskov Substitution Principle</h2>
+              <p>
+                Linked lists are a sequence of things where a thing can be added
+                to or removed from any location.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Interface Segregation Principle</h2>
+              <p>
+                Clients should not be forced to depend upon interfaces that they
+                do not use.
+              </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Dependency Inversion Principle</h2>
+              <p>Depend upon abstractions, not concretions.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default SolidPrinciples;
+EOF
+git add $FILE
+
+FILE=src/Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices.tsx
+cat > $FILE << EOF
+import { Breadcrumb, Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const PrinciplesAndBestPractices = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Principles and Best Practices</h1>
+          <p className="col-md-8 fs-4">
+            Learn about principles like SOLID as well as best practices like
+            Test-Driven Development.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/" }}>
+                Home
+              </Breadcrumb.Item>
+              <Breadcrumb.Item linkAs={Link} linkProps={{ to: "/Learn" }}>
+                Learn
+              </Breadcrumb.Item>
+              <Breadcrumb.Item active>
+                Principles and Best Practices
+              </Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>SOLID Principles</h2>
+              <p>
+                Five design principles intended to make object-oriented designs
+                more understandable, flexible, and maintainable.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/PrinciplesAndBestPractices/SolidPrinciples"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Test-Driven Development</h2>
+              <p>
+                A software development process relying on software requirements
+                being converted to test cases before software is fully
+                developed, and tracking all software development by repeatedly
+                testing the software against all test cases.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PrinciplesAndBestPractices;
+EOF
+git add $FILE
+
+FILE=src/Learn/Learn.tsx
+cat > $FILE << EOF
+import { Breadcrumb, Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const Learn = () => {
+  return (
+    <>
+      <div className="p-5 mb-1 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Let's Learn</h1>
+          <p className="col-md-8 fs-4">
+            Use these series of lessons for learning the fundamentals of
+            Computer Science. We'll go through the basics of programming, data
+            structures, and algorithms. We'll also go through the best practices
+            for software development, including SOLID priciples and Test-Driven
+            Development.
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-12">
+            <Breadcrumb>
+              <Breadcrumb.Item href="/">Home</Breadcrumb.Item>
+              <Breadcrumb.Item active>Learn</Breadcrumb.Item>
+            </Breadcrumb>
+          </div>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Data Structures</h2>
+              <p>
+                Learn about data structures such as arrays, strings, linked
+                lists, stacks, queues, trees, and graphs.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DataStructures"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Algorithms</h2>
+              <p>Learn about algorithms involving sorting and searching.</p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/Algorithms"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Design Patterns</h2>
+              <p>
+                Learn about design patterns such as creational patterns
+                (Singleton, Builder, and Factory), behavioral patterns (Iterator
+                and Observer), and structural patterns (Decorator).
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/DesignPatterns"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Principles and Best Practices</h2>
+              <p>
+                Learn about principles like SOLID as well as best practices like
+                Test-Driven Development.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn/PrinciplesAndBestPractices"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Learn;
+EOF
+git add $FILE
+
+FILE=src/About.tsx
+cat > $FILE << EOF
+const Home = () => {
+  return (
+    <>
+      <div className="container col-xxl-8 px-4 py-5">
+        <div className="row flex-lg-row align-items-center g-5 py-5">
+          <div className="col-lg-6">
+            <h1>OLIVER FORRAL</h1>
+            <p className="lead">
+              Forward-thinking engineer with a comprehensive range of
+              development experience and an appetite for solving problems.
+              Committed to team environments and the ability to pick up any new
+              technology. Enjoys collaboration, communication, as well as
+              mentoring other engineers.
+            </p>
+          </div>
+          <div className="col-10 col-sm-8 col-lg-6">
+            <ul className="list-group mx-0 w-auto">
+              <li className="list-group-item d-flex gap-2">
+                <a
+                  className="nav-link"
+                  href="https://www.linkedin.com/in/intrepion/"
+                >
+                  <i className="fa-brands fa-linkedin"></i> -
+                  linkedin.com/in/intrepion
+                </a>
+              </li>
+              <li className="list-group-item d-flex gap-2">
+                <a className="nav-link" href="https://github.com/intrepion">
+                  <i className="fa-brands fa-github"></i> - github.com/intrepion
+                </a>
+              </li>
+              <li className="list-group-item d-flex gap-2">
+                <a className="nav-link" href="https://twitter.com/intrepion">
+                  <i className="fa-brands fa-twitter"></i> -
+                  twitter.com/intrepion
+                </a>
+              </li>
+              <li className="list-group-item d-flex gap-2">
+                <a
+                  className="nav-link"
+                  href="https://www.facebook.com/intrepion"
+                >
+                  <i className="fa-brands fa-facebook"></i> -
+                  facebook.com/intrepion
+                </a>
+              </li>
+              <li className="list-group-item d-flex gap-2">
+                <a className="nav-link" href="mailto:intrepion@gmail.com">
+                  <i className="fa-solid fa-envelope"></i> - intrepion@gmail.com
+                </a>
+              </li>
+              <li className="list-group-item d-flex gap-2">
+                <a
+                  className="nav-link"
+                  href="https://www.facebook.com/intrepion"
+                >
+                  <i className="fa-solid fa-phone"></i> - (503) 750-4562
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div className="container col-xxl-8 px-4 py-5">
+        <div className="row flex-lg-row align-items-center g-5 py-5">
+          <div className="container">
+            <h2 className="text-center">EXPERIENCE</h2>
+            <div className="row g-5 py-5">
+              <div className="col-12">
+                <h3>ENERFLO - SOFTWARE ENGINEER</h3>
+                <p className="text-end">MAY 2022 - PRESENT</p>
+                <p>
+                  Utilized a wide range of full-stack capabilities at a startup
+                  with a very lean team. Worked on a variety of projects,
+                  including a Laravel SaaS and a NodeJS API.
+                </p>
+                <div>
+                  <h5>ACCOMPLISHMENTS</h5>
+                  <ul>
+                    <li>
+                      Fixed bugs that found themselves in production and wrote
+                      tests to prevent them from happening again.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="row g-5 py-5">
+              <div className="col-12">
+                <h3>FREELANCE - SOFTWARE ENGINEER</h3>
+                <p className="text-end">SEPTEMBER 2021 - MAY 2022</p>
+                <p>
+                  Provided freelance work for small local companies that needed
+                  web development and custom-made systems tools. Became more
+                  familiar with Digital Ocean's offerings, including
+                  provisioning App, Droplets, and Spaces. Increased proficiency
+                  in Rust using Actix Web for the backend and Dioxus for both
+                  desktop and web front end.
+                </p>
+                <div>
+                  <h5>ACCOMPLISHMENTS</h5>
+                  <ul>
+                    <li>
+                      Created command-line tools that saved hours each week for
+                      each employee using them.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="row g-5 py-5">
+              <div className="col-12">
+                <h3>INCOMM INCENTIVES - SOFTWARE ENGINEER</h3>
+                <p className="text-end">JUNE 2017 - SEPTEMBER 2021</p>
+                <p>
+                  Configured continuous integrations with TeamCity. Developed
+                  code for automating deploys into AWS S3 buckets. Implemented
+                  several REST microservices in C# and .NET Core, as well as
+                  front ends in TypeScript and React. Exposed to New Relic for
+                  logging and Octopus Deploy for deployment. Supported new
+                  engineers with getting up to speed with best practices.
+                  Mentored coworkers that wanted to move into software
+                  engineering.
+                </p>
+                <div>
+                  <h5>ACCOMPLISHMENTS</h5>
+                  <ul>
+                    <li>
+                      Championed small experiments within the team, such as
+                      doing mini-hackathons. These experiments have generated
+                      greater creativity and innovation among team members.
+                    </li>
+                    <li>
+                      Collaborated closely with UX Engineer to design a
+                      TypeScript React component library that can be used
+                      company-wide. By giving the company more control,
+                      employees are able to save time and money maintaining
+                      consistent WCAG and ADA compliant user interfaces across
+                      all front ends.
+                    </li>
+                    <li>
+                      A key player in helping a recent acquisition with their
+                      backlog of new features and the refactoring of old
+                      features that an important client was requesting.
+                      Successfully implemented the changes, which maintained the
+                      professional relationship with the client.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="row g-5 py-5">
+              <div className="col-12">
+                <h3>
+                  MULTNOMAH EDUCATION SERVICE DISTRICT - APPLICATION DEVELOPER
+                </h3>
+                <p className="text-end">OCTOBER 2009 - JUNE 2017</p>
+                <p>
+                  Maintained legacy applications in jQuery and updated some
+                  applications to React and Ember. Maintained part of Oracle
+                  database and updated applications to use PostgreSQL for
+                  production data and SQLite for performant mock testing.
+                  Maintained multiple legacy applications in PHP and updated
+                  applications to use REST and Symfony, which used PHP 7 and
+                  actual coding standards. Implemented multiple applications in
+                  Symfony and Bootstrap. Configured continuous integration with
+                  TravisCI. Creatively solved the logistics of implementing
+                  complex business rules.
+                </p>
+                <div>
+                  <h5>ACCOMPLISHMENTS</h5>
+                  <ul>
+                    <li>
+                      Converted projects from Subversion to Git and put them
+                      into GitHub. As a result, the team became more
+                      collaborative and completed work more efficiently.
+                    </li>
+                    <li>
+                      Became an expert in using Symfony for all refactors and
+                      new development. This also resulted in the team being more
+                      collaborative and getting work done more efficiently.
+                    </li>
+                    <li>
+                      After the company had run out of symbols in an old
+                      off-the-shelf product, took initiative and coded a script
+                      that recalculated and updated the database so it used only
+                      10 symbols. This allowed us to save time and money by
+                      using the old product while it was systematically
+                      replaced.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="row g-5 py-5">
+              <div className="col-12">
+                <h3>MILES CONSULTING, INC. - WEB APPLICATION DEVELOPER</h3>
+                <p className="text-end">MARCH 2007 - DECEMBER 2012</p>
+                <p>
+                  Constructed and maintained an enterprise web application in
+                  JavaScript, which requests API calls to a C# and ASP.Net
+                  backend which then connects to an SQL Server database.
+                </p>
+                <div>
+                  <h5>ACCOMPLISHMENTS</h5>
+                  <ul>
+                    <li>
+                      The sole developer during this internship, was able to
+                      teach self how to turn a set of requirements into a
+                      full-stack web application while also learning C# and SQL
+                      Server.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="container col-xxl-8 px-4 py-5">
+        <div className="row flex-lg-row align-items-center g-5 py-5">
+          <div>
+            <h2 className="text-center">EDUCATION</h2>
+            <div>
+              <div>
+                <h3>Oregon State University</h3>
+                <div>Bachelor of Science</div>
+                <div>Computer Science - Information Systems Track</div>
+              </div>
+              <div>
+                <span>Graduated June 2009</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="container col-xxl-8 px-4 py-5">
+        <div className="row flex-lg-row align-items-center g-5 py-5">
+          <div className="col-12">
+            <h2 className="text-center">SKILLS</h2>
+            <h3>Programming Languages & Tools</h3>
+            <ul className="list-group">
+              <li className="list-group-item">
+                <i className="fa-brands fa-js"></i> - JavaScript - 15 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-php"></i> - PHP - 15 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-solid fa-database"></i> - Postgres - 15 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-git"></i> - Git - 15 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-github"></i> - GitHub - 15 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-solid fa-database"></i> - SQLite - 14 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-bootstrap"></i> - Bootstrap - 10
+                years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-docker"></i> - Docker - 9 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-react"></i> - React - 8 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-js"></i> - TypeScript - 7 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-symfony"></i> - Symfony - 7 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-solid fa-database"></i> - Oracle - 7 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-js"></i> - JQuery - 6 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-microsoft"></i> - C# - 6 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-solid fa-database"></i> - SQL Server - 5 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-microsoft"></i> - .NET - 5 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-solid fa-database"></i> - RavenDB - 4 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-aws"></i> - AWS - 4 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-microsoft"></i> - Azure - 4 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-octopus-deploy"></i> - Octopus Deploy
+                - 4 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-digital-ocean"></i> - Digital Ocean -
+                2 years
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-rust"></i> - Rust - 1 year
+              </li>
+              <li className="list-group-item">
+                <i className="fa-brands fa-rust"></i> - Actix Web - 1 year
+              </li>
+              <li className="list-group-item">
+                <i className="fa-solid fa-database"></i> - Redis - 1 year
+              </li>
+            </ul>
+          </div>
+          <div className="col-12">
+            <h3>Workflow</h3>
+            <ul className="list-group">
+              <li className="list-group-item">
+                <span>
+                  <i className="fa-solid fa-check"></i>
+                </span>
+                Mobile-First, Responsive Design
+              </li>
+              <li className="list-group-item">
+                <span>
+                  <i className="fa-solid fa-check"></i>
+                </span>
+                Cross Browser Testing & Debugging
+              </li>
+              <li className="list-group-item">
+                <span>
+                  <i className="fa-solid fa-check"></i>
+                </span>
+                Cross Functional Teams
+              </li>
+              <li className="list-group-item">
+                <span>
+                  <i className="fa-solid fa-check"></i>
+                </span>
+                Agile Development & Scrum
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Home;
+EOF
+git add $FILE
+
+FILE=src/analytics.ts
+cat > $FILE << EOF
+import ReactGA from "react-ga";
+
+const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
+
+function init() {
+  const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === "development";
+  ReactGA.initialize(GOOGLE_ANALYTICS_ID, { debug: isDev });
+}
+
+function sendEvent(payload: ReactGA.EventArgs) {
+  ReactGA.event(payload);
+}
+
+function sendPageview(path: string) {
+  ReactGA.set({ page: path });
+  ReactGA.pageview(path);
+}
+
+const analytics = { init, sendEvent, sendPageview };
+
+export default analytics;
+EOF
+git add $FILE
+
+FILE=src/App.tsx
+cat > $FILE << EOF
+import { BrowserRouter } from "react-router-dom";
+import Routing from "./Routing";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routing />
+    </BrowserRouter>
+  );
+}
+
+export default App;
+EOF
+git add $FILE
+
+FILE=src/Home.tsx
+cat > $FILE << EOF
+import { Nav } from "react-bootstrap";
+import { Link } from "react-router-dom";
+
+const Home = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">intrepion</h1>
+          <p className="col-md-8 fs-4">
+            Your resource for learning how to create software
+          </p>
+        </div>
+      </div>
+      <div className="container px-4 py-2">
+        <div className="row">
+          <div className="col-md-6 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Let's Learn</h2>
+              <p>
+                Use these series of lessons for learning the fundamentals of
+                Computer Science. We'll go through the basics of programming,
+                data structures, and algorithms. We'll also go through the best
+                practices for software development, including SOLID priciples
+                and Test-Driven Development.
+              </p>
+              <Nav.Link
+                as={Link}
+                className="btn btn-outline-secondary"
+                to="/Learn"
+                type="button"
+              >
+                Learn
+              </Nav.Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Home;
+EOF
+git add $FILE
+
+FILE=src/index.tsx
+cat > $FILE << EOF
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+reportWebVitals();
+EOF
+git add $FILE
+
+FILE=src/Navigating.tsx
+cat > $FILE << EOF
+import { Container, Nav, Navbar } from "react-bootstrap";
+import { Link, Outlet } from "react-router-dom";
+
+const Navigation = () => {
+  return (
+    <>
+      <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+        <Container>
+          <Navbar.Brand as={Link} to="/">
+            intrepion
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
+            <Nav className="me-auto">
+              <Nav.Link as={Link} to="/">
+                Home
+              </Nav.Link>
+              <Nav.Link as={Link} to="/Learn">
+                Learn
+              </Nav.Link>
+              <Nav.Link as={Link} to="/About">
+                About
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <main>
+        <Outlet />
+      </main>
+      <footer className="py-5">
+        <div className="row"></div>
+        <div className="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
+          <p>© 2023 Oliver Forral All rights reserved.</p>
+          <ul className="list-unstyled d-flex">
+            <li className="ms-3">
+              <a className="link-dark" href="https://twitter.com/intrepion">
+                <i className="fa-brands fa-twitter"></i>
+              </a>
+            </li>
+            <li className="ms-3">
+              <a
+                className="link-dark"
+                href="https://www.instagram.com/intrepion/"
+              >
+                <i className="fa-brands fa-instagram"></i>
+              </a>
+            </li>
+            <li className="ms-3">
+              <a
+                className="link-dark"
+                href="https://www.facebook.com/intrepion"
+              >
+                <i className="fa-brands fa-facebook"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </footer>
+    </>
+  );
+};
+
+export default Navigation;
+EOF
+git add $FILE
+
+FILE=src/Routing.tsx
+cat > $FILE << EOF
+import { Route, Routes } from "react-router-dom";
+import About from "./About";
+import Home from "./Home";
+import Algorithms from "./Learn/Algorithms/Algorithms";
+import DataStructures from "./Learn/DataStructures/DataStructures";
+import ArchitecturalPatterns from "./Learn/DesignPatterns/ArchitecturalPatterns/ArchitecturalPatterns";
+import BehavioralPatterns from "./Learn/DesignPatterns/BehavioralPatterns/BehavioralPatterns";
+import ConcurrencyPatterns from "./Learn/DesignPatterns/ConcurrencyPatterns/ConcurrencyPatterns";
+import CreationalPatterns from "./Learn/DesignPatterns/CreationalPatterns/CreationalPatterns";
+import DesignPatterns from "./Learn/DesignPatterns/DesignPatterns";
+import StructuralPatterns from "./Learn/DesignPatterns/StructuralPatterns/StructuralPatterns";
+import Learn from "./Learn/Learn";
+import PrinciplesAndBestPractices from "./Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices";
+import SolidPrinciples from "./Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples";
+import Navigating from "./Navigating";
+import useGoogleAnalytics from "./useGoogleAnalytics";
+
+function Routing() {
+  useGoogleAnalytics();
+
+  return (
+    <Routes>
+      <Route element={<Navigating />}>
+        <Route index element={<Home />} />
+        <Route path="About" element={<About />} />
+        <Route path="Home" element={<Home />} />
+        <Route path="Learn">
+          <Route index element={<Learn />} />
+          <Route path="Algorithms" element={<Algorithms />} />
+          <Route path="DataStructures" element={<DataStructures />} />
+          <Route path="DesignPatterns">
+            <Route index element={<DesignPatterns />} />
+            <Route
+              path="ArchitecturalPatterns"
+              element={<ArchitecturalPatterns />}
+            />
+            <Route path="BehavioralPatterns" element={<BehavioralPatterns />} />
+            <Route
+              path="ConcurrencyPatterns"
+              element={<ConcurrencyPatterns />}
+            />
+            <Route path="CreationalPatterns" element={<CreationalPatterns />} />
+            <Route path="StructuralPatterns" element={<StructuralPatterns />} />
+          </Route>
+          <Route path="PrinciplesAndBestPractices">
+            <Route index element={<PrinciplesAndBestPractices />} />
+            <Route path="SolidPrinciples" element={<SolidPrinciples />} />
+          </Route>
+        </Route>
+      </Route>
+    </Routes>
+  );
+}
+
+export default Routing;
+EOF
+git add $FILE
+
+FILE=src/useGoogleAnalytics.ts
+cat > $FILE << EOF
+import React from "react";
+import { useLocation } from "react-router-dom";
+
+import analytics from "./analytics";
+
+export default function useGoogleAnalytics() {
+  const location = useLocation();
+
+  React.useEffect(() => {
+    analytics.init();
+  }, []);
+
+  React.useEffect(() => {
+    const currentPath = location.pathname + location.search;
+    analytics.sendPageview(currentPath);
+  }, [location]);
+}
+EOF
+git add $FILE
+
+git commit -m "Added content."
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
