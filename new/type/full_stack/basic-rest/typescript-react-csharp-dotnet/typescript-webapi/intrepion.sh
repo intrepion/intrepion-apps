@@ -2033,6 +2033,10 @@ npm install react-bootstrap --save
 git add --all
 git commit --message "npm install react-bootstrap --save"
 
+npm install react-ga --save
+git add --all
+git commit --message "npm install react-ga --save"
+
 npm install react-router-dom --save
 git add --all
 git commit --message "npm install react-router-dom --save"
