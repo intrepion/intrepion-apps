@@ -3483,10 +3483,7 @@ cat > $FILE << EOF
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="$CANONICAL"
-    />
+    <meta name="description" content="$CANONICAL" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <link
@@ -3513,13 +3510,16 @@ cat > $FILE << EOF
       src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_ANALYTICS_ID%"
     ></script>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+      var trackingId = "%REACT_APP_GOOGLE_ANALYTICS_ID%";
 
-      gtag("config", "%REACT_APP_GOOGLE_ANALYTICS_ID%");
+      if (trackingId) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+        gtag("config", trackingId);
+      }
     </script>
   </head>
   <body>
@@ -5345,13 +5345,22 @@ function Routing() {
               path="architectural-patterns"
               element={<ArchitecturalPatterns />}
             />
-            <Route path="behavioral-patterns" element={<BehavioralPatterns />} />
+            <Route
+              path="behavioral-patterns"
+              element={<BehavioralPatterns />}
+            />
             <Route
               path="concurrency-patterns"
               element={<ConcurrencyPatterns />}
             />
-            <Route path="creational-patterns" element={<CreationalPatterns />} />
-            <Route path="structural-patterns" element={<StructuralPatterns />} />
+            <Route
+              path="creational-patterns"
+              element={<CreationalPatterns />}
+            />
+            <Route
+              path="structural-patterns"
+              element={<StructuralPatterns />}
+            />
           </Route>
           <Route path="principles-and-best-practices">
             <Route index element={<PrinciplesAndBestPractices />} />
@@ -5391,7 +5400,7 @@ const useOnLocationChange = (
     if (!window.gtag) return;
     if (!trackingId) {
       console.log(
-        "Tracking not enabled, as `trackingId` was not given and there is no `GOOGLE_ANALYTICS_ID`."
+        "Tracking not enabled, as \`trackingId\` was not given and there is no \`GOOGLE_ANALYTICS_ID\`."
       );
       return;
     }
