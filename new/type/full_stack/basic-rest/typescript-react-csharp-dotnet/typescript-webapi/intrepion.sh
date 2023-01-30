@@ -3510,16 +3510,13 @@ cat > $FILE << EOF
       src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_ANALYTICS_ID%"
     ></script>
     <script>
-      var trackingId = "%REACT_APP_GOOGLE_ANALYTICS_ID%";
-
-      if (trackingId) {
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {
-          dataLayer.push(arguments);
-        }
-        gtag("js", new Date());
-        gtag("config", trackingId);
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
       }
+      gtag("js", new Date());
+
+      gtag("config", "%REACT_APP_GOOGLE_ANALYTICS_ID%");
     </script>
   </head>
   <body>
