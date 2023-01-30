@@ -5324,10 +5324,10 @@ import Learn from "./Learn/Learn";
 import PrinciplesAndBestPractices from "./Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices";
 import SolidPrinciples from "./Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples";
 import Navigating from "./Navigating";
-import useOnLocationChange from "./useOnLocationChange";
+import usePageTracking from "./usePageTracking";
 
 function Routing() {
-  useOnLocationChange();
+  usePageTracking();
 
   return (
     <Routes>
@@ -5376,40 +5376,26 @@ export default Routing;
 EOF
 git add $FILE
 
-FILE=src/useOnLocationChange.ts
+FILE=src/usePageTracking.ts
 cat > $FILE << EOF
 import { useEffect } from "react";
-import { useLocation } from "react-router";
+import { useLocation } from "react-router-dom";
+import ReactGA from "react-ga";
 
-declare global {
-  interface Window {
-    gtag?: (
-      key: string,
-      trackingId: string,
-      config: { page_path: string }
-    ) => void;
-  }
-}
+const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
 
-const useOnLocationChange = (
-  trackingId: string | undefined = process.env.REACT_APP_GOOGLE_ANALYTICS_ID
-) => {
+const usePageTracking = () => {
   const location = useLocation();
 
   useEffect(() => {
-    if (!window.gtag) return;
-    if (!trackingId) {
-      console.log(
-        "Tracking not enabled, as \`trackingId\` was not given and there is no \`GOOGLE_ANALYTICS_ID\`."
-      );
-      return;
+    if (!GOOGLE_ANALYTICS_ID) {
+      ReactGA.initialize(GOOGLE_ANALYTICS_ID);
+      ReactGA.pageview(location.pathname + location.search);
     }
-
-    window.gtag("config", trackingId, { page_path: location.pathname });
-  }, [location, trackingId]);
+  }, [location]);
 };
 
-export default useOnLocationChange;
+export default usePageTracking;
 EOF
 git add $FILE
 
