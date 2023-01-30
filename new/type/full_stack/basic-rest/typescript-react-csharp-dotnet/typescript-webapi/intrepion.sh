@@ -3530,7 +3530,9 @@ const Algorithms = () => {
         <div className="container-fluid py-5">
           <h1 className="display-5 fw-bold">Algorithms</h1>
           <p className="col-md-8 fs-4">
-            Learn about algorithms involving sorting and searching.
+            An algorithm is a set of steps to solve a specific problem. In
+            computer science, algorithms are used to process data, sort and
+            search information, and make decisions.
           </p>
         </div>
       </div>
@@ -3553,75 +3555,70 @@ const Algorithms = () => {
         <div className="row">
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Bubble Sort</h2>
+              <h2>Sorting Algorithms</h2>
               <p>
-                Bubble Sort involves repeatedly swapping adjacent elements if
-                they are in the wrong order.
+                Sorting Algorithms are used to arrange data in a specific order,
+                such as bubble sort, insertion sort, and merge sort.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Selection Sort</h2>
+              <h2>Search Algorithms</h2>
               <p>
-                Selection Sort involves finding the smallest element and moving
-                it to the front.
+                Search Algorithms are used to find an item in a dataset, such as
+                linear search and binary search.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Merge Sort</h2>
+              <h2>Graph Algorithms</h2>
               <p>
-                Merge Sort involves splitting the array into two halves, sorting
-                each half, and then merging the two halves.
+                Graph Algorithms are used to process and analyze graph data
+                structures, such as breadth-first search and Dijkstra's shortest
+                path.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Quick Sort</h2>
+              <h2>Dynamic Programming Algorithms</h2>
               <p>
-                Quick Sort involves randomly choosing a pivot and moving all
-                elements either less than or greater than the pivot.
+                Dynamic Programming Algorithms are used to solve problems by
+                breaking them down into smaller subproblems, such as the
+                Fibonacci sequence and the knapsack problem.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Radix Sort</h2>
+              <h2>Divide and Conquer Algorithms</h2>
               <p>
-                Radix Sort involves sorting positive integers by the most
-                significant digit first.
+                Divide and Conquer Algorithms are used to solve problems by
+                dividing the problem into smaller subproblems and solving each
+                subproblem, such as quick sort and merge sort.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Binary Search</h2>
+              <h2>Greedy Algorithms</h2>
               <p>
-                Binary Search involves checking the midpoint of a sorted
-                collection before checking the next midpoint.
+                Greedy Algorithms are used to make locally optimal choices at
+                each stage with the hope of finding a global optimum, such as
+                the activity selection problem and Kruskal's minimum spanning
+                tree.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Breadth-First Search</h2>
+              <h2>Backtracking Algorithms</h2>
               <p>
-                Breadth-First Search involves organizing the data into a tree
-                and starting with the root's children before the root's
-                grandchildren.
-              </p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
-            <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Breadth-First Search</h2>
-              <p>
-                Depth-First Search involves organizing the data into a tree and
-                starting with a root's child's decendants before moving on to
-                the next child.
+                Backtracking Algorithms are used to find all possible solutions
+                by incrementally building and testing candidate solutions, such
+                as the n-queens problem and the traveling salesman problem.{" "}
               </p>
             </div>
           </div>
@@ -3649,8 +3646,8 @@ const DataStructures = () => {
         <div className="container-fluid py-5">
           <h1 className="display-5 fw-bold">Data Structures</h1>
           <p className="col-md-8 fs-4">
-            Learn about data structures such as arrays, strings, linked lists,
-            stacks, queues, trees, and graphs.
+            Data structures are structures used to organize and store data in a
+            computer so that it can be accessed and used efficiently.
           </p>
         </div>
       </div>
@@ -3674,58 +3671,76 @@ const DataStructures = () => {
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
               <h2>Arrays</h2>
-              <p>Arrays are a sequence of things.</p>
+              <p>Collection of items stored at contiguous memory locations.</p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Strings</h2>
-              <p>Strings are a sequence of characters.</p>
-            </div>
-          </div>
-          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
-            <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Linked Lists</h2>
+              <h2>Linked List</h2>
               <p>
-                Linked lists are a sequence of things where a thing can be added
-                to or removed from any location.
+                Collection of items where each item holds a reference to the
+                next item.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Stacks</h2>
+              <h2>Stack</h2>
+              <p>Collection of items with last-in-first-out (LIFO) order.</p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Queue</h2>
+              <p>Collection of items with first-in-first-out (FIFO) order.</p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Tree</h2>
+              <p>Collection of items organized in a hierarchical structure.</p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Graph</h2>
               <p>
-                Stacks are a sequence of things that can be added to the top or
-                removed from the top, similar to a stack of pancakes.
+                Collection of items represented as nodes connected by edges.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Queues</h2>
+              <h2>Hash Table</h2>
               <p>
-                Queues are a sequence of things that can be added to the back or
-                removed from the front, similar to people waiting in line.
+                Data structure that implements an associative array, a structure
+                that can map keys to values.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Trees</h2>
+              <h2>Heap</h2>
               <p>
-                Trees are a way of organize objects with an object as the root.
-                If it has children, each child is another tree.
+                Complete binary tree where items are stored in a special order
+                such that the parent node is always larger/smaller than its
+                child nodes.
               </p>
             </div>
           </div>
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
-              <h2>Graphs</h2>
+              <h2>Trie</h2>
               <p>
-                Graphs are a way to organize objects with an emphasis on
-                connections to other objects.
+                Tree-like data structure used for efficient retrieval of data in
+                which keys are sequences.
               </p>
+            </div>
+          </div>
+          <div className="col-lg-4 col-md-6 col-sm-12 py-2">
+            <div className="h-100 p-5 bg-light border rounded-3">
+              <h2>Matrix</h2>
+              <p>2D array used to represent and manipulate numerical data.</p>
             </div>
           </div>
         </div>
@@ -4703,8 +4718,8 @@ const Learn = () => {
             <div className="h-100 p-5 bg-light border rounded-3">
               <h2>Data Structures</h2>
               <p>
-                Learn about data structures such as arrays, strings, linked
-                lists, stacks, queues, trees, and graphs.
+                Data structures are structures used to organize and store data
+                in a computer so that it can be accessed and used efficiently.
               </p>
               <Nav.Link
                 as={Link}
@@ -4719,7 +4734,11 @@ const Learn = () => {
           <div className="col-lg-4 col-md-6 col-sm-12 py-2">
             <div className="h-100 p-5 bg-light border rounded-3">
               <h2>Algorithms</h2>
-              <p>Learn about algorithms involving sorting and searching.</p>
+              <p>
+                An algorithm is a set of steps to solve a specific problem. In
+                computer science, algorithms are used to process data, sort and
+                search information, and make decisions.
+              </p>
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
