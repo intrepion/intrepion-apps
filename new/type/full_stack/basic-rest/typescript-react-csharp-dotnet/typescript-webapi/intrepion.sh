@@ -2035,9 +2035,9 @@ npm install react-bootstrap --save
 git add --all
 git commit --message "npm install react-bootstrap --save"
 
-npm install react-ga --save
+npm install react-ga4 --save
 git add --all
-git commit --message "npm install react-ga --save"
+git commit --message "npm install react-ga4 --save"
 
 npm install react-router-dom --save
 git add --all
@@ -5152,6 +5152,31 @@ export default App;
 EOF
 git add $FILE
 
+FILE=src/ga4.ts
+cat > $FILE << EOF
+import ga4 from "react-ga4";
+
+const isProduction = process.env.NODE_ENV === "production";
+
+export const init = (GOOGLE_ANALYTICS_ID: string) =>
+  ga4.initialize(GOOGLE_ANALYTICS_ID, {
+    testMode: !isProduction,
+  });
+
+export const sendEvent = (name: string) =>
+  ga4.event("screen_view", {
+    app_name: "myApp",
+    screen_name: name,
+  });
+
+export const sendPageview = (path: string) =>
+  ga4.send({
+    hitType: "pageview",
+    page: path,
+  });
+EOF
+git add $FILE
+
 FILE=src/Home.tsx
 cat > $FILE << EOF
 import { Nav } from "react-bootstrap";
@@ -5308,13 +5333,10 @@ import Learn from "./Learn/Learn";
 import PrinciplesAndBestPractices from "./Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices";
 import SolidPrinciples from "./Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples";
 import Navigating from "./Navigating";
-import ReactGA from "react-ga";
+import useAnalytics from "./useAnalytics";
 
 function Routing() {
-  const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
-
-  ReactGA.initialize(GOOGLE_ANALYTICS_ID);
-  ReactGA.pageview(window.location.pathname + window.location.search);
+  useAnalytics();
 
   return (
     <Routes>
@@ -5360,6 +5382,35 @@ function Routing() {
 }
 
 export default Routing;
+EOF
+git add $FILE
+
+FILE=src/useAnalytics.ts
+cat > $FILE << EOF
+import React from "react";
+import { useLocation } from "react-router-dom";
+
+import * as analytics from "./ga4";
+
+export function useAnalytics() {
+  const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
+  const location = useLocation();
+
+  React.useEffect(() => {
+    if (GOOGLE_ANALYTICS_ID) {
+      analytics.init(GOOGLE_ANALYTICS_ID);
+    }
+  }, [GOOGLE_ANALYTICS_ID]);
+
+  React.useEffect(() => {
+    if (GOOGLE_ANALYTICS_ID) {
+      const path = location.pathname + location.search;
+      analytics.sendPageview(path);
+    }
+  }, [location, GOOGLE_ANALYTICS_ID]);
+}
+
+export default useAnalytics;
 EOF
 git add $FILE
 
