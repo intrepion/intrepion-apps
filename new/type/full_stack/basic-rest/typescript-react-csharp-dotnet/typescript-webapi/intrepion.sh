@@ -3505,19 +3505,6 @@ cat > $FILE << EOF
       rel="stylesheet"
     />
     <title>$CANONICAL</title>
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GOOGLE_ANALYTICS_ID%"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "%REACT_APP_GOOGLE_ANALYTICS_ID%");
-    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
@@ -4722,7 +4709,7 @@ const Learn = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/learn/DataStructures"
+                to="/learn/data-structures"
                 type="button"
               >
                 Learn
@@ -4736,7 +4723,7 @@ const Learn = () => {
               <Nav.Link
                 as={Link}
                 className="btn btn-outline-secondary"
-                to="/learn/Algorithms"
+                to="/learn/algorithms"
                 type="button"
               >
                 Learn
@@ -5321,10 +5308,13 @@ import Learn from "./Learn/Learn";
 import PrinciplesAndBestPractices from "./Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices";
 import SolidPrinciples from "./Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples";
 import Navigating from "./Navigating";
-import usePageTracking from "./usePageTracking";
+import ReactGA from "react-ga";
 
 function Routing() {
-  usePageTracking();
+  const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
+
+  ReactGA.initialize(GOOGLE_ANALYTICS_ID);
+  ReactGA.pageview(window.location.pathname + window.location.search);
 
   return (
     <Routes>
@@ -5370,29 +5360,6 @@ function Routing() {
 }
 
 export default Routing;
-EOF
-git add $FILE
-
-FILE=src/usePageTracking.ts
-cat > $FILE << EOF
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import ReactGA from "react-ga";
-
-const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
-
-const usePageTracking = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    if (!GOOGLE_ANALYTICS_ID) {
-      ReactGA.initialize(GOOGLE_ANALYTICS_ID);
-      ReactGA.pageview(location.pathname + location.search);
-    }
-  }, [location]);
-};
-
-export default usePageTracking;
 EOF
 git add $FILE
 
