@@ -2044,10 +2044,6 @@ npm install axios
 git add --all
 git commit --message "npm install axios"
 
-npm install formik --save
-git add --all
-git commit --message "npm install formik --save"
-
 npm install react-bootstrap --save
 git add --all
 git commit --message "npm install react-bootstrap --save"
@@ -2063,10 +2059,6 @@ git commit --message "npm install react-router-dom --save"
 npm install uuid --save
 git add --all
 git commit --message "npm install uuid --save"
-
-npm install yup --save
-git add --all
-git commit --message "npm install yup --save"
 
 FILE=src/App.css
 rm -rf $FILE
@@ -5180,6 +5172,69 @@ export default App;
 EOF
 git add $FILE
 
+FILE=src/AuthProvider.tsx
+cat > $FILE << EOF
+import { createContext, useState, FC, ReactNode, useEffect } from "react";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "";
+
+type AuthContextState = {
+  authenticatedUserName: string;
+  serverUrl: string;
+  setAuthenticatedUserName: (authenticatedUserName: string) => void;
+};
+
+const contextDefaultValues: AuthContextState = {
+  authenticatedUserName: "",
+  setAuthenticatedUserName: function (authenticatedUserName: string): void {
+    throw new Error("Function not implemented.");
+  },
+  serverUrl: "",
+};
+
+export const AuthContext =
+  createContext<AuthContextState>(contextDefaultValues);
+
+interface Props {
+  children: ReactNode;
+}
+
+const AuthProvider: FC<Props> = ({ children }) => {
+  const [authenticatedUserName, setAuthenticatedUserName] = useState<string>(
+    contextDefaultValues.authenticatedUserName
+  );
+
+  const serverUrl = SERVER_URL;
+
+  useEffect(() => {
+    const authenticatedUserName = localStorage.getItem("authenticatedUserName");
+
+    if (authenticatedUserName) {
+      setAuthenticatedUserName(authenticatedUserName);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("authenticatedUserName", authenticatedUserName);
+  }, [authenticatedUserName]);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        authenticatedUserName,
+        setAuthenticatedUserName,
+        serverUrl,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export default AuthProvider;
+EOF
+git add $FILE
+
 FILE=src/ga4.ts
 cat > $FILE << EOF
 import ga4 from "react-ga4";
@@ -5255,7 +5310,7 @@ git add $FILE
 
 FILE=src/index.tsx
 cat > $FILE << EOF
-import React from "react";
+import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
@@ -5264,27 +5319,205 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <App />
-  </React.StrictMode>
+  </StrictMode>
 );
 
 reportWebVitals();
 EOF
 git add $FILE
 
+FILE=src/LogIn.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { ChangeEvent, useContext, useState } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "./AuthProvider";
+
+const LogIn = () => {
+  const { authenticatedUserName, serverUrl, setAuthenticatedUserName } =
+    useContext(AuthContext);
+  const [isHandlingLogIn, setIsHandlingLogIn] = useState(false);
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [validated, setValidated] = useState(false);
+
+  const handleChangePassword = (event: ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
+  const handleChangeRememberMe = (event: ChangeEvent<HTMLInputElement>) => {
+    setRememberMe(event.target.checked);
+  };
+
+  const handleChangeUserName = (event: ChangeEvent<HTMLInputElement>) => {
+    setUserName(event.target.value);
+  };
+
+  const handleLogIn = async (event: {
+    currentTarget: any;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  }) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    const valid = form.checkValidity();
+    setValidated(true);
+    if (valid === false) {
+      return;
+    }
+    setIsHandlingLogIn(true);
+    const values = {
+      password,
+      rememberMe,
+      userName,
+    };
+    try {
+      const response = await axios.post(serverUrl + "/LogIns", values);
+      if (response.data) {
+        const { userName } = response.data;
+        setAuthenticatedUserName(userName);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    setIsHandlingLogIn(false);
+  };
+
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Log In</h1>
+          <p className="col-md-8 fs-4">Please log in.</p>
+        </div>
+      </div>
+      <div>
+        <Form noValidate validated={validated} onSubmit={handleLogIn}>
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="validationCustomUserName">
+              <Form.Label>User Name</Form.Label>
+              <InputGroup hasValidation>
+                <InputGroup.Text id="inputGroupPrependUserName">
+                  @
+                </InputGroup.Text>
+                <Form.Control
+                  aria-describedby="inputGroupPrependUserName"
+                  onChange={handleChangeUserName}
+                  placeholder="User Name"
+                  required
+                  type="text"
+                  value={userName}
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please provide a valid user name.
+                </Form.Control.Feedback>
+              </InputGroup>
+            </Form.Group>
+          </Row>
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="validationCustomPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                onChange={handleChangePassword}
+                placeholder="Password"
+                required
+                type="password"
+                value={password}
+              />
+              <Form.Control.Feedback type="invalid">
+                Please provide a valid password.
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Row>
+          <Form.Group className="mb-3">
+            <Form.Check
+              checked={rememberMe}
+              label="Remember Me"
+              onChange={handleChangeRememberMe}
+            />
+          </Form.Group>
+          <Button disabled={isHandlingLogIn} type="submit">
+            Login
+          </Button>
+        </Form>
+      </div>
+      {authenticatedUserName && <Navigate to="/" replace={true} />}
+    </>
+  );
+};
+
+export default LogIn;
+EOF
+git add $FILE
+
+FILE=src/LogOut.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { useContext, useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "./AuthProvider";
+
+const LogOut = () => {
+  const { authenticatedUserName, serverUrl, setAuthenticatedUserName } =
+    useContext(AuthContext);
+  const [isHandlingLogOut, setIsHandlingLogOut] = useState(false);
+  const [successLogOut, setSuccessLogOut] = useState(false);
+
+  const handleLogOut = async () => {
+    setIsHandlingLogOut(true);
+    try {
+      const response = await axios.post(serverUrl + "/LogOuts");
+      if (response.data) {
+        setAuthenticatedUserName("");
+        setSuccessLogOut(true);
+      } else {
+        setSuccessLogOut(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setSuccessLogOut(false);
+    }
+    setIsHandlingLogOut(false);
+  };
+
+  useEffect(() => {
+    handleLogOut();
+  });
+
+  return (
+    <>
+      {!isHandlingLogOut && successLogOut && !authenticatedUserName && (
+        <Navigate to="/log-in" replace={true} />
+      )}
+    </>
+  );
+};
+
+export default LogOut;
+EOF
+git add $FILE
+
 FILE=src/Navigating.tsx
 cat > $FILE << EOF
+import { useContext } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { Link, Outlet } from "react-router-dom";
+import AuthProvider, { AuthContext } from "./AuthProvider";
 
-const Navigation = () => {
+const Navigating = () => {
+  const { authenticatedUserName } = useContext(AuthContext);
+
   return (
     <>
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
         <Container>
           <Navbar.Brand as={Link} to="/">
-            $CANONICAL
+            intrepion
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
@@ -5299,10 +5532,29 @@ const Navigation = () => {
                 About
               </Nav.Link>
             </Nav>
+            {authenticatedUserName ? (
+              <Nav className="text-end">
+                <Nav.Link as={Link} to="/profile">
+                  {authenticatedUserName}
+                </Nav.Link>
+                <Nav.Link as={Link} to="/log-out">
+                  Log Out
+                </Nav.Link>
+              </Nav>
+            ) : (
+              <Nav className="text-end">
+                <Nav.Link as={Link} to="/log-in">
+                  Log In
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register">
+                  Register
+                </Nav.Link>
+              </Nav>
+            )}
           </Navbar.Collapse>
         </Container>
       </Navbar>
-      <main>
+      <main className="container">
         <Outlet />
       </main>
       <div className="container">
@@ -5312,14 +5564,14 @@ const Navigation = () => {
             <p>© 2023 Oliver Forral All rights reserved.</p>
             <ul className="list-unstyled d-flex">
               <li className="ms-3">
-                <a className="link-dark" href="https://twitter.com/$USER">
+                <a className="link-dark" href="https://twitter.com/intrepion">
                   <i className="fa-brands fa-twitter"></i>
                 </a>
               </li>
               <li className="ms-3">
                 <a
                   className="link-dark"
-                  href="https://www.instagram.com/$USER/"
+                  href="https://www.instagram.com/intrepion/"
                 >
                   <i className="fa-brands fa-instagram"></i>
                 </a>
@@ -5327,7 +5579,7 @@ const Navigation = () => {
               <li className="ms-3">
                 <a
                   className="link-dark"
-                  href="https://www.facebook.com/$USER"
+                  href="https://www.facebook.com/intrepion"
                 >
                   <i className="fa-brands fa-facebook"></i>
                 </a>
@@ -5340,7 +5592,213 @@ const Navigation = () => {
   );
 };
 
-export default Navigation;
+const WrappedNavigating = () => (
+  <AuthProvider>
+    <Navigating />
+  </AuthProvider>
+);
+
+export default WrappedNavigating;
+EOF
+git add $FILE
+
+FILE=src/NotFound.tsx
+cat > $FILE << EOF
+const NotFound = () => {
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Not Found</h1>
+          <p className="col-md-8 fs-4">Whoops! You've found a broken link!</p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default NotFound;
+EOF
+git add $FILE
+
+FILE=src/Register.tsx
+cat > $FILE << EOF
+import axios from "axios";
+import { ChangeEvent, useContext, useState } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Navigate } from "react-router-dom";
+import { AuthContext } from "./AuthProvider";
+
+const Register = () => {
+  const [accept, setAccept] = useState(false);
+  const [confirm, setConfirm] = useState("");
+  const [email, setEmail] = useState("");
+  const [isHandlingRegister, setIsHandlingRegister] = useState(false);
+  const [password, setPassword] = useState("");
+  const { serverUrl } = useContext(AuthContext);
+  const [successRegister, setSuccessRegister] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [validated, setValidated] = useState(false);
+
+  const handleChangeAccept = (event: ChangeEvent<HTMLInputElement>) => {
+    setAccept(event.target.checked);
+  };
+
+  const handleChangeConfirm = (event: ChangeEvent<HTMLInputElement>) => {
+    setConfirm(event.target.value);
+  };
+
+  const handleChangeEmail = (event: ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
+  };
+
+  const handleChangePassword = (event: ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
+
+  const handleChangeUserName = (event: ChangeEvent<HTMLInputElement>) => {
+    setUserName(event.target.value);
+  };
+
+  const handleRegister = async (event: {
+    currentTarget: any;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  }) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    const valid = form.checkValidity();
+    setValidated(true);
+    if (valid === false) {
+      return;
+    }
+    setIsHandlingRegister(true);
+    const values = {
+      accept,
+      confirm,
+      email,
+      password,
+      userName,
+    };
+    try {
+      const response = await axios.post(serverUrl + "/Users", values);
+      if (response.data) {
+        setSuccessRegister(true);
+      } else {
+        setSuccessRegister(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setSuccessRegister(false);
+    }
+    setIsHandlingRegister(false);
+  };
+
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Register</h1>
+          <p className="col-md-8 fs-4">Please register.</p>
+        </div>
+      </div>
+      <div>
+        <Form noValidate validated={validated} onSubmit={handleRegister}>
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="validationCustomUserName">
+              <Form.Label>User Name</Form.Label>
+              <InputGroup hasValidation>
+                <InputGroup.Text id="inputGroupPrependUserName">
+                  @
+                </InputGroup.Text>
+                <Form.Control
+                  aria-describedby="inputGroupPrependUserName"
+                  onChange={handleChangeUserName}
+                  placeholder="User Name"
+                  required
+                  type="text"
+                  value={userName}
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please provide a valid user name.
+                </Form.Control.Feedback>
+              </InputGroup>
+            </Form.Group>
+          </Row>
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="validationCustomEmail">
+              <Form.Label>Email</Form.Label>
+              <InputGroup hasValidation>
+                <InputGroup.Text id="inputGroupPrependEmail">
+                  mailto:
+                </InputGroup.Text>
+                <Form.Control
+                  aria-describedby="inputGroupPrependEmail"
+                  onChange={handleChangeEmail}
+                  placeholder="Email"
+                  required
+                  type="email"
+                  value={email}
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please provide a valid user name.
+                </Form.Control.Feedback>
+              </InputGroup>
+            </Form.Group>
+          </Row>
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="validationCustomPassword">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                onChange={handleChangePassword}
+                placeholder="Password"
+                required
+                type="password"
+                value={password}
+              />
+              <Form.Control.Feedback type="invalid">
+                Please provide a valid password.
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Row>
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="validationCustomConfirm">
+              <Form.Label>Confirm</Form.Label>
+              <Form.Control
+                onChange={handleChangeConfirm}
+                placeholder="Confirm"
+                required
+                type="password"
+                value={confirm}
+              />
+              <Form.Control.Feedback type="invalid">
+                Please provide a valid confirm.
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Row>
+          <Form.Group className="mb-3">
+            <Form.Check
+              checked={accept}
+              label="Accept terms of service"
+              onChange={handleChangeAccept}
+              required
+            />
+            <Form.Control.Feedback type="invalid">
+              Please accept the terms of service.
+            </Form.Control.Feedback>
+          </Form.Group>
+          <Button disabled={isHandlingRegister} type="submit">
+            Login
+          </Button>
+        </Form>
+      </div>
+      {successRegister && <Navigate to="/log-in" replace={true} />}
+    </>
+  );
+};
+
+export default Register;
 EOF
 git add $FILE
 
@@ -5360,7 +5818,11 @@ import StructuralPatterns from "./Learn/DesignPatterns/StructuralPatterns/Struct
 import Learn from "./Learn/Learn";
 import PrinciplesAndBestPractices from "./Learn/PrinciplesAndBestPractices/PrinciplesAndBestPractices";
 import SolidPrinciples from "./Learn/PrinciplesAndBestPractices/SolidPrinciples/SolidPrinciples";
+import LogIn from "./LogIn";
+import LogOut from "./LogOut";
 import Navigating from "./Navigating";
+import NotFound from "./NotFound";
+import Register from "./Register";
 import useAnalytics from "./useAnalytics";
 
 function Routing() {
@@ -5404,6 +5866,10 @@ function Routing() {
             <Route path="solid-principles" element={<SolidPrinciples />} />
           </Route>
         </Route>
+        <Route path="log-in" element={<LogIn />} />
+        <Route path="log-out" element={<LogOut />} />
+        <Route path="register" element={<Register />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
@@ -5415,7 +5881,7 @@ git add $FILE
 
 FILE=src/useAnalytics.ts
 cat > $FILE << EOF
-import React from "react";
+import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 import * as analytics from "./ga4";
@@ -5424,13 +5890,13 @@ export function useAnalytics() {
   const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
   const location = useLocation();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (GOOGLE_ANALYTICS_ID) {
       analytics.init(GOOGLE_ANALYTICS_ID);
     }
   }, [GOOGLE_ANALYTICS_ID]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (GOOGLE_ANALYTICS_ID) {
       const path = location.pathname + location.search;
       analytics.sendPageview(path);
