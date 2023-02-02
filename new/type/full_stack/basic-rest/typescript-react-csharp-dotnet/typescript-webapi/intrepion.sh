@@ -142,7 +142,7 @@ dotnet test
 ### Run
 
 \`\`\`bash
-CLIENT_URL="$CLIENT_URL" dotnet run --project $PROJECT
+CLIENT_URL="<CLIENT_URL>" dotnet run --project $PROJECT
 \`\`\`
 EOF
 git add $FILE
@@ -1963,6 +1963,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseCors(MyAllowSpecificOrigins);
 
 app.Run();
 
@@ -2000,22 +2001,18 @@ mv README.old.md README.md
 git add README.old.md README.md
 git commit --message "mv README.old.md README.md"
 
-npm install @types/uuid
+npm install cypress --save-dev
 git add --all
-git commit --message "npm install @types/uuid"
+git commit --message "npm install cypress --save-dev"
 
-npm install axios
+npm install prettier --save-dev --save-exact
 git add --all
-git commit --message "npm install axios"
+git commit --message "npm install prettier --save-dev --save-exact"
 
 FILE=package.json
 sed -i 's/"test": "react-scripts test"/"test": "react-scripts test --transformIgnorePatterns \\"node_modules\/(?!axios)\/\\""/g' $FILE
 git add $FILE
 git commit --message '"test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",'
-
-npm install cypress --save-dev
-git add --all
-git commit --message "npm install cypress --save-dev"
 
 FILE=.gitignore
 cat << EOF >> $FILE
@@ -2027,9 +2024,29 @@ EOF
 git add $FILE
 git commit --message "Added cypress to .gitignore."
 
-npm install prettier --save-dev --save-exact
+echo {}> .prettierrc.json
+git add .prettierrc.json
+git commit --message "echo {}> .prettierrc.json"
+
+cp .gitignore .prettierignore
+git add .prettierignore
+git commit --message "cp .gitignore .prettierignore"
+
+npx prettier --write .
 git add --all
-git commit --message "npm install prettier --save-dev --save-exact"
+git commit --message "npx prettier --write ."
+
+npm install @types/uuid
+git add --all
+git commit --message "npm install @types/uuid"
+
+npm install axios
+git add --all
+git commit --message "npm install axios"
+
+npm install formik --save
+git add --all
+git commit --message "npm install formik --save"
 
 npm install react-bootstrap --save
 git add --all
@@ -2043,21 +2060,13 @@ npm install react-router-dom --save
 git add --all
 git commit --message "npm install react-router-dom --save"
 
-npm install uuid
+npm install uuid --save
 git add --all
-git commit --message "npm install uuid"
+git commit --message "npm install uuid --save"
 
-echo {}> .prettierrc.json
-git add .prettierrc.json
-git commit --message "echo {}> .prettierrc.json"
-
-cp .gitignore .prettierignore
-git add .prettierignore
-git commit --message "cp .gitignore .prettierignore"
-
-npx prettier --write .
+npm install yup --save
 git add --all
-git commit --message "npx prettier --write ."
+git commit --message "npm install yup --save"
 
 FILE=src/App.css
 rm -rf $FILE
@@ -2138,7 +2147,7 @@ npm test
 ### Run
 
 \`\`\`bash
-REACT_APP_SERVER_URL=$SERVER_URL npm start
+REACT_APP_SERVER_URL="<SERVER_URL>" npm start
 \`\`\`
 EOF
 git add README.md
