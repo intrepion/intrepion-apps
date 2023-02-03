@@ -558,6 +558,119 @@ dotnet format
 git add --all
 git commit --message "dotnet format"
 
+FILE=$SOLUTION.Tests/Endpoints/TestLogInsEndpoints.cs
+cat > $FILE << EOF
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using FluentAssertions;
+using Microsoft.AspNetCore.Mvc.Testing;
+using IntrepionApp.WebApi.Authentication.LogIn;
+using IntrepionApp.WebApi.Authentication.LogOut;
+
+namespace IntrepionApp.Tests.Endpoints;
+
+public class TestLogInsEndpoints : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly WebApplicationFactory<Program> _factory;
+
+    public TestLogInsEndpoints(WebApplicationFactory<Program> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task LogIns_Endpoints()
+    {
+        // Arrange
+        var client = _factory.CreateClient();
+        var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
+
+        var adminMakeLogInRequest = new MakeLogInRequest
+        {
+            Password = "adminP4$$w0rd",
+            RememberMe = true,
+            UserName = "admin",
+        };
+        var adminMakeLogInRequestString = JsonSerializer.Serialize(adminMakeLogInRequest);
+        var adminMakeLogInRequestContent = new StringContent(adminMakeLogInRequestString, Encoding.UTF8, "application/json");
+        var userMakeLogInRequest = new MakeLogInRequest
+        {
+            Password = "userP4$$w0rd",
+            RememberMe = true,
+            UserName = "user",
+        };
+        var userMakeLogInRequestString = JsonSerializer.Serialize(userMakeLogInRequest);
+        var userMakeLogInRequestContent = new StringContent(userMakeLogInRequestString, Encoding.UTF8, "application/json");
+
+        // Act
+        var response = await client.PostAsync("/LogOuts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        var makeLogOutResponse = JsonSerializer.Deserialize<MakeLogOutResponse>(responseContent);
+        Assert.NotNull(makeLogOutResponse);
+        Assert.Null(makeLogOutResponse.UserName);
+
+        // Act
+        response = await client.PostAsync("/LogIns", userMakeLogInRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        var makeLogInResponse = JsonSerializer.Deserialize<MakeLogInResponse>(responseContent);
+        Assert.NotNull(makeLogInResponse);
+        Assert.NotNull(makeLogInResponse.UserName);
+        makeLogInResponse.UserName.Should().Be(userMakeLogInRequest.UserName);
+
+        // Act
+        response = await client.PostAsync("/LogOuts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        makeLogOutResponse = JsonSerializer.Deserialize<MakeLogOutResponse>(responseContent);
+        Assert.NotNull(makeLogOutResponse);
+        Assert.NotNull(makeLogOutResponse.UserName);
+        makeLogOutResponse.UserName.Should().Be(userMakeLogInRequest.UserName);
+
+        // Act
+        response = await client.PostAsync("/LogIns", adminMakeLogInRequestContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        makeLogInResponse = JsonSerializer.Deserialize<MakeLogInResponse>(responseContent);
+        Assert.NotNull(makeLogInResponse);
+        Assert.NotNull(makeLogInResponse.UserName);
+        makeLogInResponse.UserName.Should().Be(adminMakeLogInRequest.UserName);
+
+        // Act
+        response = await client.PostAsync("/LogOuts", emptyContent);
+
+        // Assert
+        Assert.NotNull(response);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        responseContent = await response.Content.ReadAsStringAsync();
+        Assert.NotNull(responseContent);
+        makeLogOutResponse = JsonSerializer.Deserialize<MakeLogOutResponse>(responseContent);
+        Assert.NotNull(makeLogOutResponse);
+        Assert.NotNull(makeLogOutResponse.UserName);
+        makeLogOutResponse.UserName.Should().Be(adminMakeLogInRequest.UserName);
+    }
+}
+EOF
+git add $FILE
+
 FILE=$SOLUTION.Tests/Endpoints/TestUsersEndpoints.cs
 cat > $FILE << EOF
 using System.Net;
@@ -565,10 +678,10 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using $PROJECT.Authentication.Login;
-using $PROJECT.Authentication.User;
+using IntrepionApp.WebApi.Authentication.LogIn;
+using IntrepionApp.WebApi.Authentication.User;
 
-namespace $SOLUTION.Tests.Endpoints;
+namespace IntrepionApp.Tests.Endpoints;
 
 public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -586,14 +699,14 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var client = _factory.CreateClient();
         var emptyContent = new StringContent("", Encoding.UTF8, "application/json");
 
-        var adminMakeLoginRequest = new MakeLoginRequest
+        var adminMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "adminP4\$\$w0rd",
+            Password = "adminP4$$w0rd",
             RememberMe = true,
             UserName = "admin",
         };
-        var adminMakeLoginRequestString = JsonSerializer.Serialize(adminMakeLoginRequest);
-        var adminMakeLoginRequestContent = new StringContent(adminMakeLoginRequestString, Encoding.UTF8, "application/json");
+        var adminMakeLogInRequestString = JsonSerializer.Serialize(adminMakeLogInRequest);
+        var adminMakeLogInRequestContent = new StringContent(adminMakeLogInRequestString, Encoding.UTF8, "application/json");
 
         var editUserName = Guid.NewGuid().ToString();
         var editUserRequest = new EditUserRequest
@@ -603,7 +716,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var editUserRequestString = JsonSerializer.Serialize(editUserRequest);
         var editUserRequestContent = new StringContent(editUserRequestString, Encoding.UTF8, "application/json");
 
-        var makePassword = "makeP4\$\$w0rd";
+        var makePassword = "makeP4$$w0rd";
         var makeUserName = "makeUserName" + String.Join("", Guid.NewGuid().ToString().Split("-"));
         var makeEmail = $"makeEmail@makeEmail.com";
         var makeUserRequest = new MakeUserRequest
@@ -616,30 +729,30 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var makeUserRequestString = JsonSerializer.Serialize(makeUserRequest);
         var makeUserRequestContent = new StringContent(makeUserRequestString, Encoding.UTF8, "application/json");
 
-        var userMakeLoginRequest = new MakeLoginRequest
+        var userMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "userP4\$\$w0rd",
+            Password = "userP4$$w0rd",
             RememberMe = true,
             UserName = "user",
         };
-        var userMakeLoginRequestString = JsonSerializer.Serialize(userMakeLoginRequest);
-        var userMakeLoginRequestContent = new StringContent(userMakeLoginRequestString, Encoding.UTF8, "application/json");
+        var userMakeLogInRequestString = JsonSerializer.Serialize(userMakeLogInRequest);
+        var userMakeLogInRequestContent = new StringContent(userMakeLogInRequestString, Encoding.UTF8, "application/json");
 
-        var makeMakeLoginRequest = new MakeLoginRequest
+        var makeMakeLogInRequest = new MakeLogInRequest
         {
             Password = makePassword,
             RememberMe = true,
             UserName = makeUserName,
         };
-        var makeMakeLoginRequestString = JsonSerializer.Serialize(makeMakeLoginRequest);
-        var makeMakeLoginRequestContent = new StringContent(makeMakeLoginRequestString, Encoding.UTF8, "application/json");
+        var makeMakeLogInRequestString = JsonSerializer.Serialize(makeMakeLogInRequest);
+        var makeMakeLogInRequestContent = new StringContent(makeMakeLogInRequestString, Encoding.UTF8, "application/json");
 
         // Act
-        var response = await client.PostAsync("/Logouts", emptyContent);
+        var response = await client.PostAsync("/LogOuts", emptyContent);
 
         // Assert
         Assert.NotNull(response);
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
         response = await client.GetAsync("/Users");
@@ -718,7 +831,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
         // Act
-        response = await client.PostAsync("/Logins", adminMakeLoginRequestContent);
+        response = await client.PostAsync("/LogIns", adminMakeLogInRequestContent);
 
         // Assert
         Assert.NotNull(response);
@@ -732,14 +845,14 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
-        response = await client.PostAsync("/Logouts", emptyContent);
+        response = await client.PostAsync("/LogOuts", emptyContent);
 
         // Assert
         Assert.NotNull(response);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
-        response = await client.PostAsync("/Logins", userMakeLoginRequestContent);
+        response = await client.PostAsync("/LogIns", userMakeLogInRequestContent);
 
         // Assert
         Assert.NotNull(response);
@@ -816,14 +929,14 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Act
-        response = await client.PostAsync("/Logouts", emptyContent);
+        response = await client.PostAsync("/LogOuts", emptyContent);
 
         // Assert
         Assert.NotNull(response);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
-        response = await client.PostAsync("/Logins", makeMakeLoginRequestContent);
+        response = await client.PostAsync("/LogIns", makeMakeLogInRequestContent);
         responseContent = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -880,14 +993,14 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
 
         // Act
-        response = await client.PostAsync("/Logouts", emptyContent);
+        response = await client.PostAsync("/LogOuts", emptyContent);
 
         // Assert
         Assert.NotNull(response);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
-        response = await client.PostAsync("/Logins", adminMakeLoginRequestContent);
+        response = await client.PostAsync("/LogIns", adminMakeLogInRequestContent);
 
         // Assert
         Assert.NotNull(response);
@@ -1013,7 +1126,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Act
-        response = await client.PostAsync("/Logouts", emptyContent);
+        response = await client.PostAsync("/LogOuts", emptyContent);
 
         // Assert
         Assert.NotNull(response);
@@ -1023,129 +1136,117 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 EOF
 git add $FILE
 
-dotnet test && exit 1 || git commit --message="red - testing the users endpoints"
+dotnet test && exit 1 || git commit --message="red - testing the endpoints"
 dotnet format
 git add --all
 git commit --message "dotnet format"
 
-FILE=$PROJECT/appsettings.Development.json
-cat > $FILE << EOF
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=$USER;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
-  },
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
-    }
-  }
-}
-EOF
-git add $FILE
+mkdir -p $PROJECT/Authentication/LogIn && echo "Created $PROJECT/Authentication/LogIn folder" || exit 1
 
-mkdir -p $PROJECT/Authentication/Login && echo "Created $PROJECT/Authentication/Login folder" || exit 1
-
-FILE=$PROJECT/Authentication/Login/LoginsController.cs
+FILE=$PROJECT/Authentication/LogIn/LogInsController.cs
 cat > $FILE << EOF
+using IntrepionApp.WebApi.Authentication.User;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace $PROJECT.Authentication.Login;
+namespace IntrepionApp.WebApi.Authentication.LogIn;
 
-public interface ILoginsController
+public interface ILogInsController
 {
-    public Task<IActionResult> MakeLoginAsync([FromBody] MakeLoginRequest makeLoginRequest);
+    public Task<IActionResult> MakeLogInAsync([FromBody] MakeLogInRequest makeLogInRequest);
 }
 
 [ApiController]
 [Route("{controller}")]
-public class LoginsController : ControllerBase, ILoginsController
+public class LogInsController : ControllerBase, ILogInsController
 {
-    private readonly ILoginsRepository _loginsRepository;
+    private readonly ILogInsRepository _loginsRepository;
+    private readonly UserManager<UserEntity> _userManager;
 
-    public LoginsController(ILoginsRepository loginsRepository)
+    public LogInsController(ILogInsRepository loginsRepository, UserManager<UserEntity> userManager)
     {
         _loginsRepository = loginsRepository;
+        _userManager = userManager;
     }
 
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> MakeLoginAsync([FromBody] MakeLoginRequest makeLoginRequest)
+    public async Task<IActionResult> MakeLogInAsync([FromBody] MakeLogInRequest makeLogInRequest)
     {
-        var makeLoginResponse = await _loginsRepository.MakeLoginAsync(makeLoginRequest);
+        var makeLogInResponse = await _loginsRepository.MakeLogInAsync(makeLogInRequest);
 
-        if (makeLoginResponse is null)
+        if (makeLogInResponse is null)
         {
             return BadRequest();
         }
 
-        return Ok(makeLoginResponse);
+        return Ok(makeLogInResponse);
     }
 }
 EOF
 git add $FILE
 
-FILE=$PROJECT/Authentication/Login/LoginsRepository.cs
+FILE=$PROJECT/Authentication/LogIn/LogInsRepository.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using $PROJECT.Authentication.User;
+using IntrepionApp.WebApi.Authentication.User;
 
-namespace $PROJECT.Authentication.Login;
+namespace IntrepionApp.WebApi.Authentication.LogIn;
 
-public interface ILoginsRepository
+public interface ILogInsRepository
 {
-    public Task<MakeLoginResponse?> MakeLoginAsync(MakeLoginRequest makeLoginRequest);
+    public Task<MakeLogInResponse?> MakeLogInAsync(MakeLogInRequest makeLogInRequest);
 }
 
-public class LoginsRepository : ILoginsRepository
+public class LogInsRepository : ILogInsRepository
 {
     private readonly SignInManager<UserEntity> _signInManager;
 
-    public LoginsRepository(SignInManager<UserEntity> signInManager)
+    public LogInsRepository(SignInManager<UserEntity> signInManager)
     {
         _signInManager = signInManager;
     }
 
-    public async Task<MakeLoginResponse?> MakeLoginAsync(MakeLoginRequest makeLoginRequest)
+    public async Task<MakeLogInResponse?> MakeLogInAsync(MakeLogInRequest makeLogInRequest)
     {
-        if (makeLoginRequest is null)
+        if (makeLogInRequest is null)
         {
             return null;
         }
 
-        if (String.IsNullOrWhiteSpace(makeLoginRequest.Password))
+        if (String.IsNullOrWhiteSpace(makeLogInRequest.Password))
         {
             return null;
         }
 
-        if (String.IsNullOrWhiteSpace(makeLoginRequest.UserName))
+        if (String.IsNullOrWhiteSpace(makeLogInRequest.UserName))
         {
             return null;
         }
 
-        var result = await _signInManager.PasswordSignInAsync(makeLoginRequest.UserName, makeLoginRequest.Password, makeLoginRequest.RememberMe, false);
+        var result = await _signInManager.PasswordSignInAsync(makeLogInRequest.UserName, makeLogInRequest.Password, makeLogInRequest.RememberMe, false);
 
         if (!result.Succeeded)
         {
             return null;
         }
 
-        return new MakeLoginResponse
+        return new MakeLogInResponse
         {
-            UserName = makeLoginRequest.UserName,
+            UserName = makeLogInRequest.UserName,
         };
     }
 }
 EOF
 git add $FILE
 
-FILE=$PROJECT/Authentication/Login/MakeLoginRequest.cs
+FILE=$PROJECT/Authentication/LogIn/MakeLogInRequest.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace $PROJECT.Authentication.Login;
+namespace IntrepionApp.WebApi.Authentication.LogIn;
 
-public class MakeLoginRequest
+public class MakeLogInRequest
 {
     [JsonPropertyName("password")]
     public string? Password { get; set; }
@@ -1159,13 +1260,13 @@ public class MakeLoginRequest
 EOF
 git add $FILE
 
-FILE=$PROJECT/Authentication/Login/MakeLoginResponse.cs
+FILE=$PROJECT/Authentication/LogIn/MakeLogInResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace $PROJECT.Authentication.Login;
+namespace IntrepionApp.WebApi.Authentication.LogIn;
 
-public class MakeLoginResponse
+public class MakeLogInResponse
 {
     [JsonPropertyName("userName")]
     public string? UserName { get; set; }
@@ -1173,95 +1274,104 @@ public class MakeLoginResponse
 EOF
 git add $FILE
 
-mkdir -p $PROJECT/Authentication/Logout && echo "Created $PROJECT/Authentication/Logout folder" || exit 1
+mkdir -p $PROJECT/Authentication/LogOut && echo "Created $PROJECT/Authentication/LogOut folder" || exit 1
 
-FILE=$PROJECT/Authentication/Logout/LogoutsController.cs
+FILE=$PROJECT/Authentication/LogOut/LogOutsController.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using $PROJECT.Authentication.User;
+using IntrepionApp.WebApi.Authentication.User;
 
-namespace $PROJECT.Authentication.Logout;
+namespace IntrepionApp.WebApi.Authentication.LogOut;
 
-public interface ILogoutsController
+public interface ILogOutsController
 {
-    public Task<IActionResult> MakeLogoutAsync();
+    public Task<IActionResult> MakeLogOutAsync();
 }
 
 [ApiController]
 [Route("{controller}")]
-public class LogoutsController : ControllerBase, ILogoutsController
+public class LogOutsController : ControllerBase, ILogOutsController
 {
-    private readonly ILogoutsRepository _LogoutsRepository;
+    private readonly ILogOutsRepository _LogOutsRepository;
     private readonly UserManager<UserEntity> _userManager;
 
-    public LogoutsController(ILogoutsRepository LogoutsRepository, UserManager<UserEntity> userManager)
+    public LogOutsController(ILogOutsRepository LogOutsRepository, UserManager<UserEntity> userManager)
     {
-        _LogoutsRepository = LogoutsRepository;
+        _LogOutsRepository = LogOutsRepository;
         _userManager = userManager;
     }
 
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> MakeLogoutAsync()
+    public async Task<IActionResult> MakeLogOutAsync()
     {
         var currentUser = await _userManager.GetUserAsync(HttpContext.User);
 
-        var makeLogoutResponse = await _LogoutsRepository.MakeLogoutAsync(currentUser);
+        var makeLogOutResponse = await _LogOutsRepository.MakeLogOutAsync(currentUser);
 
-        if (makeLogoutResponse is null)
+        if (makeLogOutResponse is null)
         {
             return BadRequest();
         }
 
-        return Ok(makeLogoutResponse);
+        return Ok(makeLogOutResponse);
     }
 }
 EOF
 git add $FILE
 
-FILE=$PROJECT/Authentication/Logout/LogoutsRepository.cs
+FILE=$PROJECT/Authentication/LogOut/LogOutsRepository.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using $PROJECT.Authentication.User;
+using IntrepionApp.WebApi.Authentication.User;
 
-namespace $PROJECT.Authentication.Logout;
+namespace IntrepionApp.WebApi.Authentication.LogOut;
 
-public interface ILogoutsRepository
+public interface ILogOutsRepository
 {
-    public Task<MakeLogoutResponse?> MakeLogoutAsync(UserEntity? currentUser);
+    public Task<MakeLogOutResponse?> MakeLogOutAsync(UserEntity? currentUser);
 }
 
-public class LogoutsRepository : ILogoutsRepository
+public class LogOutsRepository : ILogOutsRepository
 {
     private readonly SignInManager<UserEntity> _signInManager;
 
-    public LogoutsRepository(SignInManager<UserEntity> signInManager)
+    public LogOutsRepository(SignInManager<UserEntity> signInManager)
     {
         _signInManager = signInManager;
     }
 
-    public async Task<MakeLogoutResponse?> MakeLogoutAsync(UserEntity? currentUser)
+    public async Task<MakeLogOutResponse?> MakeLogOutAsync(UserEntity? currentUser)
     {
         if (currentUser is null)
         {
-            return null;
+            return new MakeLogOutResponse();
         }
+
+        var userName = currentUser.UserName;
 
         await _signInManager.SignOutAsync();
 
-        return new MakeLogoutResponse();
+        return new MakeLogOutResponse
+        {
+            UserName = userName,
+        };
     }
 }
 EOF
 git add $FILE
 
-FILE=$PROJECT/Authentication/Logout/MakeLogoutResponse.cs
+FILE=$PROJECT/Authentication/LogOut/MakeLogOutResponse.cs
 cat > $FILE << EOF
-namespace $PROJECT.Authentication.Logout;
+using System.Text.Json.Serialization;
 
-public class MakeLogoutResponse
+namespace IntrepionApp.WebApi.Authentication.LogOut;
+
+public class MakeLogOutResponse
 {
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
 }
 EOF
 git add $FILE
@@ -1905,14 +2015,30 @@ public static class DatabaseInitializer
 EOF
 git add $FILE
 
+FILE=$PROJECT/appsettings.Development.json
+cat > $FILE << EOF
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=$USER;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
+EOF
+git add $FILE
+
 FILE=$PROJECT/Program.cs
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
-using $PROJECT.Authentication.Login;
-using $PROJECT.Authentication.Logout;
-using $PROJECT.Authentication.Role;
-using $PROJECT.Authentication.User;
-using $PROJECT.Database;
+using IntrepionApp.WebApi.Authentication.LogIn;
+using IntrepionApp.WebApi.Authentication.LogOut;
+using IntrepionApp.WebApi.Authentication.Role;
+using IntrepionApp.WebApi.Authentication.User;
+using IntrepionApp.WebApi.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -1927,8 +2053,8 @@ builder.Services.AddIdentity<UserEntity, RoleEntity>()
 
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<ILoginsRepository, LoginsRepository>();
-builder.Services.AddScoped<ILogoutsRepository, LogoutsRepository>();
+builder.Services.AddScoped<ILogInsRepository, LogInsRepository>();
+builder.Services.AddScoped<ILogOutsRepository, LogOutsRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -1971,7 +2097,7 @@ public partial class Program { }
 EOF
 git add $FILE
 
-dotnet test && git commit --message="green - testing the users endpoints" || exit 1
+dotnet test && git commit --message="green - testing the endpoints" || exit 1
 dotnet format
 git add --all
 git commit --message "dotnet format"
