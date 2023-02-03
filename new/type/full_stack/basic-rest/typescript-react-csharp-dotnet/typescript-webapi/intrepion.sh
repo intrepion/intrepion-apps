@@ -565,10 +565,10 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using IntrepionApp.WebApi.Authentication.LogIn;
-using IntrepionApp.WebApi.Authentication.LogOut;
+using $PROJECT.Authentication.LogIn;
+using $PROJECT.Authentication.LogOut;
 
-namespace IntrepionApp.Tests.Endpoints;
+namespace $SOLUTION.Tests.Endpoints;
 
 public class TestLogInsEndpoints : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -678,10 +678,10 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using IntrepionApp.WebApi.Authentication.LogIn;
-using IntrepionApp.WebApi.Authentication.User;
+using $PROJECT.Authentication.LogIn;
+using $PROJECT.Authentication.User;
 
-namespace IntrepionApp.Tests.Endpoints;
+namespace $SOLUTION.Tests.Endpoints;
 
 public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 {
@@ -1145,11 +1145,11 @@ mkdir -p $PROJECT/Authentication/LogIn && echo "Created $PROJECT/Authentication/
 
 FILE=$PROJECT/Authentication/LogIn/LogInsController.cs
 cat > $FILE << EOF
-using IntrepionApp.WebApi.Authentication.User;
+using $PROJECT.Authentication.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace IntrepionApp.WebApi.Authentication.LogIn;
+namespace $PROJECT.Authentication.LogIn;
 
 public interface ILogInsController
 {
@@ -1189,9 +1189,9 @@ git add $FILE
 FILE=$PROJECT/Authentication/LogIn/LogInsRepository.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using IntrepionApp.WebApi.Authentication.User;
+using $PROJECT.Authentication.User;
 
-namespace IntrepionApp.WebApi.Authentication.LogIn;
+namespace $PROJECT.Authentication.LogIn;
 
 public interface ILogInsRepository
 {
@@ -1244,7 +1244,7 @@ FILE=$PROJECT/Authentication/LogIn/MakeLogInRequest.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace IntrepionApp.WebApi.Authentication.LogIn;
+namespace $PROJECT.Authentication.LogIn;
 
 public class MakeLogInRequest
 {
@@ -1264,7 +1264,7 @@ FILE=$PROJECT/Authentication/LogIn/MakeLogInResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace IntrepionApp.WebApi.Authentication.LogIn;
+namespace $PROJECT.Authentication.LogIn;
 
 public class MakeLogInResponse
 {
@@ -1280,9 +1280,9 @@ FILE=$PROJECT/Authentication/LogOut/LogOutsController.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using IntrepionApp.WebApi.Authentication.User;
+using $PROJECT.Authentication.User;
 
-namespace IntrepionApp.WebApi.Authentication.LogOut;
+namespace $PROJECT.Authentication.LogOut;
 
 public interface ILogOutsController
 {
@@ -1324,9 +1324,9 @@ git add $FILE
 FILE=$PROJECT/Authentication/LogOut/LogOutsRepository.cs
 cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
-using IntrepionApp.WebApi.Authentication.User;
+using $PROJECT.Authentication.User;
 
-namespace IntrepionApp.WebApi.Authentication.LogOut;
+namespace $PROJECT.Authentication.LogOut;
 
 public interface ILogOutsRepository
 {
@@ -1366,7 +1366,7 @@ FILE=$PROJECT/Authentication/LogOut/MakeLogOutResponse.cs
 cat > $FILE << EOF
 using System.Text.Json.Serialization;
 
-namespace IntrepionApp.WebApi.Authentication.LogOut;
+namespace $PROJECT.Authentication.LogOut;
 
 public class MakeLogOutResponse
 {
@@ -2034,11 +2034,11 @@ git add $FILE
 FILE=$PROJECT/Program.cs
 cat > $FILE << EOF
 using Microsoft.EntityFrameworkCore;
-using IntrepionApp.WebApi.Authentication.LogIn;
-using IntrepionApp.WebApi.Authentication.LogOut;
-using IntrepionApp.WebApi.Authentication.Role;
-using IntrepionApp.WebApi.Authentication.User;
-using IntrepionApp.WebApi.Database;
+using $PROJECT.Authentication.LogIn;
+using $PROJECT.Authentication.LogOut;
+using $PROJECT.Authentication.Role;
+using $PROJECT.Authentication.User;
+using $PROJECT.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -5643,7 +5643,7 @@ const Navigating = () => {
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
         <Container>
           <Navbar.Brand as={Link} to="/">
-            intrepion
+            $CANONICAL
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
@@ -5690,14 +5690,14 @@ const Navigating = () => {
             <p>© 2023 Oliver Forral All rights reserved.</p>
             <ul className="list-unstyled d-flex">
               <li className="ms-3">
-                <a className="link-dark" href="https://twitter.com/intrepion">
+                <a className="link-dark" href="https://twitter.com/$USER">
                   <i className="fa-brands fa-twitter"></i>
                 </a>
               </li>
               <li className="ms-3">
                 <a
                   className="link-dark"
-                  href="https://www.instagram.com/intrepion/"
+                  href="https://www.instagram.com/$USER/"
                 >
                   <i className="fa-brands fa-instagram"></i>
                 </a>
@@ -5705,7 +5705,7 @@ const Navigating = () => {
               <li className="ms-3">
                 <a
                   className="link-dark"
-                  href="https://www.facebook.com/intrepion"
+                  href="https://www.facebook.com/$USER"
                 >
                   <i className="fa-brands fa-facebook"></i>
                 </a>
