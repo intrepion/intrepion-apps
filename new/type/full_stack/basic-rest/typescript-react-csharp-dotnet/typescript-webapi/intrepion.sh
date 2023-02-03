@@ -588,7 +588,7 @@ public class TestLogInsEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var adminMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "adminP4$$w0rd",
+            Password = "adminP4\$\$w0rd",
             RememberMe = true,
             UserName = "admin",
         };
@@ -596,7 +596,7 @@ public class TestLogInsEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var adminMakeLogInRequestContent = new StringContent(adminMakeLogInRequestString, Encoding.UTF8, "application/json");
         var userMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "userP4$$w0rd",
+            Password = "userP4\$\$w0rd",
             RememberMe = true,
             UserName = "user",
         };
@@ -701,7 +701,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var adminMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "adminP4$$w0rd",
+            Password = "adminP4\$\$w0rd",
             RememberMe = true,
             UserName = "admin",
         };
@@ -716,7 +716,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var editUserRequestString = JsonSerializer.Serialize(editUserRequest);
         var editUserRequestContent = new StringContent(editUserRequestString, Encoding.UTF8, "application/json");
 
-        var makePassword = "makeP4$$w0rd";
+        var makePassword = "makeP4\$\$w0rd";
         var makeUserName = "makeUserName" + String.Join("", Guid.NewGuid().ToString().Split("-"));
         var makeEmail = $"makeEmail@makeEmail.com";
         var makeUserRequest = new MakeUserRequest
@@ -731,7 +731,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var userMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "userP4$$w0rd",
+            Password = "userP4\$\$w0rd",
             RememberMe = true,
             UserName = "user",
         };
