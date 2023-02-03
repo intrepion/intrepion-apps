@@ -2131,15 +2131,6 @@ npm install cypress --save-dev
 git add --all
 git commit --message "npm install cypress --save-dev"
 
-npm install prettier --save-dev --save-exact
-git add --all
-git commit --message "npm install prettier --save-dev --save-exact"
-
-FILE=package.json
-sed -i 's/"test": "react-scripts test"/"test": "react-scripts test --transformIgnorePatterns \\"node_modules\/(?!axios)\/\\""/g' $FILE
-git add $FILE
-git commit --message '"test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",'
-
 FILE=.gitignore
 cat << EOF >> $FILE
 
@@ -2149,6 +2140,10 @@ cat << EOF >> $FILE
 EOF
 git add $FILE
 git commit --message "Added cypress to .gitignore."
+
+npm install prettier --save-dev --save-exact
+git add --all
+git commit --message "npm install prettier --save-dev --save-exact"
 
 echo {}> .prettierrc.json
 git add .prettierrc.json
@@ -2169,6 +2164,11 @@ git commit --message "npm install @types/uuid"
 npm install axios
 git add --all
 git commit --message "npm install axios"
+
+FILE=package.json
+sed -i 's/"test": "react-scripts test"/"test": "react-scripts test --transformIgnorePatterns \\"node_modules\/(?!axios)\/\\""/g' $FILE
+git add $FILE
+git commit --message '"test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!axios)/\"",'
 
 npm install react-bootstrap --save
 git add --all
