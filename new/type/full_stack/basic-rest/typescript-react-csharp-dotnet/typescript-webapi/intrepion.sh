@@ -2457,6 +2457,8 @@ mkdir -p cypress/e2e/pages/Learn/Algorithms && echo "Created cypress/e2e/pages/L
 
 FILE=cypress/e2e/pages/Learn/Algorithms/Algorithms.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Algorithms pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/algorithms");
@@ -2485,6 +2487,8 @@ mkdir -p cypress/e2e/pages/Learn/BestPractices && echo "Created cypress/e2e/page
 
 FILE=cypress/e2e/pages/Learn/BestPractices/BestPractices.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Best Practices pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/best-practices");
@@ -2513,6 +2517,8 @@ mkdir -p cypress/e2e/pages/Learn/DataStructures && echo "Created cypress/e2e/pag
 
 FILE=cypress/e2e/pages/Learn/DataStructures/DataStructures.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Data Structures pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/data-structures");
@@ -2543,6 +2549,8 @@ mkdir -p cypress/e2e/pages/Learn/DesignPatterns/ArchitecturalPatterns && echo "C
 
 FILE=cypress/e2e/pages/Learn/DesignPatterns/ArchitecturalPatterns/ArchitecturalPatterns.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Architectural Patterns pages", () => {
   it("passes", () => {
     cy.visit(
@@ -2582,6 +2590,8 @@ mkdir -p cypress/e2e/pages/Learn/DesignPatterns/BehavioralPatterns && echo "Crea
 
 FILE=cypress/e2e/pages/Learn/DesignPatterns/BehavioralPatterns/BehavioralPatterns.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Behavioral Patterns pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/design-patterns/behavioral-patterns");
@@ -2619,6 +2629,8 @@ mkdir -p cypress/e2e/pages/Learn/DesignPatterns/ConcurrencyPatterns && echo "Cre
 
 FILE=cypress/e2e/pages/Learn/DesignPatterns/ConcurrencyPatterns/ConcurrencyPatterns.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Concurrency Patterns pages", () => {
   it("passes", () => {
     cy.visit(
@@ -2658,6 +2670,8 @@ mkdir -p cypress/e2e/pages/Learn/DesignPatterns/CreationalPatterns && echo "Crea
 
 FILE=cypress/e2e/pages/Learn/DesignPatterns/CreationalPatterns/CreationalPatterns.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Creational Patterns pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/design-patterns/creational-patterns");
@@ -2695,6 +2709,8 @@ mkdir -p cypress/e2e/pages/Learn/DesignPatterns/StructuralPatterns && echo "Crea
 
 FILE=cypress/e2e/pages/Learn/DesignPatterns/StructuralPatterns/StructuralPatterns.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Structural Patterns pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/design-patterns/structural-patterns");
@@ -2730,6 +2746,8 @@ git add $FILE
 
 FILE=cypress/e2e/pages/Learn/DesignPatterns/DesignPatterns.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Design Patterns pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/design-patterns");
@@ -2795,6 +2813,8 @@ mkdir -p cypress/e2e/pages/Learn/Principles/SolidPrinciples && echo "Created cyp
 
 FILE=cypress/e2e/pages/Learn/Principles/SolidPrinciples/SolidPrinciples.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("SOLID Principles pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/principles/solid-principles");
@@ -2828,6 +2848,8 @@ git add $FILE
 
 FILE=cypress/e2e/pages/Learn/Principles/Principles.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Principles pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn/principles");
@@ -2861,6 +2883,8 @@ git add $FILE
 
 FILE=cypress/e2e/pages/Learn/Learn.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("Learn pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/learn");
@@ -2915,6 +2939,8 @@ git add $FILE
 
 FILE=cypress/e2e/pages/index.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("index pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000");
@@ -2981,13 +3007,23 @@ cat > $FILE << EOF
 describe("users", () => {
   it("passes", () => {
     cy.intercept("POST", /^http.*\/Users$/, {
-      fixture: "register-new-user.json",
+      fixture: "registerNewUser.json",
     }).as("register");
     cy.visit("http://localhost:3000");
     cy.get("#navigations-link-register").contains("Register").click();
   });
 });
 
+EOF
+git add $FILE
+
+mkdir -p cypress/fixtures && echo "Created cypress/fixtures folder" || exit 1
+
+FILE=cypress/fixtures/registerNewUser.json
+cat > $FILE << EOF
+{
+  "userName": "new"
+}
 EOF
 git add $FILE
 
@@ -5268,7 +5304,7 @@ git add $FILE
 
 mkdir -p src/utilities && echo "Created src/utilities folder" || exit 1
 
-FILE=src/utilitiesga4.ts
+FILE=src/utilities/ga4.ts
 cat > $FILE << EOF
 import ga4 from "react-ga4";
 

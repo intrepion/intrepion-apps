@@ -1943,6 +1943,8 @@ mkdir -p cypress/e2e && echo "Created cypress/e2e folder" || exit 1
 
 FILE=cypress/e2e/$SNAKE.cy.ts
 cat > $FILE << EOF
+/// <reference types="cypress" />
+
 describe("$CANONICAL app", () => {
   it("passes", () => {
     cy.visit("$CLIENT_URL");
