@@ -3013,7 +3013,6 @@ describe("users", () => {
     cy.get("#navigations-link-register").contains("Register").click();
   });
 });
-
 EOF
 git add $FILE
 
