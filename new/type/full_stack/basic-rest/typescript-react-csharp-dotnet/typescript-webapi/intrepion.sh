@@ -1904,11 +1904,11 @@ cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using $PROJECT.Authentication.Role;
-using $PROJECT.Authentication.User;
-using $PROJECT.Authentication.UserRole;
+using IntrepionApp.WebApi.Authentication.Role;
+using IntrepionApp.WebApi.Authentication.User;
+using IntrepionApp.WebApi.Authentication.UserRole;
 
-namespace $PROJECT.Database;
+namespace IntrepionApp.WebApi.Database;
 
 public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
 {
@@ -1921,13 +1921,15 @@ public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEnti
     {
         base.OnModelCreating(builder);
 
-        var adminRole = new RoleEntity {
-                Id = Guid.NewGuid(),
-                Name = "Admin",
-                NormalizedName = "ADMIN"
+        var adminRole = new RoleEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "Admin",
+            NormalizedName = "ADMIN"
         };
 
-        var regularRole = new RoleEntity {
+        var regularRole = new RoleEntity
+        {
             Id = Guid.NewGuid(),
             Name = "Regular",
             NormalizedName = "REGULAR"
@@ -1941,7 +1943,8 @@ public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEnti
 
         var hasher = new PasswordHasher<UserEntity>();
 
-        var adminUser = new UserEntity {
+        var adminUser = new UserEntity
+        {
             ConcurrencyStamp = Guid.NewGuid().ToString(),
             Email = "$USER@gmail.com",
             Id = Guid.NewGuid(),
@@ -1953,7 +1956,8 @@ public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEnti
         adminUser.NormalizedUserName = adminUser.UserName.ToUpper();
         adminUser.PasswordHash = hasher.HashPassword(adminUser, "adminP@ssw0rd");
 
-        var ${USER}User = new UserEntity {
+        var ${USER}User = new UserEntity
+        {
             ConcurrencyStamp = Guid.NewGuid().ToString(),
             Email = "$USER@gmail.com",
             Id = Guid.NewGuid(),
@@ -1965,7 +1969,8 @@ public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEnti
         ${USER}User.NormalizedUserName = ${USER}User.UserName.ToUpper();
         ${USER}User.PasswordHash = hasher.HashPassword(${USER}User, "${USER}P@ssw0rd");
 
-        var regularUser = new UserEntity {
+        var regularUser = new UserEntity
+        {
             ConcurrencyStamp = Guid.NewGuid().ToString(),
             Email = "$USER@gmail.com",
             Id = Guid.NewGuid(),
@@ -1977,7 +1982,8 @@ public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEnti
         regularUser.NormalizedUserName = regularUser.UserName.ToUpper();
         regularUser.PasswordHash = hasher.HashPassword(regularUser, "regularP@ssw0rd");
 
-        var userUser = new UserEntity {
+        var userUser = new UserEntity
+        {
             ConcurrencyStamp = Guid.NewGuid().ToString(),
             Email = "$USER@gmail.com",
             Id = Guid.NewGuid(),
