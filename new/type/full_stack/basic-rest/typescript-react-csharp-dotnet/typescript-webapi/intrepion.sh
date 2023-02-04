@@ -588,7 +588,7 @@ public class TestLogInsEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var adminMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "adminP4\$\$w0rd",
+            Password = "adminP@ssw0rd",
             RememberMe = true,
             UserName = "admin",
         };
@@ -596,7 +596,7 @@ public class TestLogInsEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var adminMakeLogInRequestContent = new StringContent(adminMakeLogInRequestString, Encoding.UTF8, "application/json");
         var userMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "userP4\$\$w0rd",
+            Password = "userP@ssw0rd",
             RememberMe = true,
             UserName = "user",
         };
@@ -701,7 +701,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var adminMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "adminP4\$\$w0rd",
+            Password = "adminP@ssw0rd",
             RememberMe = true,
             UserName = "admin",
         };
@@ -716,7 +716,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var editUserRequestString = JsonSerializer.Serialize(editUserRequest);
         var editUserRequestContent = new StringContent(editUserRequestString, Encoding.UTF8, "application/json");
 
-        var makePassword = "makeP4\$\$w0rd";
+        var makePassword = "makeP@ssw0rd";
         var makeUserName = "makeUserName" + String.Join("", Guid.NewGuid().ToString().Split("-"));
         var makeEmail = $"makeEmail@makeEmail.com";
         var makeUserRequest = new MakeUserRequest
@@ -731,7 +731,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         var userMakeLogInRequest = new MakeLogInRequest
         {
-            Password = "userP4\$\$w0rd",
+            Password = "userP@ssw0rd",
             RememberMe = true,
             UserName = "user",
         };
@@ -1145,9 +1145,9 @@ mkdir -p $PROJECT/Authentication/LogIn && echo "Created $PROJECT/Authentication/
 
 FILE=$PROJECT/Authentication/LogIn/LogInsController.cs
 cat > $FILE << EOF
-using $PROJECT.Authentication.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using $PROJECT.Authentication.User;
 
 namespace $PROJECT.Authentication.LogIn;
 
@@ -1883,14 +1883,30 @@ public class ViewUserResponse
 EOF
 git add $FILE
 
+mkdir -p $PROJECT/Authentication/UserRole && echo "Created $PROJECT/Authentication/UserRole folder" || exit 1
+
+FILE=$PROJECT/Authentication/UserRole/UserRoleEntity.cs
+cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
+
+namespace $PROJECT.Authentication.UserRole;
+
+public class UserRoleEntity : IdentityUserRole<Guid>
+{
+}
+EOF
+git add $FILE
+
 mkdir -p $PROJECT/Database && echo "Created $PROJECT/Database folder" || exit 1
 
 FILE=$PROJECT/Database/ApplicationDatabaseContext.cs
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using $PROJECT.Authentication.Role;
 using $PROJECT.Authentication.User;
+using $PROJECT.Authentication.UserRole;
 
 namespace $PROJECT.Database;
 
@@ -1899,117 +1915,104 @@ public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEnti
     public ApplicationDatabaseContext(DbContextOptions<ApplicationDatabaseContext> options) : base(options)
     {
         Database.EnsureCreated();
-        DatabaseInitializer.Initialize(this);
     }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-    }
-}
-EOF
-git add $FILE
 
-FILE=$PROJECT/Database/DatabaseInitializer.cs
-cat > $FILE << EOF
-using Microsoft.AspNetCore.Identity;
-using $PROJECT.Authentication.Role;
-using $PROJECT.Authentication.User;
-
-namespace $PROJECT.Database;
-
-public static class DatabaseInitializer
-{
-    public static void Initialize(ApplicationDatabaseContext context)
-    {
-        var email = "$USER@gmail.com";
-        var adminRoleName = "Admin";
-        var adminRole = context.Roles.SingleOrDefault(role => role.Name == adminRoleName);
-        if (adminRole is null)
-        {
-            adminRole = new RoleEntity
-            {
+        var adminRole = new RoleEntity {
                 Id = Guid.NewGuid(),
-                Name = adminRoleName,
-                NormalizedName = adminRoleName.ToUpper(),
-            };
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+        };
 
-            context.Roles.Add(adminRole);
-        }
+        var regularRole = new RoleEntity {
+            Id = Guid.NewGuid(),
+            Name = "Regular",
+            NormalizedName = "REGULAR"
+        };
 
-        var adminUserName = "admin";
-        var adminUser = context.Users.SingleOrDefault(user => user.UserName == adminUserName);
-        if (adminUser is null)
+        builder.Entity<RoleEntity>().HasData(new List<RoleEntity>
         {
-            adminUser = new UserEntity
-            {
-                ConcurrencyStamp = "b580c17a-4891-4907-a289-896cfe626059",
-                Email = email,
-                Id = new Guid("0f22ead4-c2dc-47b6-bfa7-53b71524a123"),
-                NormalizedEmail = email.ToUpper(),
-                NormalizedUserName = adminUserName.ToUpper(),
-                PasswordHash = "AQAAAAIAAYagAAAAEPlC3spp0sF663crmvWsH44fEgHdynasZEhBYjpU33qVayBbqo13yhf7nc53TVeXFQ==",
-                SecurityStamp = "5VBDAQB4FP22JE6R6TUSZQEG5FK5U346",
-                UserName = adminUserName,
-            };
+            adminRole,
+            regularRole,
+        });
 
-            context.Users.Add(adminUser);
-        }
+        var hasher = new PasswordHasher<UserEntity>();
 
-        var adminUserRole = context.UserRoles.SingleOrDefault(userRole => userRole.UserId == adminUser.Id && userRole.RoleId == adminRole.Id);
-        if (adminUserRole is null)
-        {
-            context.UserRoles.Add(new IdentityUserRole<Guid>
+        var adminUser = new UserEntity {
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
+            Email = "$USER@gmail.com",
+            Id = Guid.NewGuid(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = "admin",
+        };
+
+        adminUser.NormalizedEmail = adminUser.Email.ToUpper();
+        adminUser.NormalizedUserName = adminUser.UserName.ToUpper();
+        adminUser.PasswordHash = hasher.HashPassword(adminUser, "adminP@ssw0rd");
+
+        var ${USER}User = new UserEntity {
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
+            Email = "$USER@gmail.com",
+            Id = Guid.NewGuid(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = "$USER",
+        };
+
+        ${USER}User.NormalizedEmail = ${USER}User.Email.ToUpper();
+        ${USER}User.NormalizedUserName = ${USER}User.UserName.ToUpper();
+        ${USER}User.PasswordHash = hasher.HashPassword(${USER}User, "${USER}P@ssw0rd");
+
+        var regularUser = new UserEntity {
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
+            Email = "$USER@gmail.com",
+            Id = Guid.NewGuid(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = "regular",
+        };
+
+        regularUser.NormalizedEmail = regularUser.Email.ToUpper();
+        regularUser.NormalizedUserName = regularUser.UserName.ToUpper();
+        regularUser.PasswordHash = hasher.HashPassword(regularUser, "regularP@ssw0rd");
+
+        var userUser = new UserEntity {
+            ConcurrencyStamp = Guid.NewGuid().ToString(),
+            Email = "$USER@gmail.com",
+            Id = Guid.NewGuid(),
+            SecurityStamp = Guid.NewGuid().ToString(),
+            UserName = "user",
+        };
+
+        userUser.NormalizedEmail = userUser.Email.ToUpper();
+        userUser.NormalizedUserName = userUser.UserName.ToUpper();
+        userUser.PasswordHash = hasher.HashPassword(userUser, "userP@ssw0rd");
+
+        builder.Entity<UserEntity>().HasData(
+            adminUser,
+            ${USER}User,
+            regularUser,
+            userUser
+        );
+
+        builder.Entity<UserRoleEntity>().HasData(
+            new UserRoleEntity
             {
                 RoleId = adminRole.Id,
                 UserId = adminUser.Id,
-            });
-        }
-
-        var regularRoleName = "Regular";
-        var regularRole = context.Roles.SingleOrDefault(role => role.Name == regularRoleName);
-        if (regularRole is null)
-        {
-            regularRole = new RoleEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = regularRoleName,
-                NormalizedName = regularRoleName.ToUpper(),
-            };
-
-            context.Roles.Add(regularRole);
-        }
-
-        var regularUserName = "user";
-        var regularUser = context.Users.SingleOrDefault(user => user.UserName == regularUserName);
-        if (regularUser is null)
-        {
-            regularUser = new UserEntity
-            {
-                ConcurrencyStamp = "29b261a3-8854-47aa-b5db-39d1af4d16b4",
-                Email = email,
-                Id = new Guid("91e3682b-735a-4da0-8bce-956714313878"),
-                NormalizedEmail = email.ToUpper(),
-                NormalizedUserName = regularUserName.ToUpper(),
-                PasswordHash = "AQAAAAIAAYagAAAAEGjTqPCH6FvDgteBVlUpNmyRuWaNHdwnAls3ATX1IvjGMSQonXFeFvMMo785JsA/4g==",
-                SecurityStamp = "7F2WYPUIFN55SQY4LYMC2G56C4MZAUOG",
-                UserName = regularUserName,
-            };
-
-            context.Users.Add(regularUser);
-        }
-
-        var regularUserRole = context.UserRoles.SingleOrDefault(userRole => userRole.UserId == regularUser.Id && userRole.RoleId == regularRole.Id);
-        if (regularUserRole is null)
-        {
-            context.UserRoles.Add(new IdentityUserRole<Guid>
+            },
+            new UserRoleEntity
             {
                 RoleId = regularRole.Id,
                 UserId = regularUser.Id,
-            });
-        }
-
-        context.SaveChanges();
+            },
+            new UserRoleEntity
+            {
+                RoleId = regularRole.Id,
+                UserId = userUser.Id,
+            }
+        );
     }
 }
 EOF
@@ -2019,7 +2022,7 @@ FILE=$PROJECT/appsettings.Development.json
 cat > $FILE << EOF
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=$USER;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=$USER;Username=postgres;Password=password;SSL Mode=Disable;Trust Server Certificate=true;Include Error Detail=true;"
   },
   "Logging": {
     "LogLevel": {
