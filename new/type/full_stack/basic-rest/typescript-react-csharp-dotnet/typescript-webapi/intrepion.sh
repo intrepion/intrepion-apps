@@ -3006,17 +3006,65 @@ cat > $FILE << EOF
 
 describe("users", () => {
   it("passes", () => {
+    cy.intercept("POST", /^http.*\/LogIns$/, {
+      fixture: "logInNewUser.json",
+    }).as("logIn");
+    cy.intercept("POST", /^http.*\/LogOuts$/, {
+      fixture: "logOutNewUser.json",
+    }).as("logOut");
     cy.intercept("POST", /^http.*\/Users$/, {
       fixture: "registerNewUser.json",
     }).as("register");
+
     cy.visit("http://localhost:3000");
+    cy.url().should("include", "/");
+    cy.get("h1").contains("intrepion");
+
     cy.get("#navigations-link-register").contains("Register").click();
+    cy.url().should("include", "/authentication/register");
+    cy.get("h1").contains("Register");
+    cy.get("#register-user-name").type("new");
+    cy.get("#register-email").type("intrepion@gmail.com");
+    cy.get("#register-password").type("newP@ssw0rd");
+    cy.get("#register-confirm").type("newP@ssw0rd");
+    cy.get("#register-accept").check();
+
+    cy.get("#register-submit").click();
+    cy.url().should("include", "/log-in");
+    cy.get("h1").contains("Log In");
+    cy.get("#log-in-user-name").type("new");
+    cy.get("#log-in-password").type("newP@ssw0rd");
+    cy.get("#log-in-remember-me").check();
+
+    cy.get("#log-in-submit").click();
+    cy.url().should("include", "/");
+    cy.get("h1").contains("intrepion");
+
+    cy.get("#navigations-link-log-out").contains("Log Out").click();
+    cy.url().should("include", "/authentication/log-in");
+    cy.get("h1").contains("Log In");
   });
 });
 EOF
 git add $FILE
 
 mkdir -p cypress/fixtures && echo "Created cypress/fixtures folder" || exit 1
+
+FILE=cypress/fixtures/logInNewUser.json
+cat > $FILE << EOF
+{
+  "userName": "new"
+}
+EOF
+git add $FILE
+
+FILE=cypress/fixtures/logOutNewUser.json
+cat > $FILE << EOF
+{
+  "userName": "new"
+}
+EOF
+git add $FILE
 
 FILE=cypress/fixtures/registerNewUser.json
 cat > $FILE << EOF
@@ -3146,7 +3194,7 @@ const LogIn = () => {
       <div>
         <Form noValidate validated={validated} onSubmit={handleLogIn}>
           <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationCustomUserName">
+            <Form.Group as={Col} md="4" controlId="log-in-user-name">
               <Form.Label>User Name</Form.Label>
               <InputGroup hasValidation>
                 <InputGroup.Text id="inputGroupPrependUserName">
@@ -3167,7 +3215,7 @@ const LogIn = () => {
             </Form.Group>
           </Row>
           <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationCustomPassword">
+            <Form.Group as={Col} md="4" controlId="log-in-password">
               <Form.Label>Password</Form.Label>
               <Form.Control
                 onChange={handleChangePassword}
@@ -3181,14 +3229,16 @@ const LogIn = () => {
               </Form.Control.Feedback>
             </Form.Group>
           </Row>
-          <Form.Group className="mb-3">
-            <Form.Check
-              checked={rememberMe}
-              label="Remember Me"
-              onChange={handleChangeRememberMe}
-            />
-          </Form.Group>
-          <Button disabled={isHandlingLogIn} type="submit">
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="log-in-remember-me">
+              <Form.Check
+                checked={rememberMe}
+                label="Remember Me"
+                onChange={handleChangeRememberMe}
+              />
+            </Form.Group>
+          </Row>
+          <Button disabled={isHandlingLogIn} id="log-in-submit" type="submit">
             Login
           </Button>
         </Form>
@@ -3239,7 +3289,7 @@ const LogOut = () => {
   return (
     <>
       {!isHandlingLogOut && successLogOut && !authenticatedUserName && (
-        <Navigate to="/log-in" replace={true} />
+        <Navigate to="/authentication/log-in" replace={true} />
       )}
     </>
   );
@@ -3334,7 +3384,7 @@ const Register = () => {
       <div>
         <Form noValidate validated={validated} onSubmit={handleRegister}>
           <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationCustomUserName">
+            <Form.Group as={Col} md="4" controlId="register-user-name">
               <Form.Label>User Name</Form.Label>
               <InputGroup hasValidation>
                 <InputGroup.Text id="inputGroupPrependUserName">
@@ -3355,7 +3405,7 @@ const Register = () => {
             </Form.Group>
           </Row>
           <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationCustomEmail">
+            <Form.Group as={Col} md="4" controlId="register-email">
               <Form.Label>Email</Form.Label>
               <InputGroup hasValidation>
                 <InputGroup.Text id="inputGroupPrependEmail">
@@ -3376,7 +3426,7 @@ const Register = () => {
             </Form.Group>
           </Row>
           <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationCustomPassword">
+            <Form.Group as={Col} md="4" controlId="register-password">
               <Form.Label>Password</Form.Label>
               <Form.Control
                 onChange={handleChangePassword}
@@ -3391,7 +3441,7 @@ const Register = () => {
             </Form.Group>
           </Row>
           <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="validationCustomConfirm">
+            <Form.Group as={Col} md="4" controlId="register-confirm">
               <Form.Label>Confirm</Form.Label>
               <Form.Control
                 onChange={handleChangeConfirm}
@@ -3405,23 +3455,31 @@ const Register = () => {
               </Form.Control.Feedback>
             </Form.Group>
           </Row>
-          <Form.Group className="mb-3">
-            <Form.Check
-              checked={accept}
-              label="Accept terms of service"
-              onChange={handleChangeAccept}
-              required
-            />
-            <Form.Control.Feedback type="invalid">
-              Please accept the terms of service.
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Button disabled={isHandlingRegister} type="submit">
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="register-accept">
+              <Form.Check
+                checked={accept}
+                label="Accept terms of service"
+                onChange={handleChangeAccept}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                Please accept the terms of service.
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Row>
+          <Button
+            disabled={isHandlingRegister}
+            id="register-submit"
+            type="submit"
+          >
             Login
           </Button>
         </Form>
       </div>
-      {successRegister && <Navigate to="/log-in" replace={true} />}
+      {successRegister && (
+        <Navigate to="/authentication/log-in" replace={true} />
+      )}
     </>
   );
 };
@@ -5642,7 +5700,7 @@ export default Routing;
 EOF
 git add $FILE
 
-npx cypress run && git commit --message="green - test routes" || exit 1
+npx cypress run && git commit --message="green - test pages" || exit 1
 npx prettier --write .
 git add --all
 git commit --message "npx prettier --write ."
