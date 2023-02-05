@@ -2467,7 +2467,7 @@ describe("Algorithms pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/algorithms");
     cy.get("h1").contains("Algorithms");
@@ -2497,7 +2497,7 @@ describe("Best Practices pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/best-practices");
     cy.get("h1").contains("Best Practices");
@@ -2527,7 +2527,7 @@ describe("Data Structures pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/data-structures");
     cy.get("h1").contains("Data Structures");
@@ -2561,7 +2561,7 @@ describe("Architectural Patterns pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/design-patterns/architectural-patterns");
     cy.get("h1").contains("Architectural Patterns");
@@ -2600,7 +2600,7 @@ describe("Behavioral Patterns pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/design-patterns/behavioral-patterns");
     cy.get("h1").contains("Behavioral Patterns");
@@ -2641,7 +2641,7 @@ describe("Concurrency Patterns pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/design-patterns/concurrency-patterns");
     cy.get("h1").contains("Concurrency Patterns");
@@ -2680,7 +2680,7 @@ describe("Creational Patterns pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/design-patterns/creational-patterns");
     cy.get("h1").contains("Creational Patterns");
@@ -2719,7 +2719,7 @@ describe("Structural Patterns pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/design-patterns/structural-patterns");
     cy.get("h1").contains("Structural Patterns");
@@ -2756,7 +2756,7 @@ describe("Design Patterns pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/design-patterns");
     cy.get("h1").contains("Design Patterns");
@@ -2823,7 +2823,7 @@ describe("SOLID Principles pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/principles/solid-principles");
     cy.get("h1").contains("SOLID Principles");
@@ -2858,7 +2858,7 @@ describe("Principles pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn/principles");
     cy.get("h1").contains("Principles");
@@ -2893,7 +2893,7 @@ describe("Learn pages", () => {
 
     cy.get("#breadcrumbs-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
     cy.go("back");
     cy.url().should("include", "/learn");
     cy.get("h1").contains("Let's Learn");
@@ -2945,50 +2945,50 @@ describe("index pages", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
-    cy.get("#navigations-link-intrepion").contains("intrepion").click();
+    cy.get("#navigations-link-$CANONICAL").contains("$CANONICAL").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-home").contains("Home").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-learn").contains("Learn").click();
     cy.url().should("include", "/learn");
     cy.get("h1").contains("Let's Learn");
     cy.go("back");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-about").contains("About").click();
     cy.url().should("include", "/about");
     cy.get("h1").contains("OLIVER FORRAL");
     cy.go("back");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-log-in").contains("Log In").click();
     cy.url().should("include", "/authentication/log-in");
     cy.get("h1").contains("Log In");
     cy.go("back");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-register").contains("Register").click();
     cy.url().should("include", "/authentication/register");
     cy.get("h1").contains("Register");
     cy.go("back");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#cards-link-learn").contains("Learn").click();
     cy.url().should("include", "/learn");
     cy.get("h1").contains("Let's Learn");
     cy.go("back");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#socials-link-twitter").should((\$a) => {
       expect(\$a.attr("href"), "href").contains("twitter.com");
@@ -3018,13 +3018,13 @@ describe("users", () => {
 
     cy.visit("http://localhost:3000");
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-register").contains("Register").click();
     cy.url().should("include", "/authentication/register");
     cy.get("h1").contains("Register");
     cy.get("#register-user-name").type("new");
-    cy.get("#register-email").type("intrepion@gmail.com");
+    cy.get("#register-email").type("$USER@gmail.com");
     cy.get("#register-password").type("newP@ssw0rd");
     cy.get("#register-confirm").type("newP@ssw0rd");
     cy.get("#register-accept").check();
@@ -3038,7 +3038,7 @@ describe("users", () => {
 
     cy.get("#log-in-submit").click();
     cy.url().should("include", "/");
-    cy.get("h1").contains("intrepion");
+    cy.get("h1").contains("$CANONICAL");
 
     cy.get("#navigations-link-log-out").contains("Log Out").click();
     cy.url().should("include", "/authentication/log-in");
@@ -5300,7 +5300,7 @@ const Home = () => {
     <>
       <div className="p-5 mb-4 bg-light rounded-3">
         <div className="container-fluid py-5">
-          <h1 className="display-5 fw-bold">intrepion</h1>
+          <h1 className="display-5 fw-bold">$CANONICAL</h1>
           <p className="col-md-8 fs-4">
             Your resource for learning how to create software
           </p>
@@ -5509,8 +5509,8 @@ const Navigating = () => {
     <>
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
         <Container>
-          <Navbar.Brand as={Link} id="navigations-link-intrepion" to="/">
-            intrepion
+          <Navbar.Brand as={Link} id="navigations-link-$CANONICAL" to="/">
+            $CANONICAL
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="responsive-navbar-nav" />
           <Navbar.Collapse id="responsive-navbar-nav">
