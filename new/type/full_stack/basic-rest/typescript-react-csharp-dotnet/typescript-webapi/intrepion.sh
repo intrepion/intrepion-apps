@@ -1868,6 +1868,7 @@ public class UsersRepository : IUsersRepository
 
         return new ViewUserResponse
         {
+            Email = userEntity.Email,
             UserName = userEntity.UserName,
         };
     }
