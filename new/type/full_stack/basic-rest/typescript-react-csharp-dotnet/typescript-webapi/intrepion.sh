@@ -711,7 +711,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
         var editUserName = Guid.NewGuid().ToString();
         var editUserRequest = new EditUserRequest
         {
-            EditUserName = editUserName,
+            UserName = editUserName,
         };
         var editUserRequestString = JsonSerializer.Serialize(editUserRequest);
         var editUserRequestContent = new StringContent(editUserRequestString, Encoding.UTF8, "application/json");
@@ -779,7 +779,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.NotNull(response);
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Act
         response = await client.PostAsync("/Users", makeUserRequestContent);
@@ -821,7 +821,7 @@ public class TestUsersEndpoints : IClassFixture<WebApplicationFactory<Program>>
 
         // Assert
         Assert.NotNull(response);
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         // Act
         response = await client.DeleteAsync($"/Users/{makeUserName}");
@@ -1145,6 +1145,7 @@ mkdir -p $PROJECT/Authentication/LogIn && echo "Created $PROJECT/Authentication/
 
 FILE=$PROJECT/Authentication/LogIn/LogInsController.cs
 cat > $FILE << EOF
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using $PROJECT.Authentication.User;
@@ -1169,6 +1170,7 @@ public class LogInsController : ControllerBase, ILogInsController
         _userManager = userManager;
     }
 
+    [AllowAnonymous]
     [HttpPost]
     [Route("")]
     public async Task<IActionResult> MakeLogInAsync([FromBody] MakeLogInRequest makeLogInRequest)
@@ -1420,20 +1422,20 @@ namespace $PROJECT.Authentication.User;
 
 public class EditUserRequest
 {
-    [JsonPropertyName("currentPassword")]
-    public string? CurrentPassword { get; set; }
+    [JsonPropertyName("confirm")]
+    public string? Confirm { get; set; }
 
-    [JsonPropertyName("editConfirm")]
-    public string? EditConfirm { get; set; }
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
 
-    [JsonPropertyName("editEmail")]
-    public string? EditEmail { get; set; }
+    [JsonPropertyName("password")]
+    public string? Password { get; set; }
 
-    [JsonPropertyName("editPassword")]
-    public string? EditPassword { get; set; }
+    [JsonPropertyName("passwordCurrent")]
+    public string? PasswordCurrent { get; set; }
 
-    [JsonPropertyName("editUserName")]
-    public string? EditUserName { get; set; }
+    [JsonPropertyName("userName")]
+    public string? UserName { get; set; }
 }
 EOF
 git add $FILE
@@ -1446,6 +1448,9 @@ namespace $PROJECT.Authentication.User;
 
 public class EditUserResponse
 {
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
     [JsonPropertyName("userName")]
     public string? UserName { get; set; }
 }
@@ -1555,7 +1560,7 @@ public class UsersController : ControllerBase, IUsersController
         return Ok(allUsersResponse);
     }
 
-    [Authorize]
+    [AllowAnonymous]
     [HttpPut]
     [Route("{userName}")]
     public async Task<IActionResult> EditUserAsync(string userName, [FromBody] EditUserRequest editUserRequest)
@@ -1710,28 +1715,28 @@ public class UsersRepository : IUsersRepository
             }
         }
 
-        if (!(String.IsNullOrWhiteSpace(editUserRequest.CurrentPassword)
-            || String.IsNullOrWhiteSpace(editUserRequest.EditConfirm)
-            || String.IsNullOrWhiteSpace(editUserRequest.EditPassword)))
+        if (!(String.IsNullOrWhiteSpace(editUserRequest.PasswordCurrent)
+            || String.IsNullOrWhiteSpace(editUserRequest.Confirm)
+            || String.IsNullOrWhiteSpace(editUserRequest.Password)))
         {
-            if (!editUserRequest.EditConfirm.Equals(editUserRequest.EditPassword))
+            if (!editUserRequest.Confirm.Equals(editUserRequest.Password))
             {
                 return null;
             }
 
-            await _userManager.ChangePasswordAsync(userEntity, editUserRequest.CurrentPassword, editUserRequest.EditPassword);
+            await _userManager.ChangePasswordAsync(userEntity, editUserRequest.PasswordCurrent, editUserRequest.Password);
         }
 
-        if (!String.IsNullOrWhiteSpace(editUserRequest.EditEmail))
+        if (!String.IsNullOrWhiteSpace(editUserRequest.Email))
         {
-            editUserRequest.EditEmail = editUserRequest.EditEmail.Trim();
-            userEntity.Email = editUserRequest.EditEmail;
+            editUserRequest.Email = editUserRequest.Email.Trim();
+            userEntity.Email = editUserRequest.Email;
         }
 
-        if (!String.IsNullOrWhiteSpace(editUserRequest.EditUserName))
+        if (!String.IsNullOrWhiteSpace(editUserRequest.UserName))
         {
-            editUserRequest.EditUserName = editUserRequest.EditUserName.Trim();
-            userEntity.UserName = editUserRequest.EditUserName;
+            editUserRequest.UserName = editUserRequest.UserName.Trim();
+            userEntity.UserName = editUserRequest.UserName;
         }
 
         var result = await _userManager.UpdateAsync(userEntity);
@@ -1743,6 +1748,7 @@ public class UsersRepository : IUsersRepository
 
         return new EditUserResponse
         {
+            Email = userEntity.Email,
             UserName = userEntity.UserName,
         };
     }
@@ -1877,6 +1883,9 @@ namespace $PROJECT.Authentication.User;
 
 public class ViewUserResponse
 {
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
     [JsonPropertyName("userName")]
     public string? UserName { get; set; }
 }
@@ -1904,11 +1913,11 @@ cat > $FILE << EOF
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using IntrepionApp.WebApi.Authentication.Role;
-using IntrepionApp.WebApi.Authentication.User;
-using IntrepionApp.WebApi.Authentication.UserRole;
+using $PROJECT.Authentication.Role;
+using $PROJECT.Authentication.User;
+using $PROJECT.Authentication.UserRole;
 
-namespace IntrepionApp.WebApi.Database;
+namespace $PROJECT.Database;
 
 public class ApplicationDatabaseContext : IdentityDbContext<UserEntity, RoleEntity, Guid>
 {
@@ -2080,7 +2089,8 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(ClientUrl)
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
 });
 
@@ -3119,20 +3129,124 @@ cat > $FILE << EOF
 EOF
 git add $FILE
 
+mkdir -p src/api && echo "Created src/api folder" || exit 1
+
+FILE=src/api/logIn.ts
+cat > $FILE << EOF
+import axios from "axios";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "";
+
+export const logInNew = (
+  password: string,
+  rememberMe: boolean,
+  userName: string
+) => {
+  const values = {
+    password,
+    rememberMe,
+    userName,
+  };
+
+  return axios.post(SERVER_URL + "/LogIns", values, { withCredentials: true });
+};
+EOF
+git add $FILE
+
+FILE=src/api/logOut.ts
+cat > $FILE << EOF
+import axios from "axios";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "";
+
+export const logOutNew = () => {
+  return axios.post(SERVER_URL + "/LogOuts", null, { withCredentials: true });
+};
+EOF
+git add $FILE
+
+FILE=src/api/user.ts
+cat > $FILE << EOF
+import axios from "axios";
+
+const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "";
+
+export const userEditEmail = (email: string, userName: string) => {
+  const values = {
+    email,
+  };
+
+  return axios.put(SERVER_URL + "/Users/" + userName, values, {
+    withCredentials: true,
+  });
+};
+
+export const userEditPassword = (
+  confirm: string,
+  password: string,
+  passwordCurrent: string,
+  userName: string
+) => {
+  const values = {
+    confirm,
+    password,
+    passwordCurrent,
+    userName,
+  };
+
+  return axios.put(SERVER_URL + "/Users/" + userName, values, {
+    withCredentials: true,
+  });
+};
+
+export const userEditUserName = (userName: string, userNameCurrent: string) => {
+  const values = {
+    userName,
+  };
+
+  return axios.put(SERVER_URL + "/Users/" + userNameCurrent, values, {
+    withCredentials: true,
+  });
+};
+
+export const userNew = (
+  accept: boolean,
+  confirm: string,
+  email: string,
+  password: string,
+  userName: string
+) => {
+  const values = {
+    accept,
+    confirm,
+    email,
+    password,
+    userName,
+  };
+
+  return axios.post(SERVER_URL + "/Users", values, { withCredentials: true });
+};
+
+export const userView = (userName: string) => {
+  return axios.get(SERVER_URL + "/Users/" + userName);
+};
+EOF
+git add $FILE
+
 mkdir -p src/pages && echo "Created src/pages folder" || exit 1
 
 mkdir -p src/pages/Authentication && echo "Created src/pages/Authentication folder" || exit 1
 
 FILE=src/pages/Authentication/LogIn.tsx
 cat > $FILE << EOF
-import axios from "axios";
 import { ChangeEvent, useContext, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
+import { logInNew } from "../../api/logIn";
 import { AuthContext } from "../../AuthProvider";
 
 const LogIn = () => {
-  const { authenticatedUserName, serverUrl, setAuthenticatedUserName } =
+  const { authenticatedUserName, setAuthenticatedUserName } =
     useContext(AuthContext);
   const [isHandlingLogIn, setIsHandlingLogIn] = useState(false);
   const [password, setPassword] = useState("");
@@ -3166,13 +3280,8 @@ const LogIn = () => {
       return;
     }
     setIsHandlingLogIn(true);
-    const values = {
-      password,
-      rememberMe,
-      userName,
-    };
     try {
-      const response = await axios.post(serverUrl + "/LogIns", values);
+      const response = await logInNew(password, rememberMe, userName);
       if (response.data) {
         const { userName } = response.data;
         setAuthenticatedUserName(userName);
@@ -3254,13 +3363,13 @@ git add $FILE
 
 FILE=src/pages/Authentication/LogOut.tsx
 cat > $FILE << EOF
-import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import { logOutNew } from "../../api/logOut";
 import { AuthContext } from "../../AuthProvider";
 
 const LogOut = () => {
-  const { authenticatedUserName, serverUrl, setAuthenticatedUserName } =
+  const { authenticatedUserName, setAuthenticatedUserName } =
     useContext(AuthContext);
   const [isHandlingLogOut, setIsHandlingLogOut] = useState(false);
   const [successLogOut, setSuccessLogOut] = useState(false);
@@ -3268,7 +3377,7 @@ const LogOut = () => {
   const handleLogOut = async () => {
     setIsHandlingLogOut(true);
     try {
-      const response = await axios.post(serverUrl + "/LogOuts");
+      const response = await logOutNew();
       if (response.data) {
         setAuthenticatedUserName("");
         setSuccessLogOut(true);
@@ -3301,11 +3410,10 @@ git add $FILE
 
 FILE=src/pages/Authentication/Register.tsx
 cat > $FILE << EOF
-import axios from "axios";
-import { ChangeEvent, useContext, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
-import { AuthContext } from "../../AuthProvider";
+import { userNew } from "../../api/user";
 
 const Register = () => {
   const [accept, setAccept] = useState(false);
@@ -3313,7 +3421,6 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [isHandlingRegister, setIsHandlingRegister] = useState(false);
   const [password, setPassword] = useState("");
-  const { serverUrl } = useContext(AuthContext);
   const [successRegister, setSuccessRegister] = useState(false);
   const [userName, setUserName] = useState("");
   const [validated, setValidated] = useState(false);
@@ -3352,15 +3459,14 @@ const Register = () => {
       return;
     }
     setIsHandlingRegister(true);
-    const values = {
-      accept,
-      confirm,
-      email,
-      password,
-      userName,
-    };
     try {
-      const response = await axios.post(serverUrl + "/Users", values);
+      const response = await userNew(
+        accept,
+        confirm,
+        email,
+        password,
+        userName
+      );
       if (response.data) {
         setSuccessRegister(true);
       } else {
@@ -3420,7 +3526,7 @@ const Register = () => {
                   value={email}
                 />
                 <Form.Control.Feedback type="invalid">
-                  Please provide a valid user name.
+                  Please provide a valid email.
                 </Form.Control.Feedback>
               </InputGroup>
             </Form.Group>
@@ -4932,7 +5038,7 @@ git add $FILE
 
 FILE=src/pages/About.tsx
 cat > $FILE << EOF
-const Home = () => {
+const About = () => {
   return (
     <>
       <div className="container col-xxl-8 px-4 py-5">
@@ -5286,7 +5392,33 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default About;
+EOF
+git add $FILE
+
+FILE=src/pages/Error.tsx
+cat > $FILE << EOF
+import { useRouteError } from "react-router-dom";
+
+const Error = () => {
+  const error = useRouteError();
+  console.error(error);
+
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Error</h1>
+          <p className="col-md-8 fs-4">
+            Sorry, an unexpected error has occurred.
+          </p>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default Error;
 EOF
 git add $FILE
 
@@ -5339,7 +5471,6 @@ export default Home;
 EOF
 git add $FILE
 
-
 FILE=src/pages/NotFound.tsx
 cat > $FILE << EOF
 const NotFound = () => {
@@ -5359,73 +5490,377 @@ export default NotFound;
 EOF
 git add $FILE
 
-mkdir -p src/utilities && echo "Created src/utilities folder" || exit 1
-
-FILE=src/utilities/ga4.ts
+FILE=src/pages/Profile.tsx
 cat > $FILE << EOF
-import ga4 from "react-ga4";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { useParams } from "react-router-dom";
+import {
+  userEditEmail,
+  userEditPassword,
+  userEditUserName,
+  userView,
+} from "../api/user";
+import { AuthContext } from "../AuthProvider";
 
-const isProduction = process.env.NODE_ENV === "production";
+const Profile = () => {
+  const { authenticatedUserName, setAuthenticatedUserName } =
+    useContext(AuthContext);
+  const params = useParams();
+  const [confirm, setConfirm] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailEditing, setEmailEditing] = useState(false);
+  const [emailEditingHandling, setEmailEditingHandling] = useState(false);
+  const [emailEditingSuccess, setEmailEditingSuccess] = useState(false);
+  const [emailEditingValidated, setEmailEditingValidated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordCurrent, setPasswordCurrent] = useState("");
+  const [passwordEditing, setPasswordEditing] = useState(false);
+  const [passwordEditingHandling, setPasswordEditingHandling] = useState(false);
+  const [passwordEditingSuccess, setPasswordEditingSuccess] = useState(false);
+  const [passwordEditingValidated, setPasswordEditingValidated] =
+    useState(false);
+  const [profileLoadHandling, setProfileLoadHandling] = useState(false);
+  const [profileLoadSuccess, setProfileLoadSuccess] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userNameCurrent, setUserNameCurrent] = useState(params.userName || "");
+  const [userNameEditing, setUserNameEditing] = useState(false);
+  const [userNameEditingHandling, setUserNameEditingHandling] = useState(false);
+  const [userNameEditingSuccess, setUserNameEditingSuccess] = useState(false);
+  const [userNameEditingValidated, setUserNameEditingValidated] =
+    useState(false);
 
-export const init = (GOOGLE_ANALYTICS_ID: string) =>
-  ga4.initialize(GOOGLE_ANALYTICS_ID, {
-    testMode: !isProduction,
-  });
+  const handleChangeConfirm = (event: ChangeEvent<HTMLInputElement>) => {
+    setConfirm(event.target.value);
+  };
 
-export const sendEvent = (name: string) =>
-  ga4.event("screen_view", {
-    app_name: "myApp",
-    screen_name: name,
-  });
+  const handleChangeEmail = (event: ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
+  };
 
-export const sendPageview = (path: string) =>
-  ga4.send({
-    hitType: "pageview",
-    page: path,
-  });
-EOF
-git add $FILE
+  const handleChangePassword = (event: ChangeEvent<HTMLInputElement>) => {
+    setPassword(event.target.value);
+  };
 
-FILE=src/utilities/useAnalytics.ts
-cat > $FILE << EOF
-import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+  const handleChangePasswordCurrent = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    setPasswordCurrent(event.target.value);
+  };
 
-import * as analytics from "./ga4";
+  const handleChangeUserName = (event: ChangeEvent<HTMLInputElement>) => {
+    setUserName(event.target.value);
+  };
 
-export function useAnalytics() {
-  const GOOGLE_ANALYTICS_ID = process.env.REACT_APP_GOOGLE_ANALYTICS_ID ?? "";
-  const location = useLocation();
+  const userNameEditingHandle = async (event: {
+    currentTarget: any;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  }) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    const valid = form.checkValidity();
+    setUserNameEditingValidated(true);
+    if (valid === false) {
+      return;
+    }
+    setUserNameEditingHandling(true);
+    try {
+      const response = await userEditUserName(userName, userNameCurrent);
+      if (response.data) {
+        if (userNameCurrent === authenticatedUserName) {
+          setAuthenticatedUserName(response.data.userName);
+        }
+        setUserNameCurrent(response.data.userName);
+        setUserNameEditing(false);
+        setUserNameEditingSuccess(true);
+      } else {
+        setUserNameEditingSuccess(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setUserNameEditingSuccess(false);
+    }
+    setUserNameEditingHandling(false);
+  };
+
+  const emailEditingHandle = async (event: {
+    currentTarget: any;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  }) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    const valid = form.checkValidity();
+    setEmailEditingValidated(true);
+    if (valid === false) {
+      return;
+    }
+    setEmailEditingHandling(true);
+    try {
+      const response = await userEditEmail(email, userNameCurrent);
+      if (response.data) {
+        setEmail(response.data.email);
+        setEmailEditing(false);
+        setEmailEditingSuccess(true);
+      } else {
+        setEmailEditingSuccess(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setEmailEditingSuccess(false);
+    }
+    setEmailEditingHandling(false);
+  };
+
+  const passwordEditingHandle = async (event: {
+    currentTarget: any;
+    preventDefault: () => void;
+    stopPropagation: () => void;
+  }) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const form = event.currentTarget;
+    const valid = form.checkValidity();
+    setPasswordEditingValidated(true);
+    if (valid === false) {
+      return;
+    }
+    setPasswordEditingHandling(true);
+    try {
+      const response = await userEditPassword(
+        confirm,
+        password,
+        passwordCurrent,
+        userNameCurrent
+      );
+      if (response.data) {
+        setPassword(response.data.email);
+        setPasswordEditing(false);
+        setPasswordEditingSuccess(true);
+      } else {
+        setPasswordEditingSuccess(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setPasswordEditingSuccess(false);
+    }
+    setPasswordEditingHandling(false);
+  };
 
   useEffect(() => {
-    if (GOOGLE_ANALYTICS_ID) {
-      analytics.init(GOOGLE_ANALYTICS_ID);
+    async function fetchData() {
+      setProfileLoadHandling(true);
+      const response = await userView(userNameCurrent);
+      if (response.data) {
+        setEmail(response.data.email);
+        setProfileLoadSuccess(true);
+        setUserName(response.data.userName);
+      } else {
+        setProfileLoadSuccess(false);
+      }
+      setProfileLoadHandling(false);
     }
-  }, [GOOGLE_ANALYTICS_ID]);
+    fetchData();
+  }, [userNameCurrent]);
 
-  useEffect(() => {
-    if (GOOGLE_ANALYTICS_ID) {
-      const path = location.pathname + location.search;
-      analytics.sendPageview(path);
-    }
-  }, [location, GOOGLE_ANALYTICS_ID]);
-}
+  return (
+    <>
+      <div className="p-5 mb-4 bg-light rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">Profile</h1>
+          <p className="col-md-8 fs-4">Profile</p>
+        </div>
+      </div>
+      <div>
+        <Form
+          noValidate
+          validated={userNameEditingValidated}
+          onSubmit={userNameEditingHandle}
+        >
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="profile-user-name">
+              <Form.Label>User Name</Form.Label>
+              {userNameEditing ? (
+                <InputGroup hasValidation>
+                  <InputGroup.Text id="inputGroupPrependUserName">
+                    @
+                  </InputGroup.Text>
+                  <Form.Control
+                    aria-describedby="inputGroupPrependUserName"
+                    onChange={handleChangeUserName}
+                    placeholder="User Name"
+                    required
+                    type="text"
+                    value={userName}
+                  />
+                  <Button
+                    disabled={userNameEditingHandling}
+                    id="user-name-submit"
+                    type="submit"
+                  >
+                    Submit
+                  </Button>
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a valid user name.
+                  </Form.Control.Feedback>
+                </InputGroup>
+              ) : (
+                <p>
+                  @{userNameCurrent}{" "}
+                  <Button
+                    id="user-name-editing-toggle"
+                    onClick={() => setUserNameEditing(!userNameEditing)}
+                    type="button"
+                  >
+                    Edit
+                  </Button>
+                </p>
+              )}
+            </Form.Group>
+          </Row>
+        </Form>
+        <Form
+          noValidate
+          validated={emailEditingValidated}
+          onSubmit={emailEditingHandle}
+        >
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="profile-email">
+              <Form.Label>Email</Form.Label>
+              {emailEditing ? (
+                <InputGroup hasValidation>
+                  <InputGroup.Text id="inputGroupPrependEmail">
+                    mailto:
+                  </InputGroup.Text>
+                  <Form.Control
+                    aria-describedby="inputGroupPrependEmail"
+                    onChange={handleChangeEmail}
+                    placeholder="Email"
+                    required
+                    type="email"
+                    value={email}
+                  />
+                  <Button
+                    disabled={emailEditingHandling}
+                    id="user-name-submit"
+                    type="submit"
+                  >
+                    Submit
+                  </Button>
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a valid email.
+                  </Form.Control.Feedback>
+                </InputGroup>
+              ) : (
+                <p>
+                  {email}{" "}
+                  <Button
+                    id="email-editing-toggle"
+                    onClick={() => setEmailEditing(!emailEditing)}
+                    type="button"
+                  >
+                    Edit
+                  </Button>
+                </p>
+              )}
+            </Form.Group>
+          </Row>
+        </Form>
+        <Form
+          noValidate
+          validated={passwordEditingValidated}
+          onSubmit={passwordEditingHandle}
+        >
+          <Row className="mb-3">
+            <Form.Group as={Col} md="4" controlId="profile-password-current">
+              <Form.Label>Current Password</Form.Label>
+              {passwordEditing ? (
+                <>
+                  <Form.Control
+                    onChange={handleChangePasswordCurrent}
+                    placeholder="Password"
+                    required
+                    type="password"
+                    value={passwordCurrent}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a valid current password.
+                  </Form.Control.Feedback>
+                </>
+              ) : (
+                <p>
+                  ********{" "}
+                  <Button
+                    id="password-editing-toggle"
+                    onClick={() => setPasswordEditing(!passwordEditing)}
+                    type="button"
+                  >
+                    Edit
+                  </Button>
+                </p>
+              )}
+            </Form.Group>
+          </Row>
+          {passwordEditing && (
+            <>
+              <Row className="mb-3">
+                <Form.Group as={Col} md="4" controlId="profile-password">
+                  <Form.Label>Password</Form.Label>
+                  <Form.Control
+                    onChange={handleChangePassword}
+                    placeholder="Password"
+                    required
+                    type="password"
+                    value={password}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a valid password.
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Row>
+              <Row className="mb-3">
+                <Form.Group as={Col} md="4" controlId="profile-confirm">
+                  <Form.Label>Confirm</Form.Label>
+                  <Form.Control
+                    onChange={handleChangeConfirm}
+                    placeholder="Confirm"
+                    required
+                    type="password"
+                    value={confirm}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Please provide a valid confirm.
+                  </Form.Control.Feedback>
+                  <Button
+                    disabled={passwordEditingHandling}
+                    id="user-name-submit"
+                    type="submit"
+                  >
+                    Submit
+                  </Button>
+                </Form.Group>
+              </Row>
+            </>
+          )}
+        </Form>
+      </div>
+    </>
+  );
+};
 
-export default useAnalytics;
+export default Profile;
 EOF
 git add $FILE
 
 FILE=src/App.tsx
 cat > $FILE << EOF
-import { BrowserRouter } from "react-router-dom";
 import Routing from "./Routing";
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Routing />
-    </BrowserRouter>
-  );
+  return <Routing />;
 }
 
 export default App;
@@ -5436,20 +5871,19 @@ FILE=src/AuthProvider.tsx
 cat > $FILE << EOF
 import { createContext, useState, FC, ReactNode, useEffect } from "react";
 
-const SERVER_URL = process.env.REACT_APP_SERVER_URL ?? "";
-
 type AuthContextState = {
   authenticatedUserName: string;
-  serverUrl: string;
   setAuthenticatedUserName: (authenticatedUserName: string) => void;
 };
 
 const contextDefaultValues: AuthContextState = {
   authenticatedUserName: "",
   setAuthenticatedUserName: function (authenticatedUserName: string): void {
-    throw new Error("Function not implemented.");
+    throw new Error(
+      "Function not implemented. Cannot use authenticatedUserName: " +
+        authenticatedUserName
+    );
   },
-  serverUrl: "",
 };
 
 export const AuthContext =
@@ -5463,8 +5897,6 @@ const AuthProvider: FC<Props> = ({ children }) => {
   const [authenticatedUserName, setAuthenticatedUserName] = useState<string>(
     contextDefaultValues.authenticatedUserName
   );
-
-  const serverUrl = SERVER_URL;
 
   useEffect(() => {
     const authenticatedUserName = localStorage.getItem("authenticatedUserName");
@@ -5483,7 +5915,6 @@ const AuthProvider: FC<Props> = ({ children }) => {
       value={{
         authenticatedUserName,
         setAuthenticatedUserName,
-        serverUrl,
       }}
     >
       {children}
@@ -5527,7 +5958,11 @@ const Navigating = () => {
             </Nav>
             {authenticatedUserName ? (
               <Nav className="text-end">
-                <Nav.Link as={Link} id="navigations-link-profile" to="/profile">
+                <Nav.Link
+                  as={Link}
+                  id="navigations-link-profile"
+                  to={"/profile/" + authenticatedUserName}
+                >
                   {authenticatedUserName}
                 </Nav.Link>
                 <Nav.Link
@@ -5621,8 +6056,14 @@ git add $FILE
 
 FILE=src/Routing.tsx
 cat > $FILE << EOF
-import { Route, Routes } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  Route,
+  RouterProvider,
+} from "react-router-dom";
 import About from "./pages/About";
+import Error from "./pages/Error";
 import Home from "./pages/Home";
 import Algorithms from "./pages/Learn/Algorithms/Algorithms";
 import BestPractices from "./pages/Learn/BestPractices/BestPractices";
@@ -5641,14 +6082,12 @@ import LogOut from "./pages/Authentication/LogOut";
 import Navigating from "./Navigating";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Authentication/Register";
-import useAnalytics from "./utilities/useAnalytics";
+import Profile from "./pages/Profile";
 
-function Routing() {
-  useAnalytics();
-
-  return (
-    <Routes>
-      <Route element={<Navigating />}>
+const Routing = () => {
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route element={<Navigating />} errorElement={<Error />}>
         <Route index element={<Home />} />
         <Route path="about" element={<About />} />
         <Route path="authentication">
@@ -5690,11 +6129,14 @@ function Routing() {
             <Route path="solid-principles" element={<SolidPrinciples />} />
           </Route>
         </Route>
+        <Route path="profile/:userName" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Route>
-    </Routes>
+    )
   );
-}
+
+  return <RouterProvider router={router} />;
+};
 
 export default Routing;
 EOF
