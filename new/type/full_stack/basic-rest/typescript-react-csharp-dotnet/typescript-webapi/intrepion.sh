@@ -3240,8 +3240,9 @@ mkdir -p src/pages/Authentication && echo "Created src/pages/Authentication fold
 
 FILE=src/pages/Authentication/LogIn.tsx
 cat > $FILE << EOF
+import { isAxiosError } from "axios";
 import { ChangeEvent, useContext, useState } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import { logInNew } from "../../api/logIn";
 import { AuthContext } from "../../AuthProvider";
@@ -3249,7 +3250,9 @@ import { AuthContext } from "../../AuthProvider";
 const LogIn = () => {
   const { authenticatedUserName, setAuthenticatedUserName } =
     useContext(AuthContext);
-  const [isHandlingLogIn, setIsHandlingLogIn] = useState(false);
+  const [logInError, setLogInError] = useState("");
+  const [logInHandling, setLogInHandling] = useState(false);
+  const [logInSuccess, setLogInSuccess] = useState(false);
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [userName, setUserName] = useState("");
@@ -3274,23 +3277,34 @@ const LogIn = () => {
   }) => {
     event.preventDefault();
     event.stopPropagation();
+    setLogInError("");
+    setLogInSuccess(false);
     const form = event.currentTarget;
     const valid = form.checkValidity();
     setValidated(true);
     if (valid === false) {
       return;
     }
-    setIsHandlingLogIn(true);
+    setLogInHandling(true);
     try {
       const response = await logInNew(password, rememberMe, userName);
       if (response.data) {
         const { userName } = response.data;
         setAuthenticatedUserName(userName);
+        setLogInSuccess(true);
+      } else {
+        setLogInError("Log in failed.");
+        setLogInSuccess(false);
       }
     } catch (error) {
-      console.log(error);
+      let message;
+      if (isAxiosError(error) && error.response) {
+        message = "Log in failed.";
+      } else message = String(error);
+      setLogInError(message);
+      setLogInSuccess(false);
     }
-    setIsHandlingLogIn(false);
+    setLogInHandling(false);
   };
 
   return (
@@ -3348,9 +3362,20 @@ const LogIn = () => {
               />
             </Form.Group>
           </Row>
-          <Button disabled={isHandlingLogIn} id="log-in-submit" type="submit">
-            Login
-          </Button>
+          <Row className="mb-3">
+            <Col md="4">
+              <Button disabled={logInHandling} id="log-in-submit" type="submit">
+                Login
+              </Button>
+            </Col>
+          </Row>
+          {!logInSuccess && logInError && (
+            <Row>
+              <Col md="4">
+                <Alert variant="danger">{logInError}</Alert>
+              </Col>
+            </Row>
+          )}
         </Form>
       </div>
       {authenticatedUserName && <Navigate to="/" replace={true} />}
@@ -3411,8 +3436,9 @@ git add $FILE
 
 FILE=src/pages/Authentication/Register.tsx
 cat > $FILE << EOF
+import { isAxiosError } from "axios";
 import { ChangeEvent, useState } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import { userNew } from "../../api/user";
 
@@ -3420,9 +3446,10 @@ const Register = () => {
   const [accept, setAccept] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [email, setEmail] = useState("");
-  const [isHandlingRegister, setIsHandlingRegister] = useState(false);
   const [password, setPassword] = useState("");
-  const [successRegister, setSuccessRegister] = useState(false);
+  const [registerError, setRegisterError] = useState("");
+  const [registerHandling, setRegisterHandling] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
   const [userName, setUserName] = useState("");
   const [validated, setValidated] = useState(false);
 
@@ -3453,13 +3480,15 @@ const Register = () => {
   }) => {
     event.preventDefault();
     event.stopPropagation();
+    setRegisterError("");
+    setRegisterSuccess(false);
     const form = event.currentTarget;
     const valid = form.checkValidity();
     setValidated(true);
     if (valid === false) {
       return;
     }
-    setIsHandlingRegister(true);
+    setRegisterHandling(true);
     try {
       const response = await userNew(
         accept,
@@ -3469,15 +3498,20 @@ const Register = () => {
         userName
       );
       if (response.data) {
-        setSuccessRegister(true);
+        setRegisterSuccess(true);
       } else {
-        setSuccessRegister(false);
+        setRegisterError("Register failed.");
+        setRegisterSuccess(false);
       }
     } catch (error) {
-      console.log(error);
-      setSuccessRegister(false);
+      let message;
+      if (isAxiosError(error) && error.response) {
+        message = "Register failed.";
+      } else message = String(error);
+      setRegisterError(message);
+      setRegisterSuccess(false);
     }
-    setIsHandlingRegister(false);
+    setRegisterHandling(false);
   };
 
   return (
@@ -3575,16 +3609,27 @@ const Register = () => {
               </Form.Control.Feedback>
             </Form.Group>
           </Row>
-          <Button
-            disabled={isHandlingRegister}
-            id="register-submit"
-            type="submit"
-          >
-            Login
-          </Button>
+          <Row className="mb-3">
+            <Col md="4">
+              <Button
+                disabled={registerHandling}
+                id="register-submit"
+                type="submit"
+              >
+                Login
+              </Button>
+            </Col>
+          </Row>
+          {!registerSuccess && registerError && (
+            <Row>
+              <Col md="4">
+                <Alert variant="danger">{registerError}</Alert>
+              </Col>
+            </Row>
+          )}
         </Form>
       </div>
-      {successRegister && (
+      {registerSuccess && (
         <Navigate to="/authentication/log-in" replace={true} />
       )}
     </>
@@ -5493,9 +5538,10 @@ git add $FILE
 
 FILE=src/pages/Profile.tsx
 cat > $FILE << EOF
+import { isAxiosError } from "axios";
 import { ChangeEvent, useContext, useEffect, useState } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
+import { useLocation, useParams } from "react-router-dom";
 import {
   userEditEmail,
   userEditPassword,
@@ -5505,27 +5551,32 @@ import {
 import { AuthContext } from "../AuthProvider";
 
 const Profile = () => {
+  const location = useLocation();
+  const params = useParams();
   const { authenticatedUserName, setAuthenticatedUserName } =
     useContext(AuthContext);
-  const params = useParams();
   const [confirm, setConfirm] = useState("");
   const [email, setEmail] = useState("");
   const [emailEditing, setEmailEditing] = useState(false);
+  const [emailEditingError, setEmailEditingError] = useState("");
   const [emailEditingHandling, setEmailEditingHandling] = useState(false);
   const [emailEditingSuccess, setEmailEditingSuccess] = useState(false);
   const [emailEditingValidated, setEmailEditingValidated] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordCurrent, setPasswordCurrent] = useState("");
   const [passwordEditing, setPasswordEditing] = useState(false);
+  const [passwordEditingError, setPasswordEditingError] = useState("");
   const [passwordEditingHandling, setPasswordEditingHandling] = useState(false);
   const [passwordEditingSuccess, setPasswordEditingSuccess] = useState(false);
   const [passwordEditingValidated, setPasswordEditingValidated] =
     useState(false);
+  const [profileLoadError, setProfileLoadError] = useState("");
   const [profileLoadHandling, setProfileLoadHandling] = useState(false);
   const [profileLoadSuccess, setProfileLoadSuccess] = useState(false);
   const [userName, setUserName] = useState("");
   const [userNameCurrent, setUserNameCurrent] = useState(params.userName || "");
   const [userNameEditing, setUserNameEditing] = useState(false);
+  const [userNameEditingError, setUserNameEditingError] = useState("");
   const [userNameEditingHandling, setUserNameEditingHandling] = useState(false);
   const [userNameEditingSuccess, setUserNameEditingSuccess] = useState(false);
   const [userNameEditingValidated, setUserNameEditingValidated] =
@@ -5560,6 +5611,8 @@ const Profile = () => {
   }) => {
     event.preventDefault();
     event.stopPropagation();
+    setUserNameEditingError("");
+    setUserNameEditingSuccess(false);
     const form = event.currentTarget;
     const valid = form.checkValidity();
     setUserNameEditingValidated(true);
@@ -5573,14 +5626,20 @@ const Profile = () => {
         if (userNameCurrent === authenticatedUserName) {
           setAuthenticatedUserName(response.data.userName);
         }
+        setUserName(response.data.userName);
         setUserNameCurrent(response.data.userName);
         setUserNameEditing(false);
         setUserNameEditingSuccess(true);
       } else {
+        setUserNameEditingError("User name edit failed.");
         setUserNameEditingSuccess(false);
       }
     } catch (error) {
-      console.log(error);
+      let message;
+      if (isAxiosError(error) && error.response) {
+        message = "User name edit failed.";
+      } else message = String(error);
+      setUserNameEditingError(message);
       setUserNameEditingSuccess(false);
     }
     setUserNameEditingHandling(false);
@@ -5593,6 +5652,8 @@ const Profile = () => {
   }) => {
     event.preventDefault();
     event.stopPropagation();
+    setEmailEditingError("");
+    setEmailEditingSuccess(false);
     const form = event.currentTarget;
     const valid = form.checkValidity();
     setEmailEditingValidated(true);
@@ -5607,10 +5668,15 @@ const Profile = () => {
         setEmailEditing(false);
         setEmailEditingSuccess(true);
       } else {
+        setEmailEditingError("Email edit failed.");
         setEmailEditingSuccess(false);
       }
     } catch (error) {
-      console.log(error);
+      let message;
+      if (isAxiosError(error) && error.response) {
+        message = "Email edit failed.";
+      } else message = String(error);
+      setEmailEditingError(message);
       setEmailEditingSuccess(false);
     }
     setEmailEditingHandling(false);
@@ -5623,6 +5689,8 @@ const Profile = () => {
   }) => {
     event.preventDefault();
     event.stopPropagation();
+    setPasswordEditingError("");
+    setPasswordEditingSuccess(false);
     const form = event.currentTarget;
     const valid = form.checkValidity();
     setPasswordEditingValidated(true);
@@ -5638,14 +5706,18 @@ const Profile = () => {
         userNameCurrent
       );
       if (response.data) {
-        setPassword(response.data.email);
         setPasswordEditing(false);
         setPasswordEditingSuccess(true);
       } else {
+        setPasswordEditingError("Password edit failed.");
         setPasswordEditingSuccess(false);
       }
     } catch (error) {
-      console.log(error);
+      let message;
+      if (isAxiosError(error) && error.response) {
+        message = "Password edit failed.";
+      } else message = String(error);
+      setPasswordEditingError(message);
       setPasswordEditingSuccess(false);
     }
     setPasswordEditingHandling(false);
@@ -5653,19 +5725,32 @@ const Profile = () => {
 
   useEffect(() => {
     async function fetchData() {
+      setProfileLoadError("");
       setProfileLoadHandling(true);
-      const response = await userView(userNameCurrent);
-      if (response.data) {
-        setEmail(response.data.email);
-        setProfileLoadSuccess(true);
-        setUserName(response.data.userName);
-      } else {
+      setProfileLoadSuccess(false);
+      try {
+        const userNameLocation = location.pathname.split("/")[2];
+        const response = await userView(userNameLocation);
+        if (response.data) {
+          setEmail(response.data.email);
+          setProfileLoadSuccess(true);
+          setUserName(response.data.userName);
+          setUserNameCurrent(response.data.userName);
+        } else {
+          setProfileLoadSuccess(false);
+        }
+      } catch (error) {
+        let message;
+        if (isAxiosError(error) && error.response) {
+          message = "Profile load failed.";
+        } else message = String(error);
+        setProfileLoadError(message);
         setProfileLoadSuccess(false);
       }
       setProfileLoadHandling(false);
     }
     fetchData();
-  }, [userNameCurrent]);
+  }, [location]);
 
   return (
     <>
@@ -5676,254 +5761,205 @@ const Profile = () => {
         </div>
       </div>
       <div>
-        <Form
-          noValidate
-          validated={userNameEditingValidated}
-          onSubmit={userNameEditingHandle}
-        >
-          <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="profile-user-name">
-              <Form.Label>User Name</Form.Label>
-              {userNameEditing ? (
-                <InputGroup hasValidation>
-                  <InputGroup.Text id="inputGroupPrependUserName">
-                    @
-                  </InputGroup.Text>
-                  <Form.Control
-                    aria-describedby="inputGroupPrependUserName"
-                    onChange={handleChangeUserName}
-                    placeholder="User Name"
-                    required
-                    type="text"
-                    value={userName}
-                  />
-                  <Button
-                    disabled={userNameEditingHandling}
-                    id="user-name-submit"
-                    type="submit"
-                  >
-                    Submit
-                  </Button>
-                  <Form.Control.Feedback type="invalid">
-                    Please provide a valid user name.
-                  </Form.Control.Feedback>
-                </InputGroup>
-              ) : (
-                <p>
-                  @{userNameCurrent}{" "}
-                  <Button
-                    id="user-name-editing-toggle"
-                    onClick={() => setUserNameEditing(!userNameEditing)}
-                    type="button"
-                  >
-                    Edit
-                  </Button>
-                </p>
-              )}
-            </Form.Group>
-          </Row>
-        </Form>
-        <Form
-          noValidate
-          validated={emailEditingValidated}
-          onSubmit={emailEditingHandle}
-        >
-          <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="profile-email">
-              <Form.Label>Email</Form.Label>
-              {emailEditing ? (
-                <InputGroup hasValidation>
-                  <InputGroup.Text id="inputGroupPrependEmail">
-                    mailto:
-                  </InputGroup.Text>
-                  <Form.Control
-                    aria-describedby="inputGroupPrependEmail"
-                    onChange={handleChangeEmail}
-                    placeholder="Email"
-                    required
-                    type="email"
-                    value={email}
-                  />
-                  <Button
-                    disabled={emailEditingHandling}
-                    id="user-name-submit"
-                    type="submit"
-                  >
-                    Submit
-                  </Button>
-                  <Form.Control.Feedback type="invalid">
-                    Please provide a valid email.
-                  </Form.Control.Feedback>
-                </InputGroup>
-              ) : (
-                <p>
-                  {email}{" "}
-                  <Button
-                    id="email-editing-toggle"
-                    onClick={() => setEmailEditing(!emailEditing)}
-                    type="button"
-                  >
-                    Edit
-                  </Button>
-                </p>
-              )}
-            </Form.Group>
-          </Row>
-        </Form>
-        <Form
-          noValidate
-          validated={passwordEditingValidated}
-          onSubmit={passwordEditingHandle}
-        >
-          <Row className="mb-3">
-            <Form.Group as={Col} md="4" controlId="profile-password-current">
-              <Form.Label>Current Password</Form.Label>
-              {passwordEditing ? (
+        {!profileLoadHandling && !profileLoadSuccess && profileLoadError ? (
+          <Alert variant="danger">{profileLoadError}</Alert>
+        ) : (
+          <>
+            <Form
+              noValidate
+              validated={userNameEditingValidated}
+              onSubmit={userNameEditingHandle}
+            >
+              <Row className="mb-3">
+                <Form.Group as={Col} md="4" controlId="profile-user-name">
+                  <Form.Label>User Name</Form.Label>
+                  {userNameEditing ? (
+                    <InputGroup hasValidation>
+                      <InputGroup.Text id="inputGroupPrependUserName">
+                        @
+                      </InputGroup.Text>
+                      <Form.Control
+                        aria-describedby="inputGroupPrependUserName"
+                        onChange={handleChangeUserName}
+                        placeholder="User Name"
+                        required
+                        type="text"
+                        value={userName}
+                      />
+                      <Button
+                        disabled={userNameEditingHandling}
+                        id="user-name-submit"
+                        type="submit"
+                      >
+                        Submit
+                      </Button>
+                      <Form.Control.Feedback type="invalid">
+                        Please provide a valid user name.
+                      </Form.Control.Feedback>
+                      {!userNameEditingSuccess && userNameEditingError && (
+                        <Alert variant="danger">{userNameEditingError}</Alert>
+                      )}
+                    </InputGroup>
+                  ) : (
+                    <p>
+                      @{userNameCurrent}{" "}
+                      <Button
+                        className="btn btn-secondary"
+                        id="user-name-editing-toggle"
+                        onClick={() => setUserNameEditing(!userNameEditing)}
+                        type="button"
+                      >
+                        Edit
+                      </Button>
+                    </p>
+                  )}
+                </Form.Group>
+              </Row>
+            </Form>
+            <Form
+              noValidate
+              validated={emailEditingValidated}
+              onSubmit={emailEditingHandle}
+            >
+              <Row className="mb-3">
+                <Form.Group as={Col} md="4" controlId="profile-email">
+                  <Form.Label>Email</Form.Label>
+                  {emailEditing ? (
+                    <InputGroup hasValidation>
+                      <InputGroup.Text id="inputGroupPrependEmail">
+                        mailto:
+                      </InputGroup.Text>
+                      <Form.Control
+                        aria-describedby="inputGroupPrependEmail"
+                        onChange={handleChangeEmail}
+                        placeholder="Email"
+                        required
+                        type="email"
+                        value={email}
+                      />
+                      <Button
+                        disabled={emailEditingHandling}
+                        id="user-name-submit"
+                        type="submit"
+                      >
+                        Submit
+                      </Button>
+                      <Form.Control.Feedback type="invalid">
+                        Please provide a valid email.
+                      </Form.Control.Feedback>
+                      {!emailEditingSuccess && emailEditingError && (
+                        <Alert variant="danger">{emailEditingError}</Alert>
+                      )}
+                    </InputGroup>
+                  ) : (
+                    <p>
+                      {email}{" "}
+                      <Button
+                        className="btn btn-secondary"
+                        id="email-editing-toggle"
+                        onClick={() => setEmailEditing(!emailEditing)}
+                        type="button"
+                      >
+                        Edit
+                      </Button>
+                    </p>
+                  )}
+                </Form.Group>
+              </Row>
+            </Form>
+            <Form
+              noValidate
+              validated={passwordEditingValidated}
+              onSubmit={passwordEditingHandle}
+            >
+              <Row className="mb-3">
+                <Form.Group
+                  as={Col}
+                  md="4"
+                  controlId="profile-password-current"
+                >
+                  <Form.Label>Current Password</Form.Label>
+                  {passwordEditing ? (
+                    <>
+                      <Form.Control
+                        onChange={handleChangePasswordCurrent}
+                        placeholder="Password"
+                        required
+                        type="password"
+                        value={passwordCurrent}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please provide a valid current password.
+                      </Form.Control.Feedback>
+                    </>
+                  ) : (
+                    <p>
+                      ********{" "}
+                      <Button
+                        className="btn btn-secondary"
+                        id="password-editing-toggle"
+                        onClick={() => setPasswordEditing(!passwordEditing)}
+                        type="button"
+                      >
+                        Edit
+                      </Button>
+                    </p>
+                  )}
+                </Form.Group>
+              </Row>
+              {passwordEditing && (
                 <>
-                  <Form.Control
-                    onChange={handleChangePasswordCurrent}
-                    placeholder="Password"
-                    required
-                    type="password"
-                    value={passwordCurrent}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Please provide a valid current password.
-                  </Form.Control.Feedback>
+                  <Row className="mb-3">
+                    <Form.Group as={Col} md="4" controlId="profile-password">
+                      <Form.Label>Password</Form.Label>
+                      <Form.Control
+                        onChange={handleChangePassword}
+                        placeholder="Password"
+                        required
+                        type="password"
+                        value={password}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please provide a valid password.
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Row>
+                  <Row className="mb-3">
+                    <Form.Group as={Col} md="4" controlId="profile-confirm">
+                      <Form.Label>Confirm</Form.Label>
+                      <Form.Control
+                        onChange={handleChangeConfirm}
+                        placeholder="Confirm"
+                        required
+                        type="password"
+                        value={confirm}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        Please provide a valid confirm.
+                      </Form.Control.Feedback>
+                      <Button
+                        disabled={passwordEditingHandling}
+                        id="user-name-submit"
+                        type="submit"
+                      >
+                        Submit
+                      </Button>
+                      {!passwordEditingSuccess && passwordEditingError && (
+                        <Alert variant="danger">{passwordEditingError}</Alert>
+                      )}
+                    </Form.Group>
+                  </Row>
                 </>
-              ) : (
-                <p>
-                  ********{" "}
-                  <Button
-                    id="password-editing-toggle"
-                    onClick={() => setPasswordEditing(!passwordEditing)}
-                    type="button"
-                  >
-                    Edit
-                  </Button>
-                </p>
               )}
-            </Form.Group>
-          </Row>
-          {passwordEditing && (
-            <>
-              <Row className="mb-3">
-                <Form.Group as={Col} md="4" controlId="profile-password">
-                  <Form.Label>Password</Form.Label>
-                  <Form.Control
-                    onChange={handleChangePassword}
-                    placeholder="Password"
-                    required
-                    type="password"
-                    value={password}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Please provide a valid password.
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-              <Row className="mb-3">
-                <Form.Group as={Col} md="4" controlId="profile-confirm">
-                  <Form.Label>Confirm</Form.Label>
-                  <Form.Control
-                    onChange={handleChangeConfirm}
-                    placeholder="Confirm"
-                    required
-                    type="password"
-                    value={confirm}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Please provide a valid confirm.
-                  </Form.Control.Feedback>
-                  <Button
-                    disabled={passwordEditingHandling}
-                    id="user-name-submit"
-                    type="submit"
-                  >
-                    Submit
-                  </Button>
-                </Form.Group>
-              </Row>
-            </>
-          )}
-        </Form>
+            </Form>
+          </>
+        )}
       </div>
     </>
   );
 };
 
 export default Profile;
-EOF
-git add $FILE
-
-FILE=src/App.tsx
-cat > $FILE << EOF
-import Routing from "./Routing";
-
-function App() {
-  return <Routing />;
-}
-
-export default App;
-EOF
-git add $FILE
-
-FILE=src/AuthProvider.tsx
-cat > $FILE << EOF
-import { createContext, useState, FC, ReactNode, useEffect } from "react";
-
-type AuthContextState = {
-  authenticatedUserName: string;
-  setAuthenticatedUserName: (authenticatedUserName: string) => void;
-};
-
-const contextDefaultValues: AuthContextState = {
-  authenticatedUserName: "",
-  setAuthenticatedUserName: function (authenticatedUserName: string): void {
-    throw new Error(
-      "Function not implemented. Cannot use authenticatedUserName: " +
-        authenticatedUserName
-    );
-  },
-};
-
-export const AuthContext =
-  createContext<AuthContextState>(contextDefaultValues);
-
-interface Props {
-  children: ReactNode;
-}
-
-const AuthProvider: FC<Props> = ({ children }) => {
-  const [authenticatedUserName, setAuthenticatedUserName] = useState<string>(
-    contextDefaultValues.authenticatedUserName
-  );
-
-  useEffect(() => {
-    const authenticatedUserName = localStorage.getItem("authenticatedUserName");
-
-    if (authenticatedUserName) {
-      setAuthenticatedUserName(authenticatedUserName);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("authenticatedUserName", authenticatedUserName);
-  }, [authenticatedUserName]);
-
-  return (
-    <AuthContext.Provider
-      value={{
-        authenticatedUserName,
-        setAuthenticatedUserName,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export default AuthProvider;
 EOF
 git add $FILE
 
