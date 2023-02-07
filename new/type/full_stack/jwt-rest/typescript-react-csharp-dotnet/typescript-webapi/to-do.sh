@@ -358,9 +358,10 @@ cat > $FILE << EOF
 set -x
 set -eo pipefail
 
-if ! [ -x "/usr/bin/psql" ]; then
-    echo >&2 "Error: psql is not installed."
-    exit 1
+if ! command -v psql &> /dev/null
+then
+    echo "psql could not be found"
+    exit
 fi
 
 DB_USER=\${POSTGRES_USER:=postgres}
